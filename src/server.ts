@@ -7,7 +7,7 @@ import authRoutes from './auth/interface/routes/authRoute';
 import cookieParser from 'cookie-parser';
 import { env } from './auth/config/authConfig';
 
-dotenv.config()
+dotenv.config();
 
 const app = express();
 app.use(cors({

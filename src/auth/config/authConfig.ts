@@ -16,7 +16,15 @@ export const env = {
     },
 
     get PORT() {
-        return process.env.PORT 
+        return process.env.PORT;
+    },
+
+    get REDIS_HOST() {
+        return process.env.REDIS_HOST;
+    },
+
+    get REDIS_PORT() {
+        return process.env.REDIS_PORT;
     }
 
-}
+};
