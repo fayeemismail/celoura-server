@@ -3,6 +3,7 @@ import { IUserRepository } from "../../domain/interfaces/IUserRepository";
 
 
 
+
 export const registerUser = async ( 
     name: string,
     email: string,
@@ -11,8 +12,6 @@ export const registerUser = async (
     userRepo: IUserRepository, 
     authService: IAuthService
  ) => {
-    const existing = await userRepo.findByEmail(email);
-    if (existing) throw new Error('USER IS ALREADY EXISTS');
 
     const hashed = await authService.hashPassword(password)
     

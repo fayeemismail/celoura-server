@@ -1,7 +1,7 @@
 import { Model, model, Schema } from "mongoose";
-import { User } from "../../domain/entities/User";
+import { User } from "../../../domain/entities/User";
 
-const userSchema: Schema < User > = new Schema( {
+const userSchema: Schema < User > = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String },
@@ -10,7 +10,7 @@ const userSchema: Schema < User > = new Schema( {
     is_verified: { type: Boolean, default: false },
 }, {
     timestamps: true
-} )
+});
 
 const userModel: Model < User > = model( 'User', userSchema );
-export default userModel
+export default userModel;

@@ -2,10 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../../infrastructure/service/AuthService";
 import { OtpService } from "../../infrastructure/service/OtpService";
 import { EmailService } from "../../infrastructure/service/EmailService";
-import { registerUser } from "../../usecase/user/registerUser";
-import { sendSignupOtp } from "../../usecase/user/sendSignupOtp";
-import { loginUser } from "../../usecase/user/loginUser";
-import { UserRepository } from "../../infrastructure/service/UserRepository";
+import { registerUser } from "../../application/usecase/user/registerUser";
+import { sendSignupOtp } from "../../application/usecase/user/sendSignupOtp";
+import { loginUser } from "../../application/usecase/user/loginUser";
+import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 
 
 const userRepo = new UserRepository();
@@ -19,18 +19,17 @@ export const signup = async ( req: Request, res: Response, next: NextFunction ):
     try {
         // console.log(req.body)
         const { name, email, password, confirmPassword, role, } = req.body;
+        const existingUser = await userRepo.findByEmail(email)
+        if(existingUser) return res.status(400).json({ error: 'User already Exisits' })
         if(password !== confirmPassword){
             return res.status(400).json({ error: 'Invalid Credentials' });
         }
 
-
-        
         await otpService.setTempUser(email, {name, email, confirmPassword, role} )
-        
-
+    
         await sendSignupOtp( email, otpService, emailService );
 
-        res.status(200).json( { message: 'OTP sent to Email' } );
+        res.status(200).json({ message: 'OTP sent to Email' });
     } catch (error: any) {
         console.log(error.message);
         res.status(400).json({ error: error.message });
@@ -107,4 +106,24 @@ export const resendOtp = async ( req: Request, res: Response ): Promise<any> => 
     await sendSignupOtp(user.email, otpService, emailService)
     return res.status(200).json({message: 'OTP Sent Successfully'})
 }
+
+
+
+
+// export const adminLogin = async (req: Request, res: Response): Promise<any> => {
+//     const {email, password} = req.body;
+//     const { user, token, refreshToken } = await loginUser( email, password, userRepo, authService );
+
+
+//     res.cookie( 'accessToken', token, {
+//         httpOnly: true,
+//         sameSite: 'strict'
+//     } )
+
+//     res.cookie( 'refreshToken', refreshToken, {
+//         httpOnly: true,
+//         sameSite: 'strict',
+//         maxAge: 7 * 27 * 60 * 1000
+//     } );
+// }
 
