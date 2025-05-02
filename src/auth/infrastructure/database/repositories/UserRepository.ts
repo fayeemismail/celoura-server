@@ -1,6 +1,6 @@
-import { User } from "../../domain/entities/User";
-import { IUserRepository } from "../../domain/interfaces/IUserRepository";
-import userModel from "../../framework/model/userModel";
+import { User } from "../../../domain/entities/User";
+import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import userModel from "../models/userModel";
 
 
 export class UserRepository implements IUserRepository {
