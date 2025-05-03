@@ -6,6 +6,8 @@ import { registerUser } from "../../application/usecase/user/registerUser";
 import { sendSignupOtp } from "../../application/usecase/user/sendSignupOtp";
 import { loginUser } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
+import { env } from "../../config/authConfig";
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 
 const userRepo = new UserRepository();
@@ -42,22 +44,56 @@ export const signup = async ( req: Request, res: Response, next: NextFunction ):
 export const login = async (req: Request, res: Response) => {
     try {
         const {email, password} = req.body;
-        const { user, token, refreshToken } = await loginUser( email, password, userRepo, authService );
+        const { user, token, refreshToken } = await loginUser( email, password, ['user'], userRepo, authService );
 
         
+
+        res.cookie( 'accessToken', token, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: env.ACCESS_TOKEN_EXPIRE,
+        } )
+
         //seting refresh Token
         res.cookie( 'refreshToken' , refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: "strict",
-            maxAge: 7 * 27 * 60 * 1000,  
+            secure: env.NODE_ENV === 'production',
+            sameSite: "strict", 
+            maxAge: env.REFRESH_TOKEN_EXPIRE,  
         } );
 
 
-        res.status(200).json({ user, token });
+        res.status(200).json(user);
     } catch (error: any) {
         console.error('Login Error:', error);
         res.status(400).json({ error: error.message });
+    }
+};
+
+export const adminLogin = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const {email, password} = req.body;
+        const { user, token, refreshToken } = await loginUser( email, password, ['admin'], userRepo, authService );
+
+
+        res.cookie('accessToken', token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: env.ACCESS_TOKEN_EXPIRE
+        });
+        
+
+        res.cookie( 'refreshToken', refreshToken, {
+            httpOnly: true,
+            sameSite: 'strict',
+            maxAge: env.REFRESH_TOKEN_EXPIRE
+        });
+
+        res.status(200).json( user )
+    } catch (error: any) {
+        console.error("Login Error:", error);
+        res.status(400).json({ error: error.message })
     }
 };
 
@@ -105,25 +141,30 @@ export const resendOtp = async ( req: Request, res: Response ): Promise<any> => 
 
     await sendSignupOtp(user.email, otpService, emailService)
     return res.status(200).json({message: 'OTP Sent Successfully'})
-}
+};
 
 
+// const refreshAccessToken = async (req: Request, res: Response) => {
+//     const token = req.cookies?.accessToken
 
+//     if(!token) {
+//         return res.status(401).json({ message: "No refresh token" });
+//     }
 
-// export const adminLogin = async (req: Request, res: Response): Promise<any> => {
-//     const {email, password} = req.body;
-//     const { user, token, refreshToken } = await loginUser( email, password, userRepo, authService );
+//     try {
+//         const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
+//         const newAccessToken = jwt.sign({ userId: payload.userId }, env.JWT_ACCESS_SECRET!, { expiresIn: '15m' });
 
-
-//     res.cookie( 'accessToken', token, {
-//         httpOnly: true,
-//         sameSite: 'strict'
-//     } )
-
-//     res.cookie( 'refreshToken', refreshToken, {
-//         httpOnly: true,
-//         sameSite: 'strict',
-//         maxAge: 7 * 27 * 60 * 1000
-//     } );
+//         res.cookie('accessToken', newAccessToken, {
+//             httpOnly: true,
+//             secure: true,
+//             sameSite: 'strict',
+//             maxAge: env.ACCESS_TOKEN_EXPIRE,
+//         });
+//         res.status(200).json({ success: true});
+//     } catch (error) {
+//         res.clearCookie('accessToken');
+//         res.clearCookie('refreshAccessToken');
+//         return res.status(403).json({ message: 'Invalid or expire refrresh toke' })
+//     }
 // }
-

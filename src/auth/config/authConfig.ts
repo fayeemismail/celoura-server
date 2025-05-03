@@ -25,6 +25,18 @@ export const env = {
 
     get REDIS_PORT() {
         return process.env.REDIS_PORT;
+    },
+
+    get ACCESS_TOKEN_EXPIRE() {
+        return parseInt(process.env.ACCESS_TOKEN_EXPIRE || "900000"); // default to 15 mins
+    },
+    
+    get REFRESH_TOKEN_EXPIRE() {
+        return parseInt(process.env.REFRESH_TOKEN_EXPIRE || "604800000"); // default to 7 days
+    }, 
+
+    get NODE_ENV() {
+        return process.env.NODE_ENV;
     }
 
 };
