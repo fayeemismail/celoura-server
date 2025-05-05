@@ -17,9 +17,9 @@ const emailService = new EmailService();
 
 
 
+//signup controller
 export const signup = async ( req: Request, res: Response, next: NextFunction ): Promise<any> => {
     try {
-        // console.log(req.body)
         const { name, email, password, confirmPassword, role, } = req.body;
         const existingUser = await userRepo.findByEmail(email)
         if(existingUser) return res.status(400).json({ error: 'User already Exisits' })
@@ -115,7 +115,6 @@ export const verifyOtp = async ( req: Request, res: Response ): Promise<any> => 
     };
 
     const userData = await otpService.getTempUser(email);
-    console.log(userData)
     if(!userData){
         return res.status(400).json({ message: "Session expired please signup again" })
     } 
@@ -144,27 +143,65 @@ export const resendOtp = async ( req: Request, res: Response ): Promise<any> => 
 };
 
 
-// const refreshAccessToken = async (req: Request, res: Response) => {
-//     const token = req.cookies?.accessToken
 
-//     if(!token) {
-//         return res.status(401).json({ message: "No refresh token" });
-//     }
+export const refreshAccessToken = (req: Request, res: Response): any => {
+    const token = req.cookies?.refreshToken;
+    if(!token) return res.status(401).json({ error: 'Refresh Token is missing' });
 
-//     try {
-//         const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
-//         const newAccessToken = jwt.sign({ userId: payload.userId }, env.JWT_ACCESS_SECRET!, { expiresIn: '15m' });
+    try {
+        const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload; 
+        
+        if(!payload || typeof payload == 'string' || !payload.id) {
+            return res.status(403).json({ error: "Invalid token payload" });
+        }
 
-//         res.cookie('accessToken', newAccessToken, {
-//             httpOnly: true,
-//             secure: true,
-//             sameSite: 'strict',
-//             maxAge: env.ACCESS_TOKEN_EXPIRE,
-//         });
-//         res.status(200).json({ success: true});
-//     } catch (error) {
-//         res.clearCookie('accessToken');
-//         res.clearCookie('refreshAccessToken');
-//         return res.status(403).json({ message: 'Invalid or expire refrresh toke' })
-//     }
-// }
+        const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
+            expiresIn: '15m',
+        });
+
+        res.cookie('accessToken', newAccessToken, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: env.ACCESS_TOKEN_EXPIRE,
+        });
+
+        
+        res.status(200).json({ success: true });
+    } catch (error) {
+        console.error('Refresh Error: ', error);
+        res.status(403).json({ error: "Invalid refresh token" })
+    }
+}
+
+
+export const getCurrentUser = async (req: Request, res: Response): Promise<any> => {
+    try {
+        const userId = (req as any).user?.id;
+        if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
+
+        const user = await userRepo.getUserById(userId);
+        if(!user) return res.status(404).json({ error: 'User not found' });
+
+        res.status(200).json(user)
+    } catch (error) {
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+
+export const logout = (req: Request, res: Response) => {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+  
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: process.env.NODE_ENV === "production",
+    });
+  
+    res.status(200).json({ message: "Logged out successfully" });
+  };
