@@ -1,6 +1,6 @@
 import express from 'express';
 import { 
-    // adminLogin, 
+    adminLogin, 
     login, 
     resendOtp, 
     signup, 
@@ -14,6 +14,8 @@ router.post('/signup', signup);
 router.post('/login', login);
 router.post('/verify-otp', verifyOtp);
 router.post('/resend-otp', resendOtp);
-// router.post('/admin/login', adminLogin)
+router.post('/admin/login', adminLogin);
+
+
 
 export default router;
