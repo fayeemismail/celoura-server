@@ -13,4 +13,9 @@ export class UserRepository implements IUserRepository {
         const user = new userModel(data);
         return user.save()
     }
+    
+    async getUserById(_id: string): Promise<User | null> {
+        return userModel.findById(_id)
+    }
+
 }
