@@ -93,7 +93,7 @@ export const adminLogin = async (req: Request, res: Response): Promise<any> => {
         res.status(200).json( user )
     } catch (error: any) {
         console.error("Login Error:", error);
-        res.status(400).json({ error: error.message })
+        res.status(400).json({ error: error.message });
     }
 };
 
@@ -116,7 +116,7 @@ export const verifyOtp = async ( req: Request, res: Response ): Promise<any> => 
 
     const userData = await otpService.getTempUser(email);
     if(!userData){
-        return res.status(400).json({ message: "Session expired please signup again" })
+        return res.status(400).json({ message: "Session expired please signup again" });
     } 
     const user = await registerUser(userData.name, userData.email, userData.confirmPassword, userData.role, userRepo, authService);
 
@@ -130,16 +130,16 @@ export const verifyOtp = async ( req: Request, res: Response ): Promise<any> => 
 export const resendOtp = async ( req: Request, res: Response ): Promise<any> => {
     const {email} =  req.body;
 
-    const otp = await otpService.getOtp(email)
+    const otp = await otpService.getOtp(email);
     if(otp){
-        await otpService.deleteOtp(email)
+        await otpService.deleteOtp(email);
         console.log('old otp deleted');
     }
     const user = await otpService.getTempUser(email);
     if(!user) return res.status(400).json({ message: "Session expired please signup again" });
 
-    await sendSignupOtp(user.email, otpService, emailService)
-    return res.status(200).json({message: 'OTP Sent Successfully'})
+    await sendSignupOtp(user.email, otpService, emailService);
+    return res.status(200).json({message: 'OTP Sent Successfully'});
 };
 
 
@@ -147,8 +147,10 @@ export const resendOtp = async ( req: Request, res: Response ): Promise<any> => 
 export const refreshAccessToken = (req: Request, res: Response): any => {
     const token = req.cookies?.refreshToken;
     if(!token) return res.status(401).json({ error: 'Refresh Token is missing' });
+    console.log('no refresh token')
 
     try {
+        console.log('new acess token')
         const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload; 
         
         if(!payload || typeof payload == 'string' || !payload.id) {
@@ -170,20 +172,20 @@ export const refreshAccessToken = (req: Request, res: Response): any => {
         res.status(200).json({ success: true });
     } catch (error) {
         console.error('Refresh Error: ', error);
-        res.status(403).json({ error: "Invalid refresh token" })
+        res.status(403).json({ error: "Invalid refresh token" });
     }
 }
 
 
 export const getCurrentUser = async (req: Request, res: Response): Promise<any> => {
     try {
-        const userId = (req as any).user?.id;
-        if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
+        // const userId = (req as any).user?.id;
+        // if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
 
-        const user = await userRepo.getUserById(userId);
-        if(!user) return res.status(404).json({ error: 'User not found' });
+        // const user = await userRepo.getUserById(userId);
+        // if(!user) return res.status(404).json({ error: 'User not found' });
 
-        res.status(200).json(user)
+        res.status(200).json('user');
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
     }
