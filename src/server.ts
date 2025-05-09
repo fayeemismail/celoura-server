@@ -3,10 +3,10 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
-import authRoutes from './auth/interface/routes/authRoute';
-import userRoute from './auth/interface/routes/userRoute'
+import authRoutes from './interface/routes/authRoute';
+import userRoute from './interface/routes/userRoute'
 import cookieParser from 'cookie-parser';
-import { env } from './auth/config/authConfig';
+import { env } from './config/authConfig';
 
 dotenv.config();
 const app = express();

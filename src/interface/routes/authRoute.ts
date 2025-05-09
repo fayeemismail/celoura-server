@@ -7,7 +7,7 @@ import {
     refreshAccessToken, 
     resendOtp, 
     signup, 
-    verifyOtp } from '../controllers/authControllers';
+    verifyOtp } from '../controller/authControllers';
 import { authenticate } from '../../infrastructure/middleware/authMiddleware';
 
 const router = express.Router();

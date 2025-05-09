@@ -1,5 +1,5 @@
-import { IAuthService } from "../../domain/interfaces/IAuthService";
-import { IUserRepository } from "../../domain/interfaces/IUserRepository";
+import { IAuthService } from "../../../domain/interfaces/IAuthService";
+import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 
 
 
