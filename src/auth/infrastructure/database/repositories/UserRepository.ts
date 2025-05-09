@@ -18,4 +18,26 @@ export class UserRepository implements IUserRepository {
         return userModel.findById(_id)
     }
 
+    async updateProfile(userId: string, updateData: Partial<User>): Promise<User> {
+        const updated = await userModel.findByIdAndUpdate(
+            userId,
+            { $set: updateData },
+            { new: true, lean: true }
+        )
+        if(!updated) {
+            throw new Error("User not found or update fail")
+        }
+
+        return updated;
+    }
+
+    async updatePassword(usreId: string, hashedPassword: string): Promise<void> {
+        await userModel.findByIdAndUpdate(usreId, { password: hashedPassword });
+    }
+
+    async updateName(userId: string, name: string): Promise<void> {
+        await userModel.findByIdAndUpdate(userId, {name: name});
+    }
+
+
 }

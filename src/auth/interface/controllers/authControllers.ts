@@ -8,6 +8,7 @@ import { loginUser } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { env } from "../../config/authConfig";
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { HTTP_STATUS } from "../../application/constants/httpStatus";
 
 
 const userRepo = new UserRepository();
@@ -93,7 +94,7 @@ export const adminLogin = async (req: Request, res: Response): Promise<any> => {
         res.status(200).json( user )
     } catch (error: any) {
         console.error("Login Error:", error);
-        res.status(400).json({ error: error.message })
+        res.status(400).json({ error: error.message });
     }
 };
 
@@ -116,7 +117,7 @@ export const verifyOtp = async ( req: Request, res: Response ): Promise<any> => 
 
     const userData = await otpService.getTempUser(email);
     if(!userData){
-        return res.status(400).json({ message: "Session expired please signup again" })
+        return res.status(400).json({ message: "Session expired please signup again" });
     } 
     const user = await registerUser(userData.name, userData.email, userData.confirmPassword, userData.role, userRepo, authService);
 
@@ -130,16 +131,16 @@ export const verifyOtp = async ( req: Request, res: Response ): Promise<any> => 
 export const resendOtp = async ( req: Request, res: Response ): Promise<any> => {
     const {email} =  req.body;
 
-    const otp = await otpService.getOtp(email)
+    const otp = await otpService.getOtp(email);
     if(otp){
-        await otpService.deleteOtp(email)
+        await otpService.deleteOtp(email);
         console.log('old otp deleted');
     }
     const user = await otpService.getTempUser(email);
     if(!user) return res.status(400).json({ message: "Session expired please signup again" });
 
-    await sendSignupOtp(user.email, otpService, emailService)
-    return res.status(200).json({message: 'OTP Sent Successfully'})
+    await sendSignupOtp(user.email, otpService, emailService);
+    return res.status(200).json({message: 'OTP Sent Successfully'});
 };
 
 
@@ -170,7 +171,7 @@ export const refreshAccessToken = (req: Request, res: Response): any => {
         res.status(200).json({ success: true });
     } catch (error) {
         console.error('Refresh Error: ', error);
-        res.status(403).json({ error: "Invalid refresh token" })
+        res.status(403).json({ error: "Invalid refresh token" });
     }
 }
 
@@ -181,9 +182,16 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<any> 
         if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
 
         const user = await userRepo.getUserById(userId);
+        console.log(user)
         if(!user) return res.status(404).json({ error: 'User not found' });
+        const userData = {
+            id: user?._id,
+            name: user?.name,
+            email: user?.email,
+            role: user?.role
+        };
 
-        res.status(200).json(user)
+        res.status(HTTP_STATUS.OK.code).json(userData);
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
     }

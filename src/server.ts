@@ -4,12 +4,14 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import authRoutes from './auth/interface/routes/authRoute';
+import userRoute from './auth/interface/routes/userRoute'
 import cookieParser from 'cookie-parser';
 import { env } from './auth/config/authConfig';
 
 dotenv.config();
-
 const app = express();
+
+//Middleware setup
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true 
@@ -17,8 +19,14 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser())
 
-app.use('/api/auth', authRoutes);
 
+//Router setUp
+app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoute)
+
+
+
+//connecting mongoDB
 mongoose.connect(process.env.MONGO_URI!).then(() => {
     console.log('Mongo DB connected 📎')
 });
