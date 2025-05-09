@@ -8,6 +8,7 @@ import { loginUser } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { env } from "../../config/authConfig";
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { HTTP_STATUS } from "../../application/constants/httpStatus";
 
 
 const userRepo = new UserRepository();
@@ -147,10 +148,8 @@ export const resendOtp = async ( req: Request, res: Response ): Promise<any> => 
 export const refreshAccessToken = (req: Request, res: Response): any => {
     const token = req.cookies?.refreshToken;
     if(!token) return res.status(401).json({ error: 'Refresh Token is missing' });
-    console.log('no refresh token')
 
     try {
-        console.log('new acess token')
         const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload; 
         
         if(!payload || typeof payload == 'string' || !payload.id) {
@@ -179,13 +178,20 @@ export const refreshAccessToken = (req: Request, res: Response): any => {
 
 export const getCurrentUser = async (req: Request, res: Response): Promise<any> => {
     try {
-        // const userId = (req as any).user?.id;
-        // if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
+        const userId = (req as any).user?.id;
+        if(!userId) return res.status(401).json({ error: 'unnAuthorized' });
 
-        // const user = await userRepo.getUserById(userId);
-        // if(!user) return res.status(404).json({ error: 'User not found' });
+        const user = await userRepo.getUserById(userId);
+        console.log(user)
+        if(!user) return res.status(404).json({ error: 'User not found' });
+        const userData = {
+            id: user?._id,
+            name: user?.name,
+            email: user?.email,
+            role: user?.role
+        };
 
-        res.status(200).json('user');
+        res.status(HTTP_STATUS.OK.code).json(userData);
     } catch (error) {
         res.status(500).json({ error: "Internal server error" });
     }
