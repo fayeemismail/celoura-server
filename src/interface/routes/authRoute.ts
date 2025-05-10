@@ -1,9 +1,10 @@
 import express from 'express';
 import { 
     adminLogin, 
+    adminLogout, 
     getCurrentUser, 
     login, 
-    logout, 
+    logoutUser, 
     refreshAccessToken, 
     resendOtp, 
     signup, 
@@ -21,7 +22,8 @@ router.post('/resend-otp', resendOtp);
 router.post('/admin/login', adminLogin);
 router.post('/refresh-token', refreshAccessToken);
 router.get('/me', authenticate, getCurrentUser);
-router.post('/logout', logout);
+router.post('/logout', logoutUser);
+router.post('/adminLogout', adminLogout);
 
 
 

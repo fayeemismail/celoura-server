@@ -11,7 +11,7 @@ export class UserRepository implements IUserRepository {
 
     async createUser(data: Partial<User>): Promise<User> {
         const user = new userModel(data);
-        return user.save()
+        return user.save();
     }
     
     async getUserById(_id: string): Promise<User | null> {
@@ -29,15 +29,19 @@ export class UserRepository implements IUserRepository {
         }
 
         return updated;
-    }
+    };
 
     async updatePassword(usreId: string, hashedPassword: string): Promise<void> {
         await userModel.findByIdAndUpdate(usreId, { password: hashedPassword });
-    }
+    };
 
     async updateName(userId: string, name: string): Promise<void> {
         await userModel.findByIdAndUpdate(userId, {name: name});
-    }
+    };
+
+    async findAll(): Promise<User[]> {
+        return await userModel.find({ role: 'user' });
+    };
 
 
 }
