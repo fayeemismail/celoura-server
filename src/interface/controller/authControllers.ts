@@ -72,20 +72,43 @@ export const login = async (req: Request, res: Response) => {
     }
 };
 
+
+
+export const logoutUser = (req: Request, res: Response) => {
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: env.NODE_ENV === "production",
+    });
+  
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: env.NODE_ENV === "production",
+    });
+  
+    res.status(200).json({ message: "Logged out successfully" });
+  };
+
+
+
+
+
+
 export const adminLogin = async (req: Request, res: Response): Promise<any> => {
     try {
         const {email, password} = req.body;
         const { user, token, refreshToken } = await loginUser( email, password, ['admin'], userRepo, authService );
 
 
-        res.cookie('accessToken', token, {
+        res.cookie('adminAccessToken', token, {
             httpOnly: true,
             sameSite: 'strict',
             maxAge: env.ACCESS_TOKEN_EXPIRE
         });
         
 
-        res.cookie( 'refreshToken', refreshToken, {
+        res.cookie( 'adminRefreshToken', refreshToken, {
             httpOnly: true,
             sameSite: 'strict',
             maxAge: env.REFRESH_TOKEN_EXPIRE
@@ -97,6 +120,26 @@ export const adminLogin = async (req: Request, res: Response): Promise<any> => {
         res.status(400).json({ error: error.message });
     }
 };
+
+
+
+
+export const adminLogout = (req: Request, res: Response) => {
+    res.clearCookie('adminAccessToken', {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: env.NODE_ENV === 'production',
+    });
+
+    res.clearCookie('adminRefreshToken', {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: env.NODE_ENV === 'production'
+    });
+
+    res.status(HTTP_STATUS.OK.code).json({ message: "Admin logged out successfully" });
+}
+
 
 
 
@@ -198,18 +241,3 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<any> 
 }
 
 
-export const logout = (req: Request, res: Response) => {
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-  
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      sameSite: "strict",
-      secure: process.env.NODE_ENV === "production",
-    });
-  
-    res.status(200).json({ message: "Logged out successfully" });
-  };
