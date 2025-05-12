@@ -32,7 +32,6 @@ export default class UserController implements IUserInterface {
             const updateData = req.body;
 
             const updatedUser = await editProfile( updateData, this._userRepo)
-            console.log(updatedUser, 'this is updating data')
 
             res.status(HTTP_STATUS.OK.code).json({message: 'Profile pdated successfully'});
         } catch (error: unknown) {
