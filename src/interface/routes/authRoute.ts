@@ -1,29 +1,28 @@
 import express from 'express';
-import { 
-    adminLogin, 
-    adminLogout, 
-    getCurrentUser, 
-    login, 
-    logoutUser, 
-    refreshAccessToken, 
-    resendOtp, 
-    signup, 
-    verifyOtp } from '../controller/authControllers';
+import AuthController from '../controller/authControllers';
 import { authenticate } from '../../infrastructure/middleware/authMiddleware';
+import { guideAuthenticate } from '../../infrastructure/middleware/guideAuthMiddleware';
 
 const router = express.Router();
+const authController = new AuthController();
 
+//sugnup routes
+router.post('/signup', authController.signup);
+router.post('/verify-otp', authController.verifyOtp);
+router.post('/resend-otp', authController.resendOtp);
 
+//login routes
+router.post('/login', authController.login);
+router.post('/admin/login', authController.adminLogin);
+router.post('/guide/login', authController.guideLogin);
 
-router.post('/signup', signup);
-router.post('/login', login);
-router.post('/verify-otp', verifyOtp);
-router.post('/resend-otp', resendOtp);
-router.post('/admin/login', adminLogin);
-router.post('/refresh-token', refreshAccessToken);
-router.get('/me', authenticate, getCurrentUser);
-router.post('/logout', logoutUser);
-router.post('/adminLogout', adminLogout);
+//loguout routes
+router.post('/logout', authController.logoutUser);
+router.post('/adminLogout', authController.adminLogout);
+router.post('/guide/logout', authController.guideLogout);
+
+//token checking routes.
+router.post('/refresh-token', authController.refreshAccessToken);
 
 
 

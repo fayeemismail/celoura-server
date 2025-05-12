@@ -5,7 +5,8 @@ import cors from 'cors';
 import path from 'path';
 import authRoutes from './interface/routes/authRoute';
 import userRoute from './interface/routes/userRoute';
-import adminRoute from './interface/routes/adminRoute';
+import adminRouter from './interface/routes/adminRoute';
+import guideRouter from './interface/routes/guideRoute'
 import cookieParser from 'cookie-parser';
 import { env } from './config/authConfig';
 
@@ -24,7 +25,8 @@ app.use(cookieParser())
 //Router setUp
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoute);
-app.use('/api/admin', adminRoute);
+app.use('/api/admin', adminRouter);
+app.use('/api/guide', guideRouter);
 
 
 
