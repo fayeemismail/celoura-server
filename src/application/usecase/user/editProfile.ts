@@ -1,5 +1,5 @@
 import { User } from "../../../domain/entities/User";
-import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import { IUserRepository } from "../../interfaces/repositories/IUserRepository";
 import { IUserService } from "../../../domain/interfaces/IUserService";
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { validateNameUpdate } from "../../validators/nameValidators";

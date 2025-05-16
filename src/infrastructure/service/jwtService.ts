@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { env } from '../../config/authConfig'
+import { env } from '../../config/authConfig';
 
 const accessTokenSecret = env.JWT_ACCESS_SECRET;
 

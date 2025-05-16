@@ -1,4 +1,4 @@
-import { IAuthService } from "../../domain/interfaces/IAuthService";
+import { IAuthService } from "../../application/interfaces/services/IAuthService";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
