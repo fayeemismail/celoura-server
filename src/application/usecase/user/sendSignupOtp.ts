@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { IEmailService } from "../../../domain/interfaces/IEmailService";
+import { IEmailService } from "../../interfaces/services/IEmailService";
 import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 
 export const sendSignupOtp = async (

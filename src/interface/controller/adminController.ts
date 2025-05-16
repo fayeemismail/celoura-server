@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { GetAllUserUseCase } from "../../application/usecase/admin/GetAllUserUseCase";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { env } from "../../config/authConfig";
 import { JwtPayload } from "jsonwebtoken";
 import jwt from 'jsonwebtoken'
@@ -16,7 +16,7 @@ export default class AdminContrller {
             const data = await this.getAllUserUseCase.execute();
             const users = data.filter((item) => item.role == 'user');
             const guide = data.filter((item) => item.role == 'guide');
-            res.status(HTTP_STATUS.OK.code).json({ status: true, data: {users, guide} });
+            res.status(HttpStatusCode.OK).json({ status: true, data: {users, guide} });
         } catch (error: unknown) {
 
         }

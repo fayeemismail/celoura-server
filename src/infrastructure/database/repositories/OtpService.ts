@@ -1,9 +1,9 @@
 import Redis from "ioredis";
-import { IOtpRepository } from "../../domain/interfaces/IOtpRepository";
+import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 
 const redis = new Redis();
 
-export class OtpService implements IOtpRepository {
+export class OtpRepository implements IOtpRepository {
     async setOtp(email: string, otp: string): Promise<void> {
         await redis.set(`otp:${email}`, otp, 'EX', 90);
     }

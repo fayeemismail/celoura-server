@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { adminJwtVerify } from "../../shared/utility/adminJwtService";
 
 

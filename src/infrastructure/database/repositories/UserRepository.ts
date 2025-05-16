@@ -1,5 +1,5 @@
 import { User } from "../../../domain/entities/User";
-import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import { IUserRepository } from "../../../application/interfaces/repositories/IUserRepository";
 import userModel from "../models/userModel";
 
 

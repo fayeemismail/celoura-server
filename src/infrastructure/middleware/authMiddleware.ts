@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { jwtVerify } from "../../shared/utility/jwtService";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import { jwtVerify } from "../service/jwtService";
+import { HttpStatusCode } from "../../application/constants/httpStatus";
 
 
 
@@ -14,6 +14,6 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): a
         next()
     } catch (error: any) {
         console.log(error.message)
-        res.status(HTTP_STATUS.FOBIDDEN.code).json({ error: 'invalid or expired token' });
+        res.status(HttpStatusCode.FORBIDDEN).json({ error: 'invalid or expired token' });
     }
 };

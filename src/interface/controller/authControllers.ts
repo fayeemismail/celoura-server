@@ -1,64 +1,48 @@
 import { Request, Response, NextFunction } from "express";
 import IAuthController from "../../domain/interfaces/IAuthController";
-import { AuthService } from "../../infrastructure/service/AuthService";
-import { OtpService } from "../../infrastructure/service/OtpService";
-import { EmailService } from "../../infrastructure/service/EmailService";
-import { registerUser } from "../../application/usecase/user/registerUser";
-import { sendSignupOtp } from "../../application/usecase/user/sendSignupOtp";
-import { loginUser } from "../../application/usecase/user/loginUser";
+import { register } from "../../application/usecase/user/registerUserUseCase";
+import { login } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { env } from "../../config/authConfig";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import { HttpStatusCode } from "../../application/constants/httpStatus";
+import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
+import { resendOtp } from "../../application/usecase/auth/resendOtp";
+
+
 
 export default class AuthController implements IAuthController {
     private userRepo = new UserRepository();
-    private authService = new AuthService();
-    private otpService = new OtpService();
-    private emailService = new EmailService();
 
     public signup = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-        try {
-            const { name, email, password, confirmPassword, role } = req.body;
-            const existingUser = await this.userRepo.findByEmail(email);
-            if (existingUser) return res.status(400).json({ error: 'User already Exists' });
-            if (password !== confirmPassword) {
-                return res.status(400).json({ error: 'Invalid Credentials' });
-            }
+        const { name, email, password, confirmPassword, role } = req.body;
+        const result = await register({ name, email, password, confirmPassword, role });
+        res.status(result.status).json(result.data);    
+    };// OK 
 
-            await this.otpService.setTempUser(email, { name, email, confirmPassword, role });
-            await sendSignupOtp(email, this.otpService, this.emailService);
-            res.status(200).json({ message: 'OTP sent to Email' });
-        } catch (error: any) {
-            console.log(error.message);
-            res.status(400).json({ error: error.message });
+    public async login (req: Request, res: Response) {
+        const { email, password } = req.body;
+        const result = await login({ email, password, role: ['user'] });
+
+        if(result.status !== HttpStatusCode.OK) {
+            return res.status(result.status).json(result.data);
         }
-    };
 
-    public login = async (req: Request, res: Response): Promise<any> => {
-        try {
-            const { email, password } = req.body;
-            const { user, token, refreshToken } = await loginUser(email, password, ['user'], this.userRepo, this.authService);
-
-            res.cookie('accessToken', token, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: env.ACCESS_TOKEN_EXPIRE,
-            });
-
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: env.REFRESH_TOKEN_EXPIRE,
-            });
-
-            res.status(200).json(user);
-        } catch (error: any) {
-            console.error('Login Error:', error);
-            res.status(400).json({ error: error.message });
-        }
+        //setting the access token in cookie
+        res.cookie('accessToken', result.token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: env.NODE_ENV == 'production',
+            maxAge: env.ACCESS_TOKEN_EXPIRE
+        });
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: env.REFRESH_TOKEN_EXPIRE,
+        });
+        const { token, refreshToken, data } = result;
+        res.status(HttpStatusCode.OK).json(data.user)
     };
 
     public logoutUser = (req: Request, res: Response): void => {
@@ -74,37 +58,38 @@ export default class AuthController implements IAuthController {
             secure: env.NODE_ENV === "production",
         });
 
-        res.status(200).json({ message: "Logged out successfully" });
+        res.status(HttpStatusCode.OK).json({ message: "Logged out successfully" });
     };
 
     public adminLogin = async (req: Request, res: Response): Promise<any> => {
-        try {
-            const { email, password } = req.body;
-            const { user, token, refreshToken } = await loginUser(email, password, ['admin'], this.userRepo, this.authService);
+        const { email, password } = req.body;
+        const result = await login({ email, password, role: ['admin'] });
 
-            res.clearCookie('adminRefreshToken', { path: '/admin' });
-
-            res.cookie('adminAccessToken', token, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: env.NODE_ENV === 'production',
-                maxAge: env.ACCESS_TOKEN_EXPIRE,
-                path: '/',
-            });
-
-            res.cookie('adminRefreshToken', refreshToken, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: env.NODE_ENV === 'production',
-                maxAge: env.REFRESH_TOKEN_EXPIRE,
-                path: '/',
-            });
-
-            res.status(200).json(user);
-        } catch (error: any) {
-            console.error("Login Error:", error);
-            res.status(400).json({ error: error.message });
+        if(result.status !== HttpStatusCode.OK){
+            return res.status(result.status).json(result.data);
         }
+
+        res.clearCookie('adminRefreshToken', { path: '/admin' });
+
+        res.cookie('adminAccessToken', result.token, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: env.NODE_ENV === 'production',
+            maxAge: env.ACCESS_TOKEN_EXPIRE,
+            path: '/',
+        });
+
+        res.cookie('adminRefreshToken', result.refreshToken, {
+            httpOnly: true,
+            sameSite: 'strict',
+            secure: env.NODE_ENV === 'production',
+            maxAge: env.REFRESH_TOKEN_EXPIRE,
+            path: '/',
+        });
+
+        const { token, refreshToken, data } = result;
+
+        res.status(HttpStatusCode.OK).json(data.user);
     };
 
     public adminLogout = (req: Request, res: Response): void => {
@@ -120,38 +105,34 @@ export default class AuthController implements IAuthController {
             secure: env.NODE_ENV === 'production',
         });
 
-        res.status(HTTP_STATUS.OK.code).json({ message: "Admin logged out successfully" });
+        res.status(HttpStatusCode.OK).json({ message: "Admin logged out successfully" });
     };
 
-    public guideLogin = async (req: Request, res: Response): Promise<any> => {
-        try {
-            const { email, password } = req.body;
-            const { user, token, refreshToken } = await loginUser(email, password, ['guide'], this.userRepo, this.authService);
+    public async guideLogin (req: Request, res: Response) {
+       const { email, password } = req.body;
+       const result = await login({ email, password, role: ['guide'] });
 
-            res.clearCookie('guideRefreshToken', { path: '/guide' });
+       if(result.status !== HttpStatusCode.OK){
+        return res.status(result.status).json(result.data);
+       };
 
-            res.cookie('guideAccessToken', token, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: env.NODE_ENV === 'production',
-                maxAge: env.ACCESS_TOKEN_EXPIRE,
-                path: '/'
-            });
+       const { token, refreshToken, data } = result
 
-            res.cookie('guideRefreshToken', refreshToken, {
-                httpOnly: true,
-                sameSite: 'strict',
-                secure: env.NODE_ENV === 'production',
-                maxAge: env.REFRESH_TOKEN_EXPIRE,
-                path: '/'
-            });
+       res.cookie('guideAccessToken', token, {
+            httpOnly: true,
+            secure: env.NODE_ENV == 'production',
+            sameSite: 'strict',
+            maxAge: env.ACCESS_TOKEN_EXPIRE,
+       });
 
-            res.status(200).json(user);
-        } catch (error: any) {
-            console.log("Login Error: ", error);
-            res.status(HTTP_STATUS.BAD_REQUEST.code).json({ error: error.message })
-        }
+       res.cookie('guideRefreshToken', refreshToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: env.REFRESH_TOKEN_EXPIRE,
+       });
 
+       return res.status(result.status).json(data.user);
     }
 
     public guideLogout = (req: Request, res: Response): void => {
@@ -167,18 +148,18 @@ export default class AuthController implements IAuthController {
             secure: env.NODE_ENV === 'production'
         });
 
-        res.status(HTTP_STATUS.OK.code).json({ message: 'guide Logged Out successfully' });
+        res.status(HttpStatusCode.OK).json({ message: 'guide Logged Out successfully' });
 
     }
 
     public refreshAccessToken = (req: Request, res: Response): any => {
         const token = req.cookies?.refreshToken;
-        if (!token) return res.status(401).json({ error: 'Refresh Token is missing' });
+        if (!token) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh Token is missing' });
 
         try {
             const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
             if (!payload || typeof payload === 'string' || !payload.id) {
-                return res.status(403).json({ error: "Invalid token payload" });
+                return res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid token payload" });
             }
 
             const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
@@ -192,75 +173,62 @@ export default class AuthController implements IAuthController {
                 maxAge: env.ACCESS_TOKEN_EXPIRE,
             });
 
-            res.status(200).json({ success: true });
+            res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error('Refresh Error: ', error);
-            res.status(403).json({ error: "Invalid refresh token" });
+            res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid refresh token" });
         }
     };
 
     public verifyOtp = async (req: Request, res: Response): Promise<any> => {
-        const { email, otp } = req.body;
-
-        const savedOtp = await this.otpService.getOtp(email);
-        if (!savedOtp) {
-            return res.status(400).json({ message: "OTP expired or invalid" });
+        try {
+            const { email, otp } = req.body;
+            const result = await verifyOtp({email, otp});
+            if(result.status !== HttpStatusCode.CREATED){
+                return res.status(result.status).json(result.data);
+            }
+            return res.status(result.status).json(result.data)
+        } catch (error: any) {
+            console.log("Error in verify OTP",error.message)
         }
-
-        if (savedOtp !== otp) {
-            return res.status(400).json({ message: "Incorrect OTP" });
-        }
-
-        const userData = await this.otpService.getTempUser(email);
-        if (!userData) {
-            return res.status(400).json({ message: "Session expired please signup again" });
-        }
-
-        const user = await registerUser(userData.name, userData.email, userData.confirmPassword, userData.role, this.userRepo, this.authService);
-
-        await this.otpService.deleteOtp(email);
-        await this.otpService.deleteTempUser(email);
-
-        res.status(201).json({ user, message: "User registered successfully" });
     };
 
     public resendOtp = async (req: Request, res: Response): Promise<any> => {
-        const { email } = req.body;
+        try {
+            const { email } = req.body;
 
-        const otp = await this.otpService.getOtp(email);
-        if (otp) {
-            await this.otpService.deleteOtp(email);
+            const result = await resendOtp(email);
+            if(result.status !== HttpStatusCode.OK){
+                return res.status(result.status).json(result.data);
+            };
+            return res.status(result.status).json(result.data)
+        } catch (error: any) {
+            console.log('Error for resend OTP', error.message)
         }
-
-        const user = await this.otpService.getTempUser(email);
-        if (!user) return res.status(400).json({ message: "Session expired please signup again" });
-
-        await sendSignupOtp(user.email, this.otpService, this.emailService);
-        return res.status(200).json({ message: 'OTP Sent Successfully' });
     };
 
     public getCurrentUser = async (req: Request, res: Response): Promise<any> => {
         try {
-            const userId = req.query.id;
-            console.log(userId)
-            if (!userId || typeof userId !== 'string') {
-                return res.status(401).json({ error: 'Unauthorized' });
-            }
+            const userId = (req as any).user?.id;
+            if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'UnAuthorized' });
 
             const user = await this.userRepo.getUserById(userId);
-            if (!user) return res.status(404).json({ error: 'User not found' });
-
+            console.log(user)
+            if (!user) return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
             const userData = {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
+                id: user?._id,
+                name: user?.name,
+                email: user?.email,
+                role: user?.role
             };
 
-            res.status(HTTP_STATUS.OK.code).json({ data: userData });
+            res.status(HttpStatusCode.OK).json(userData);
         } catch (error) {
-            res.status(500).json({ error: "Internal server error" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }
-    };
 
+    }
+
+
+    
 }

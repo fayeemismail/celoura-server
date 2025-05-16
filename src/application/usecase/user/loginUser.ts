@@ -1,34 +1,41 @@
-import { IAuthService } from "../../../domain/interfaces/IAuthService";
-import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
+import { AuthService } from "../../../infrastructure/service/AuthService";
+import { HttpStatusCode } from "../../constants/httpStatus";
 
+const userRepo = new UserRepository();
+const authService = new AuthService();
 
+interface LoginInput {
+    email: string;
+    password: string;
+    role: string[];
+};
 
-export const loginUser = async(
-    email: string,
-    password: string,
-    role: string[],
-    userRepo: IUserRepository,
-    authService: IAuthService
-) => {
-    const userData = await userRepo.findByEmail(email);
-    if( !userData ) throw new Error('User not found');
-    if(userData.blocked) throw new Error('User is Blocked');
+export const login = async ({ email, password, role }: LoginInput) => {
+    try {
+        const user = await userRepo.findByEmail(email);
+        if(!user) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Invalid email or password' } };
 
-    if(!role.includes(userData.role)) throw new Error('Access denied');
+        const isValid = await authService.comparePasswords(password, user.password);
+        if(!isValid) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Invalid Credentials' } };
 
-    const isMatch = await authService.comparePasswords(password, userData.password);
-    if( !isMatch ) throw new Error('Invalid credentials');
-    
-    const accessToken = authService.generateAccessToken({ id: userData._id, role: userData.role });
-    const refreshToken = authService.generateRefreshToken({ id: userData._id, role: userData.role });
+        if(role[0] !== user.role) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Access denied' } };
 
-    const user = {
-        id: userData._id,
-        name: userData.name,
-        email: userData.email,
-        role: userData.role
-    };
+        if(user.blocked) return { status: HttpStatusCode.BAD_REQUEST, data:{ error: 'Your account has been blocked please contact support' } }
 
-    return { user, token: accessToken, refreshToken };
+        const token = authService.generateAccessToken( { id: user._id, role: user.role } );
+        const refreshToken = authService.generateRefreshToken({ id: user._id, role: user.role });
 
+        return {
+            status: HttpStatusCode.OK,
+            data: {
+                user: { id: user._id, name: user.name, email: user.email, role: user.role }
+            },
+            token,
+            refreshToken,
+        }
+    } catch (error: any) {
+        console.log(error.message)
+        return { status: HttpStatusCode.INTERNAL_SERVER_ERROR, data: { error: error.message } };
+    }
 }

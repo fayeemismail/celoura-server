@@ -1,4 +1,4 @@
-import { IUserRepository } from "../../../domain/interfaces/IUserRepository"
+import { IUserRepository } from "../../interfaces/repositories/IUserRepository"
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository"
 
 

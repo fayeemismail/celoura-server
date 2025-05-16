@@ -30,7 +30,7 @@ export default class UserController implements IUserInterface {
     public editProfile = async(req: Request, res: Response): Promise<void> => {
         try {
             const updateData = req.body;
-
+            console.log(updateData)
             const updatedUser = await editProfile( updateData, this._userRepo)
 
             res.status(HTTP_STATUS.OK.code).json({message: 'Profile pdated successfully'});
@@ -41,7 +41,7 @@ export default class UserController implements IUserInterface {
                   error: error.message,
                 });
               } else if (error instanceof Error) {
-                console.error(error.message);
+                console.error(error);
                 res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
                   status: HTTP_STATUS.INTERNAL_SERVER_ERROR.message,
                   error: error.message,

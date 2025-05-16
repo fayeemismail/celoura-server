@@ -1,5 +1,5 @@
 import transporter from "../../config/emailConfig";
-import { IEmailService } from "../../domain/interfaces/IEmailService";
+import { IEmailService } from "../../application/interfaces/services/IEmailService";
 
 
 export class EmailService implements IEmailService {
