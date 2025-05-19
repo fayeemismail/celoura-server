@@ -1,9 +1,11 @@
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { AuthService } from "../../../infrastructure/service/AuthService";
+import { PasswordService } from "../../../infrastructure/service/PasswordService";
 import { HttpStatusCode } from "../../constants/httpStatus";
 
 const userRepo = new UserRepository();
 const authService = new AuthService();
+const passwordService = new PasswordService();
 
 interface LoginInput {
     email: string;
@@ -16,7 +18,7 @@ export const login = async ({ email, password, role }: LoginInput) => {
         const user = await userRepo.findByEmail(email);
         if(!user) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Invalid email or password' } };
 
-        const isValid = await authService.comparePasswords(password, user.password);
+        const isValid = await passwordService.comparePassword(password, user.password);
         if(!isValid) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Invalid Credentials' } };
 
         if(role[0] !== user.role) return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Access denied' } };

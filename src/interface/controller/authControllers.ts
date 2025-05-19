@@ -4,15 +4,18 @@ import { register } from "../../application/usecase/user/registerUserUseCase";
 import { login } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { env } from "../../config/authConfig";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
 import { resendOtp } from "../../application/usecase/auth/resendOtp";
+import { AuthService } from "../../infrastructure/service/AuthService";
 
 
 
 export default class AuthController implements IAuthController {
-    private userRepo = new UserRepository();
+   constructor( 
+    private userRepo = new UserRepository,
+    private authService = new AuthService,
+   ) {}
 
     public signup = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
         const { name, email, password, confirmPassword, role } = req.body;
@@ -20,7 +23,7 @@ export default class AuthController implements IAuthController {
         res.status(result.status).json(result.data);    
     };// OK 
 
-    public async login (req: Request, res: Response) {
+    public async login (req: Request, res: Response): Promise<any> {
         const { email, password } = req.body;
         const result = await login({ email, password, role: ['user'] });
 
@@ -108,7 +111,7 @@ export default class AuthController implements IAuthController {
         res.status(HttpStatusCode.OK).json({ message: "Admin logged out successfully" });
     };
 
-    public async guideLogin (req: Request, res: Response) {
+    public async guideLogin (req: Request, res: Response): Promise<any> {
        const { email, password } = req.body;
        const result = await login({ email, password, role: ['guide'] });
 
@@ -152,19 +155,20 @@ export default class AuthController implements IAuthController {
 
     }
 
-    public refreshAccessToken = (req: Request, res: Response): any => {
+    public refreshAccessToken = async (req: Request, res: Response): Promise<any> => {
         const token = req.cookies?.refreshToken;
         if (!token) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh Token is missing' });
 
         try {
-            const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
-            if (!payload || typeof payload === 'string' || !payload.id) {
-                return res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid token payload" });
+
+            const payload = this.authService.verifyRefreshToken(token);
+            const user = await this.userRepo.getUserById(payload.id);
+
+            if(!user) {
+                return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
             }
 
-            const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
-                expiresIn: '15m',
-            });
+            const newAccessToken = this.authService.generateAccessToken({id: user?._id, role: user?.role});
 
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
@@ -187,9 +191,9 @@ export default class AuthController implements IAuthController {
             if(result.status !== HttpStatusCode.CREATED){
                 return res.status(result.status).json(result.data);
             }
-            return res.status(result.status).json(result.data)
+            return res.status(result.status).json(result.data);
         } catch (error: any) {
-            console.log("Error in verify OTP",error.message)
+            console.log("Error in verify OTP", error.message);
         }
     };
 
@@ -213,8 +217,8 @@ export default class AuthController implements IAuthController {
             if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'UnAuthorized' });
 
             const user = await this.userRepo.getUserById(userId);
-            console.log(user)
             if (!user) return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
+
             const userData = {
                 id: user?._id,
                 name: user?.name,
@@ -229,6 +233,7 @@ export default class AuthController implements IAuthController {
 
     }
 
+    
 
     
 }

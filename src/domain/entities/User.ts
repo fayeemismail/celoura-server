@@ -8,4 +8,5 @@ export interface User {
     is_verified: boolean;
     createdAt: Date;
     updatedAt: Date;
+    googleId?: string;
 }

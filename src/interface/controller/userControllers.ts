@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import IUserInterface from "../../domain/interfaces/IUserController";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { getUserProfile } from "../../application/usecase/user/getUserProfile";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import {  HttpStatusCode } from "../../application/constants/httpStatus";
 import { editProfile } from "../../application/usecase/user/editProfile";
 import { ValidationError } from "../../utils/ValidationError";
 
@@ -17,10 +17,10 @@ export default class UserController implements IUserInterface {
 
     public getProfile = async(req: Request, res: Response): Promise<any> => {
         try {
-            const userId = req.params.id 
+            const userId = req.params.id;
             const user = await getUserProfile(userId, this._userRepo);
 
-            res.status(200).json(user)
+            res.status(200).json(user);
         } catch (error: any) {
             console.error('Get Profile Error: ', error);
             res.status(400).json({ error: error.message })
@@ -30,10 +30,10 @@ export default class UserController implements IUserInterface {
     public editProfile = async(req: Request, res: Response): Promise<void> => {
         try {
             const updateData = req.body;
-            console.log(updateData)
-            const updatedUser = await editProfile( updateData, this._userRepo)
+            console.log(updateData);
+            const updatedUser = await editProfile( updateData, this._userRepo);
 
-            res.status(HTTP_STATUS.OK.code).json({message: 'Profile pdated successfully'});
+            res.status(HttpStatusCode.OK).json({message: 'Profile pdated successfully'});
         } catch (error: unknown) {
             if (error instanceof ValidationError) {
                 res.status(error.statusCode).json({
@@ -42,13 +42,13 @@ export default class UserController implements IUserInterface {
                 });
               } else if (error instanceof Error) {
                 console.error(error);
-                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-                  status: HTTP_STATUS.INTERNAL_SERVER_ERROR.message,
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                  status: HttpStatusCode.INTERNAL_SERVER_ERROR,
                   error: error.message,
                 });
               } else {
-                res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR.code).json({
-                  status: HTTP_STATUS.INTERNAL_SERVER_ERROR.message,
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                  status: HttpStatusCode.INTERNAL_SERVER_ERROR,
                   error: "Unexpected error occurred",
                 });
               }

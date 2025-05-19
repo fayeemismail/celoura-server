@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import { env } from "../../config/authConfig";
-import { HTTP_STATUS } from "../../application/constants/httpStatus";
+import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 
 
@@ -12,7 +12,6 @@ export default class  GuideController {
     constructor() {}
 
     public guideRefreshAccessToken = (req: Request, res: Response): any => {
-        console.log('heey yyyyyyyyy')
         const token = req.cookies?.guideRefreshToken;
         if(!token) {
             return res.status(401).json({ error: "Refresh token is missing" });
@@ -36,7 +35,7 @@ export default class  GuideController {
                 maxAge: env.ACCESS_TOKEN_EXPIRE,
             });
 
-            return res.status(HTTP_STATUS.OK.code).json({ success: true });
+            return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error("Admin refresh Error: ", error);
             return res.status(403).json({ error: 'Invalid admin refresh token' });
@@ -60,7 +59,7 @@ export default class  GuideController {
                 role: user.role,
             };
 
-            res.status(HTTP_STATUS.OK.code).json({ data: userData });
+            res.status(HttpStatusCode.OK).json({ data: userData });
         } catch (error) {
             res.status(500).json({ error: "Internal server error" });
         }

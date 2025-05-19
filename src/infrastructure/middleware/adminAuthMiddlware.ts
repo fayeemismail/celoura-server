@@ -7,7 +7,7 @@ import { adminJwtVerify } from "../../shared/utility/adminJwtService";
 export const adminAuthenticate = (req: Request, res: Response, next: NextFunction): any => {
     const token = req.cookies?.adminAccessToken;
     if (!token) {
-        return res.status(401).json({ error: "Admin Access token is missing" });
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: "Admin Access token is missing" });
     }
 
     try {
@@ -16,6 +16,6 @@ export const adminAuthenticate = (req: Request, res: Response, next: NextFunctio
         next();
     } catch (error: any) {
         console.log(error.message);
-        res.status(403).json({ error: "Invalid or expired Admin token" });
+        res.status(HttpStatusCode.UNAUTHORIZED).json({ error: "Invalid or expired Admin token" });
     }
 };

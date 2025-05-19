@@ -2,11 +2,13 @@ import { UserRepository } from "../../../infrastructure/database/repositories/Us
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
+import { PasswordService } from "../../../infrastructure/service/PasswordService";
 
 
 const otpRepo = new OtpRepository();
 const authService = new AuthService();
 const userRepo = new UserRepository();
+const passwordService = new PasswordService()
 
 interface OtpInput {
     email: string;
@@ -31,7 +33,7 @@ export const verifyOtp = async({ email, otp }: OtpInput) => {
         };
 
         const  { name, email: userEmail, confirmPassword, role,  } = userData;
-        const hashed = await authService.hashPassword(confirmPassword);
+        const hashed = await passwordService.hashPassword(confirmPassword);
 
         const user = {
             name: name,

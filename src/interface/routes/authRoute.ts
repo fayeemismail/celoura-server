@@ -5,17 +5,17 @@ import { authenticate } from '../../infrastructure/middleware/authMiddleware';
 const router = express.Router();
 const authController = new AuthController();
 
-//sugnup routes
+//sugnup routes.
 router.post('/signup', authController.signup);
 router.post('/verify-otp', authController.verifyOtp);
 router.post('/resend-otp', authController.resendOtp);
 
-//login routes
+//login routes.
 router.post('/login', authController.login);
 router.post('/admin/login', authController.adminLogin);
 router.post('/guide/login', authController.guideLogin);
 
-//loguout routes
+//loguout routes.
 router.post('/logout', authController.logoutUser);
 router.post('/adminLogout', authController.adminLogout);
 router.post('/guide/logout', authController.guideLogout);
