@@ -4,6 +4,7 @@ import { IUserService } from "../../../domain/interfaces/IUserService";
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { validateNameUpdate } from "../../validators/nameValidators";
 import { validatePasswordUpdate } from "../../validators/passwordValidator";
+import { PasswordService } from "../../../infrastructure/service/PasswordService";
 
 
 
@@ -15,12 +16,14 @@ interface EditProfileInput {
     currentPassword?: string;
 };
 
+const passwordService = new PasswordService()
+
 export const editProfile = async (
     input: EditProfileInput,
     userRepository: IUserRepository
   ): Promise<User> => {
     const { id, name, newPassword, currentPassword, confirmPassword } = input;
-  
+    console.log(id)
     const user = await userRepository.getUserById(id);
     if (!user) throw new Error("User not found");
   
@@ -38,7 +41,7 @@ export const editProfile = async (
       });
   
       const authService = new AuthService();
-      const hashed = await authService.hashPassword(newPassword);
+      const hashed = await passwordService.hashPassword(newPassword);
       const result = await userRepository.updatePassword(id, hashed);
       console.log(`Password updated for user ${id}:`, result);
     }

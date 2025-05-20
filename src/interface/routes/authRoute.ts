@@ -1,6 +1,8 @@
 import express from 'express';
 import AuthController from '../controller/authControllers';
 import { authenticate } from '../../infrastructure/middleware/authMiddleware';
+import passport from 'passport';
+
 
 const router = express.Router();
 const authController = new AuthController();
@@ -23,6 +25,9 @@ router.post('/guide/logout', authController.guideLogout);
 //token checking routes.
 router.post('/refresh-token', authController.refreshAccessToken);
 router.get('/me',   authenticate, authController.getCurrentUser);
+
+//For Login User With Google
+router.post('/google-login', authController.googleLoginVerify);
 
 
 export default router;

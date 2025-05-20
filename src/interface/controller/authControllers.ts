@@ -8,6 +8,8 @@ import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
 import { resendOtp } from "../../application/usecase/auth/resendOtp";
 import { AuthService } from "../../infrastructure/service/AuthService";
+import { User } from "../../domain/entities/User";
+import { loginUserUseCase } from "../../application/usecase/auth/loginUserUseCase";
 
 
 
@@ -15,6 +17,7 @@ export default class AuthController implements IAuthController {
    constructor( 
     private userRepo = new UserRepository,
     private authService = new AuthService,
+    private loginOrRegisterUseCase = new loginUserUseCase
    ) {}
 
     public signup = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -233,7 +236,53 @@ export default class AuthController implements IAuthController {
 
     }
 
-    
+    public googleLoginVerify = async ( req: Request, res: Response ): Promise<any> => {
+        try {
+            const { email, name } = req.body;
+            const user = await this.loginOrRegisterUseCase.execute(email, name);
+            if(user.blocked){
+                return res.status(HttpStatusCode.UNAUTHORIZED).json({
+                    message: "Your account is Blocked"
+                })
+            }
+
+            const accessToken = this.authService.generateAccessToken({ id: user._id, role: user.role })
+            const refreshToken = this.authService.generateRefreshToken({ id: user._id, role: user.role });
+
+            res.cookie('accessToken', accessToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: env.NODE_ENV === 'production',
+                maxAge: env.ACCESS_TOKEN_EXPIRE,
+            })
+
+            res.cookie('refreshToken', refreshToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: env.NODE_ENV == 'production',
+                maxAge: env.REFRESH_TOKEN_EXPIRE,
+            });
+
+            return res.status(HttpStatusCode.OK).json({
+                message: "login Successfull",
+                data:{
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                },
+            });
+
+        } catch (error: any) {
+            if(error.message == 'User not exists') {
+                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
+            }
+            console.error("Google Login Error", error);
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                message: 'Google Login Failed'
+            })
+        }
+    }
 
     
 }

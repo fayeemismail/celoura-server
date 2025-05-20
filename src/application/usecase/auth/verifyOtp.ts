@@ -27,7 +27,6 @@ export const verifyOtp = async({ email, otp }: OtpInput) => {
         };
 
         const userData = await otpRepo.getTempUser(email);
-        console.log(userData, 'This is user data')
         if(!userData) {
             return { status: HttpStatusCode.BAD_REQUEST, data:{ error: 'Session Expired please signUp again' } };
         };

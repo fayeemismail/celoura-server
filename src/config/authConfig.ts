@@ -49,6 +49,10 @@ export const env = {
 
     get GOOGLE_CALLBACK_URI() {
         return process.env.GOOGLE_CALLBACK_URI;
+    },
+
+    get CLIENT_URL() {
+        return process.env.CLIENT_SIDE_URL;
     }
 
 };
