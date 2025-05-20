@@ -37,6 +37,22 @@ export const env = {
 
     get NODE_ENV() {
         return process.env.NODE_ENV;
+    },
+
+    get GOOGLE_CLIENT_ID() {
+        return process.env.GOOGLE_CLIENT_ID;
+    },
+
+    get GOOGLE_CLIENT_SECRET() {
+        return process.env.GOOGLE_CLIENT_SECRET;
+    },
+
+    get GOOGLE_CALLBACK_URI() {
+        return process.env.GOOGLE_CALLBACK_URI;
+    },
+
+    get CLIENT_URL() {
+        return process.env.CLIENT_SIDE_URL;
     }
 
 };

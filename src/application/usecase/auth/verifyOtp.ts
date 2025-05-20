@@ -2,11 +2,13 @@ import { UserRepository } from "../../../infrastructure/database/repositories/Us
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
+import { PasswordService } from "../../../infrastructure/service/PasswordService";
 
 
 const otpRepo = new OtpRepository();
 const authService = new AuthService();
 const userRepo = new UserRepository();
+const passwordService = new PasswordService()
 
 interface OtpInput {
     email: string;
@@ -25,13 +27,12 @@ export const verifyOtp = async({ email, otp }: OtpInput) => {
         };
 
         const userData = await otpRepo.getTempUser(email);
-        console.log(userData, 'This is user data')
         if(!userData) {
             return { status: HttpStatusCode.BAD_REQUEST, data:{ error: 'Session Expired please signUp again' } };
         };
 
         const  { name, email: userEmail, confirmPassword, role,  } = userData;
-        const hashed = await authService.hashPassword(confirmPassword);
+        const hashed = await passwordService.hashPassword(confirmPassword);
 
         const user = {
             name: name,

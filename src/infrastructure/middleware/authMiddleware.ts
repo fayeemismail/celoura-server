@@ -6,7 +6,7 @@ import { HttpStatusCode } from "../../application/constants/httpStatus";
 
 export const authenticate = (req: Request, res: Response, next: NextFunction): any => {
     const token = req.cookies?.accessToken;
-    if(!token) return res.status(401).json({ error: 'Access token missing' });
+    if(!token) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Access token missing' });
 
     try {
         const decoded = jwtVerify(token);

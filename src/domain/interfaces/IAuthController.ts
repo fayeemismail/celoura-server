@@ -10,4 +10,5 @@ export default interface IAuthController {
     verifyOtp(req: Request, res: Response): Promise<any>;
     resendOtp(req: Request, res: Response): Promise<any>;
     getCurrentUser(req: Request, res: Response): Promise<any>;
+    googleLoginVerify(req: Request, res: Response): Promise<any>
 }

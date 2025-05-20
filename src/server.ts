@@ -9,6 +9,7 @@ import adminRouter from './interface/routes/adminRoute';
 import guideRouter from './interface/routes/guideRoute'
 import cookieParser from 'cookie-parser';
 import { env } from './config/authConfig';
+import passport from 'passport';
 
 dotenv.config();
 const app = express();
@@ -19,7 +20,8 @@ app.use(cors({
     credentials: true 
 }));
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
+app.use(passport.initialize())
 
 
 //Router setUp
@@ -36,5 +38,6 @@ mongoose.connect(process.env.MONGO_URI!).then(() => {
 });
 
 const PORT = env.PORT || 5000;
+console.log(PORT)
 
 app.listen(PORT, () => console.log('Celoura is running 🏃‍♂️'))
