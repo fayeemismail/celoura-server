@@ -1,5 +1,5 @@
 import { User } from "../../../domain/entities/User";
-import { IUserRepository } from "../../../application/interfaces/repositories/IUserRepository";
+import { IUserRepository } from "./interface/IUserRepository";
 import userModel from "../models/userModel";
 
 
@@ -43,5 +43,36 @@ export class UserRepository implements IUserRepository {
         return await userModel.find({ role: { $in: ['user' , 'guide'] } });
     };
 
+    async blockUser(userId: string): Promise<User> {
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            { blocked: true },
+            { new: true }
+        );
+        if(!user) {
+            throw new Error("User not found")
+        };
+        const userData = user.toObject();
+        return {
+            ...userData,
+            _id: userData._id.toString()
+        };
+    };
+
+    async unBlockUser(userId: string): Promise<User> {
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            { blocked: false },
+            { new: true }
+        );
+        if(!user) {
+            throw new Error("User not found");
+        };
+        const userData = user.toObject();
+        return {
+            ...userData,
+            _id: userData._id.toString()
+        }
+    };
 
 }

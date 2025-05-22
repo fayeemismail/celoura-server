@@ -1,5 +1,5 @@
 // src/domain/interfaces/userRepository.ts
-import { User } from "../../../domain/entities/User";
+import { User } from "../../../../domain/entities/User";
 
 export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
@@ -9,4 +9,6 @@ export interface IUserRepository {
   updatePassword(usreId: string, hashedPassword: string): Promise<void>;
   updateName(userId:string, name: string): Promise<void>;
   findAll(): Promise<User[]>;
+  blockUser(userId: string): Promise<User>;
+  unBlockUser(userId: string): Promise<User>;
 }

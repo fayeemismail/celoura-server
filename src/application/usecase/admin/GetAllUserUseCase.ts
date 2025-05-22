@@ -1,5 +1,5 @@
 import { User } from "../../../domain/entities/User";
-import { IUserRepository } from "../../interfaces/repositories/IUserRepository";
+import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 
 
 

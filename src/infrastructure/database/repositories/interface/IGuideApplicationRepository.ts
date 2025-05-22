@@ -1,4 +1,4 @@
-import { GuideApplication } from "../../../domain/entities/GuideApplication";
+import { GuideApplication } from "../../../../domain/entities/GuideApplication";
 
 
 export interface IGuideApplicationRepository {

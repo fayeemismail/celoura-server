@@ -1,4 +1,4 @@
-import { IGuideApplicationRepository } from "../../../application/interfaces/repositories/IGuideApplicationRepository";
+import { IGuideApplicationRepository } from "./interface/IGuideApplicationRepository";
 import { GuideApplication } from "../../../domain/entities/GuideApplication";
 import guideApplicationModel from "../models/guideApplicationModel";
 
