@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 export const env = {
     get JWT_ACCESS_SECRET() {
         return process.env.JWT_SECRET;
@@ -53,6 +56,18 @@ export const env = {
 
     get CLIENT_URL() {
         return process.env.CLIENT_SIDE_URL;
+    },
+
+    get CLOUDINARY_CLOUD_NAME() {
+        return process.env.CLOUDINARY_CLOUD_NAME;
+    },
+
+    get CLOUDINARY_API_KEY() {
+        return process.env.CLOUDINARY_API_KEY;
+    },
+
+    get CLOUDINARY_API_SECRET() {
+        return process.env.CLOUDINARY_API_SECRET;
     }
 
 };
