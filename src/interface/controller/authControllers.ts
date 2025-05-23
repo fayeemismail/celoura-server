@@ -279,7 +279,7 @@ export default class AuthController implements IAuthController {
             }
             console.error("Google Login Error", error);
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                message: 'Google Login Failed'
+                message: error.message || 'Google Login Failed'
             })
         }
     }

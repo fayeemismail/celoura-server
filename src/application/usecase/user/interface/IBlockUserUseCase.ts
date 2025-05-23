@@ -1,5 +1,5 @@
 
 
 export interface IBlockUserUseCase {
-    execute(id: string): Promise<void>;
+    execute(userId: string): Promise<void>;
 }
