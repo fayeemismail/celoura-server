@@ -1,8 +1,8 @@
 import { GuideApplication } from "../../../domain/entities/GuideApplication";
 import { GuideApplicationRepository } from "../../../infrastructure/database/repositories/GuideApplicationRepository";
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
-import { IGuideApplicationRepository } from "../../interfaces/repositories/IGuideApplicationRepository";
-import { IUserRepository } from "../../interfaces/repositories/IUserRepository";
+import { IGuideApplicationRepository } from "../../../infrastructure/database/repositories/interface/IGuideApplicationRepository";
+import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 
 
 
@@ -31,7 +31,7 @@ export class ApplyForGuideUseCase {
 
     async execute(input: Input): Promise<GuideApplication>  {
         const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, status, userId } = input;
-        
+
         const user = await this.userRepo.getUserById(userId);
         if(!user) throw new Error('User not found');
         if(user.email !== email) throw new Error('Email mismatch: The provided email does not match the user account');

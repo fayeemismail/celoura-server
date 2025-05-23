@@ -15,6 +15,7 @@ router.get('/adminHome-Users', adminAuthenticate, adminController.getAllUsers);
 // router.get('/adminHome-Guides', )
 
 router.post('/adminRefreshAccessToken', adminController.adminRefreshAccessToken);
+router.patch('/user-block-unblock', adminAuthenticate, adminController.blockUser)
 
 
 

@@ -28,9 +28,6 @@ export default class AdminContrller {
         if (!token) {
             return res.status(401).json({ error: 'Refresh token is missing' });
         }
-
-        
-
         try {
             const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
 
@@ -57,6 +54,15 @@ export default class AdminContrller {
             return res.status(403).json({ error: "Invalid admin refresh token" });
         }
     };
+
+    public blockUser = async (req: Request, res: Response): Promise<any> => {
+        const { userId } = req.params
+        try {
+            console.log(userId);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
 
 }
