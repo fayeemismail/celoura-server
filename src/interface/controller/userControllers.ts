@@ -23,10 +23,10 @@ export default class UserController implements IUserInterface {
       const userId = req.params.id;
       const user = await getUserProfile(userId, this._userRepo);
 
-      res.status(200).json(user);
+      res.status(HttpStatusCode.OK).json(user);
     } catch (error: any) {
       console.error('Get Profile Error: ', error);
-      res.status(400).json({ error: error.message })
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message })
     }
   }
 
@@ -41,18 +41,18 @@ export default class UserController implements IUserInterface {
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({
           status: "Validation Error",
-          error: error.message,
+          message: error.message,
         });
       } else if (error instanceof Error) {
         console.error(error);
         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
           status: HttpStatusCode.INTERNAL_SERVER_ERROR,
-          error: error.message,
+          message: error.message,
         });
       } else {
         res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
           status: HttpStatusCode.INTERNAL_SERVER_ERROR,
-          error: "Unexpected error occurred",
+          message: "Unexpected error occurred",
         });
       }
     }

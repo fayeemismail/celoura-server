@@ -4,12 +4,18 @@ import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { env } from "../../config/authConfig";
 import { JwtPayload } from "jsonwebtoken";
 import jwt from 'jsonwebtoken'
+import { BlockUserUseCase } from "../../application/usecase/user/BlockUserUseCase";
+import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
+import { UnBlockUserUseCase } from "../../application/usecase/user/UnBlockUserUseCase";
 
 
 
 
 export default class AdminContrller {
-    constructor(private getAllUserUseCase: GetAllUserUseCase) { };
+    constructor(
+        private getAllUserUseCase: GetAllUserUseCase,
+        private userRepo: UserRepository
+    ) { };
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -26,13 +32,13 @@ export default class AdminContrller {
     public adminRefreshAccessToken = (req: Request, res: Response): any => {
         const token = req.cookies?.adminRefreshToken;
         if (!token) {
-            return res.status(401).json({ error: 'Refresh token is missing' });
+            return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh token is missing' });
         }
         try {
             const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
 
             if (!payload || typeof payload == 'string' || !payload.id) {
-                return res.status(403).json({ error: 'Invalid token payload' });
+                return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid token payload' });
             }
 
             const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
@@ -48,19 +54,47 @@ export default class AdminContrller {
             });
 
             
-            return res.status(200).json({ success: true });
+            return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error('Admin Refresh Error: ', error);
-            return res.status(403).json({ error: "Invalid admin refresh token" });
+            return res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid admin refresh token" });
         }
     };
 
     public blockUser = async (req: Request, res: Response): Promise<any> => {
-        const { userId } = req.params
+        const { userId } = req.params;
         try {
-            console.log(userId);
-        } catch (error) {
+            if(!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
+
+            const userUseCase = new BlockUserUseCase(this.userRepo);
+            await userUseCase.execute(userId);
+
+            return res.status(HttpStatusCode.OK).json({
+                message: 'User Has been Blocked successfully'
+            })
+        } catch (error: any) {
             console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                message: error.message || 'Failed to Block user'
+            })
+        }
+    }
+
+    public unBlockUser = async (req: Request, res: Response): Promise<any> => {
+        const { userId } = req.params;
+        try {
+            if(!userId) res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
+
+            const userUseCase = new UnBlockUserUseCase(this.userRepo);
+            await userUseCase.execute(userId);
+            res.status(HttpStatusCode.OK).json({
+                message: 'UnBlocked User'
+            })
+        } catch (error: any) {
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                message: error.message || 'Failed to unBlock User'
+            })
         }
     }
 
