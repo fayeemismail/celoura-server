@@ -8,14 +8,15 @@ const router = express.Router();
 
 const userRepository = new UserRepository();
 const getAllUserUseCase = new GetAllUserUseCase(userRepository);
-const adminController = new AdminContrller(getAllUserUseCase);
+const adminController = new AdminContrller(getAllUserUseCase, userRepository);
 
 
 router.get('/adminHome-Users', adminAuthenticate, adminController.getAllUsers);
 // router.get('/adminHome-Guides', )
 
 router.post('/adminRefreshAccessToken', adminController.adminRefreshAccessToken);
-router.patch('/user-block-unblock', adminAuthenticate, adminController.blockUser)
+router.patch('/users/:userId/block', adminAuthenticate, adminController.blockUser);
+router.patch('/users/:userId/unBlock', adminAuthenticate, adminController.unBlockUser);
 
 
 

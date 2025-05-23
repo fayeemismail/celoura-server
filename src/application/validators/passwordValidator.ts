@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import { AuthService } from "../../infrastructure/service/AuthService";
 import { ValidationError } from "../../utils/ValidationError";
+import { PasswordService } from "../../infrastructure/service/PasswordService";
 
 interface PasswordValidationInput {
   newPassword: string;
@@ -46,8 +47,8 @@ export const validatePasswordUpdate = async ({
     errors.push("Password and confirm password do not match.");
   }
 
-  const authService = new AuthService();
-  const isCurrentPasswordValid = await authService.comparePasswords(currentPassword, hashedPasswordInDb);
+  const passwordService = new PasswordService();
+  const isCurrentPasswordValid = await passwordService.comparePassword(currentPassword, hashedPasswordInDb);
   if (!isCurrentPasswordValid) {
     errors.push("Current password is incorrect.");
   }

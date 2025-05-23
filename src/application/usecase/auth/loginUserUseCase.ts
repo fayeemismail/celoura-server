@@ -16,6 +16,8 @@ export class loginUserUseCase {
             return user;
         }
 
+        if(user?.role == 'guide') throw new Error('Access denied')
+
         if(!user){
             user = await this.userRepo.createUser({
                 name,

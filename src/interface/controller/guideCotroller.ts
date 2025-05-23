@@ -14,14 +14,14 @@ export default class  GuideController {
     public guideRefreshAccessToken = (req: Request, res: Response): any => {
         const token = req.cookies?.guideRefreshToken;
         if(!token) {
-            return res.status(401).json({ error: "Refresh token is missing" });
+            return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: "Refresh token is missing" });
         }
 
         try {
             const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
 
             if(!payload || typeof payload == 'string' || !payload.id) {
-                return res.status(403).json({ error: 'Invalid token payload' });
+                return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid token payload' });
             }
 
             const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
@@ -38,7 +38,7 @@ export default class  GuideController {
             return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error("Admin refresh Error: ", error);
-            return res.status(403).json({ error: 'Invalid admin refresh token' });
+            return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid admin refresh token' });
         }
     }
     public getCurrentUser = async (req: Request, res: Response): Promise<any> => {
@@ -46,11 +46,11 @@ export default class  GuideController {
             const userId = req.query.id;
             console.log(userId)
             if (!userId || typeof userId !== 'string') {
-                return res.status(401).json({ error: 'Unauthorized' });
+                return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Unauthorized' });
             }
 
             const user = await this.userRepo.getUserById(userId);
-            if (!user) return res.status(404).json({ error: 'User not found' });
+            if (!user) return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
 
             const userData = {
                 id: user._id,
@@ -61,7 +61,7 @@ export default class  GuideController {
 
             res.status(HttpStatusCode.OK).json({ data: userData });
         } catch (error) {
-            res.status(500).json({ error: "Internal server error" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }
     };
 }
