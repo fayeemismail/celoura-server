@@ -7,6 +7,9 @@ import jwt from 'jsonwebtoken'
 import { BlockUserUseCase } from "../../application/usecase/user/BlockUserUseCase";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { UnBlockUserUseCase } from "../../application/usecase/user/UnBlockUserUseCase";
+import { GuideApplication } from "../../domain/entities/GuideApplication";
+import { GetAllGuideAppliesUseCase } from "../../application/usecase/admin/GetAllGuideAppliesUseCase";
+import { ApproveAsGuideUseCase } from "../../application/usecase/admin/ApproveAsGuideUseCase";
 
 
 
@@ -96,7 +99,29 @@ export default class AdminContrller {
                 message: error.message || 'Failed to unBlock User'
             })
         }
+    };
+
+    public getGuideApplications = async( req: Request, res: Response): Promise<any> => {
+        try {
+            const applicationUseCase = new GetAllGuideAppliesUseCase() 
+            const applications = await applicationUseCase.execute();
+            return res.status(HttpStatusCode.OK).json({ data: applications })
+        } catch (error: any) {
+            console.log(error.message)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
+        }
     }
 
-
+    public approveGuide = async( req: Request, res: Response ): Promise<void> => {
+        const { applicationId, userId } = req.body;
+        try {
+            if(!applicationId) res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application not found' });
+            if(!userId) res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User Not found' });
+            const approveUseCase = new ApproveAsGuideUseCase(this.userRepo);
+            const data = await approveUseCase.execute(applicationId, userId);
+            console.log(data)
+        } catch (error: any) {
+            console.log(error.message)
+        }
+    }
 }

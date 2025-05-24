@@ -9,6 +9,7 @@ export interface IUserRepository {
   updatePassword(usreId: string, hashedPassword: string): Promise<void>;
   updateName(userId:string, name: string): Promise<void>;
   findAll(): Promise<User[]>;
-  blockUser(userId: string): Promise<User>;
-  unBlockUser(userId: string): Promise<User>;
+  blockUser(userId: string): Promise<any>;
+  unBlockUser(userId: string): Promise<any>;
+  approveAsGuide(userId: string): Promise<any>;
 }

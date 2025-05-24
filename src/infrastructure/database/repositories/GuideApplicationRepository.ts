@@ -24,4 +24,8 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
         return await guideApplicationModel.find()
     }
 
+    async findApplication(id: string): Promise<any> {
+        return await guideApplicationModel.findById(id)
+    }
+
 }
