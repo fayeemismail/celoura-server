@@ -43,7 +43,7 @@ export class UserRepository implements IUserRepository {
         return await userModel.find({ role: { $in: ['user' , 'guide'] } });
     };
 
-    async blockUser(userId: string): Promise<User> {
+    async blockUser(userId: string): Promise<any> {
         const user = await userModel.findByIdAndUpdate(
             userId,
             { blocked: true },
@@ -59,7 +59,7 @@ export class UserRepository implements IUserRepository {
         };
     };
 
-    async unBlockUser(userId: string): Promise<User> {
+    async unBlockUser(userId: string): Promise<any> {
         const user = await userModel.findByIdAndUpdate(
             userId,
             { blocked: false },
@@ -74,5 +74,14 @@ export class UserRepository implements IUserRepository {
             _id: userData._id.toString()
         }
     };
+
+    async approveAsGuide(userId: string): Promise<any> {
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            { role: 'guide' },
+            { new: true }
+        );
+        return user ?? null;
+    }
 
 }

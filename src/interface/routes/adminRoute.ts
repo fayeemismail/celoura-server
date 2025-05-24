@@ -17,6 +17,8 @@ router.get('/adminHome-Users', adminAuthenticate, adminController.getAllUsers);
 router.post('/adminRefreshAccessToken', adminController.adminRefreshAccessToken);
 router.patch('/users/:userId/block', adminAuthenticate, adminController.blockUser);
 router.patch('/users/:userId/unBlock', adminAuthenticate, adminController.unBlockUser);
+router.get('/users/get-guide-applications', adminAuthenticate, adminController.getGuideApplications);
+router.patch('/users/approveAsGuide', adminAuthenticate, adminController.approveGuide);
 
 
 
