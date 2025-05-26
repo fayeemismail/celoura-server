@@ -15,17 +15,20 @@ import morgan from 'morgan';
 
 //morgan setUp
 const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ level, message, timestamp }) => {
-            return `[${timestamp}] ${level}: ${message}`;
-        })
-    ),
-    transports: [
-        new winston.transports.File({ filename: 'logs/app.log' }),
-    ],
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: () => new Date().toLocaleString()
+    }),
+    winston.format.printf(({ level, message, timestamp }) => {
+      return `[${timestamp}] ${level}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.File({ filename: 'logs/app.log' }),
+  ],
 });
+
 
 const stream = {
     write: (message: string) => logger.info(message.trim()),
