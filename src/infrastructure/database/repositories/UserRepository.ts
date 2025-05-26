@@ -82,6 +82,15 @@ export class UserRepository implements IUserRepository {
             { new: true }
         );
         return user ?? null;
-    }
+    };
+    
+    async rejectAsGuide(userId: string): Promise<any> {
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            { role: 'user' },
+            { new: true }
+        );
+        return user ?? null;
+    };
 
 }

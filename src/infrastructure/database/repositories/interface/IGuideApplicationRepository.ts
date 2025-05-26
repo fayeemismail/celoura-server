@@ -7,4 +7,6 @@ export interface IGuideApplicationRepository {
     findUserByEmail(email: string): Promise<any>
     findAll(): Promise<GuideApplication[]>;
     findApplication(id: string): Promise<any>;
+    approveGuideApplication(applicationId:string): Promise<any>;
+    rejectGuideApplication(applicationId: string): Promise<any>;
 }

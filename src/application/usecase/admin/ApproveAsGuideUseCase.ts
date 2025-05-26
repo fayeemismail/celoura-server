@@ -11,9 +11,11 @@ export class ApproveAsGuideUseCase implements IApproveAsGuide {
         private _userRepo: IUserRepository
     ){}
     async execute(applicationId: string, userId: string): Promise<any> {
-        const application = this._guideRepo.findApplication(applicationId);
+        const application = await this._guideRepo.findApplication(applicationId);
         if(!application) throw new Error('Application NOT found');
         const updatedUser = await this._userRepo.approveAsGuide(userId);
         if(!updatedUser) throw new Error('User Not found');
+        const approveApplication = await this._guideRepo.approveGuideApplication(application._id)
+        if(!approveApplication) throw new Error('Approval failed');
     }
 }
