@@ -28,7 +28,7 @@ export default class AdminContrller {
             const guide = data.filter((item) => item.role == 'guide');
             res.status(HttpStatusCode.OK).json({ status: true, data: {users, guide} });
         } catch (error: unknown) {
-
+            
         }
     }
 
