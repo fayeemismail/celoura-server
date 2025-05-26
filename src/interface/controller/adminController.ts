@@ -10,6 +10,7 @@ import { UnBlockUserUseCase } from "../../application/usecase/user/UnBlockUserUs
 import { GuideApplication } from "../../domain/entities/GuideApplication";
 import { GetAllGuideAppliesUseCase } from "../../application/usecase/admin/GetAllGuideAppliesUseCase";
 import { ApproveAsGuideUseCase } from "../../application/usecase/admin/ApproveAsGuideUseCase";
+import { RejectAsGuideUseCase } from "../../application/usecase/admin/RejectAsGuideUseCase";
 
 
 
@@ -115,13 +116,44 @@ export default class AdminContrller {
     public approveGuide = async( req: Request, res: Response ): Promise<void> => {
         const { applicationId, userId } = req.body;
         try {
-            if(!applicationId) res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application not found' });
-            if(!userId) res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User Not found' });
+            if(!applicationId){
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application not found' });
+                return
+            } 
+            if(!userId) {
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User Not found' });
+                return 
+            } 
             const approveUseCase = new ApproveAsGuideUseCase(this.userRepo);
-            const data = await approveUseCase.execute(applicationId, userId);
-            console.log(data)
+            await approveUseCase.execute(applicationId, userId);
+
+            res.status(HttpStatusCode.OK).json({ message: 'Approves as guide Successfully' })
         } catch (error: any) {
             console.log(error.message)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message })
+        }
+    }
+
+    public rejectGuide = async(req: Request, res: Response): Promise<any> => {
+        const { applicationId, userId } = req.body
+        try {
+            if(!applicationId) {
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'application not found' });
+                return
+            }
+
+            if(!userId) {
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
+                return;
+            };
+            console.log(applicationId, 'and', userId)
+            const rejectUseCase = new RejectAsGuideUseCase(this.userRepo);
+            await rejectUseCase.execute(applicationId, userId);
+            
+            res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
+        } catch (error: any) {
+            console.log(error.message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
         }
     }
 }

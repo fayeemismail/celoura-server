@@ -12,4 +12,5 @@ export interface IUserRepository {
   blockUser(userId: string): Promise<any>;
   unBlockUser(userId: string): Promise<any>;
   approveAsGuide(userId: string): Promise<any>;
+  rejectAsGuide(userId: string): Promise<any>;
 }

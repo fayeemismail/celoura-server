@@ -26,6 +26,24 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
 
     async findApplication(id: string): Promise<any> {
         return await guideApplicationModel.findById(id)
+    };
+
+    async approveGuideApplication(applicationId: string): Promise<any> {
+        const application = await guideApplicationModel.findByIdAndUpdate(
+            applicationId,
+            { status: 'approved' },
+            { new: true }
+        );
+        return application ?? null;
+    }
+
+    async rejectGuideApplication(applicationId: string): Promise<any> {
+        const application = await guideApplicationModel.findByIdAndUpdate(
+            applicationId,
+            { status: 'rejected' },
+            { new: true }
+        );
+        return application ?? null;
     }
 
 }
