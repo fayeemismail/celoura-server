@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import IUserInterface from "../../domain/interfaces/IUserController";
+import IUserInterface from "../../domain/interfaces/controller/IUserController";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { getUserProfile } from "../../application/usecase/user/getUserProfile";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
@@ -33,7 +33,6 @@ export default class UserController implements IUserInterface {
   public editProfile = async (req: Request, res: Response): Promise<void> => {
     try {
       const updateData = req.body;
-      console.log(updateData);
       const updatedUser = await editProfile(updateData, this._userRepo);
 
       res.status(HttpStatusCode.OK).json({ message: 'Profile pdated successfully' });
@@ -75,8 +74,7 @@ export default class UserController implements IUserInterface {
       address,
       experience,
       expertise,
-      idFileUrl,       // ✅ match interface field name
-      status: 'pending', // ✅ include required status field
+      idFileUrl, 
       userId
     };
     const result = await this._applyForGuideUseCase.execute(application)

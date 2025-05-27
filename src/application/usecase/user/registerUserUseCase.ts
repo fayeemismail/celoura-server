@@ -1,5 +1,4 @@
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
-import { AuthService } from "../../../infrastructure/service/AuthService";
 import { EmailService } from "../../../infrastructure/service/EmailService";
 import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
@@ -12,7 +11,6 @@ import { sendSignupOtp } from "./sendSignupOtp";
 const userRepo = new UserRepository();
 const otpRepo = new OtpRepository();
 const emailService = new EmailService();
-const authService = new AuthService();
 
 
 interface RegisterInput {

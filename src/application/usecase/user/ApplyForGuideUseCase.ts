@@ -3,6 +3,7 @@ import { GuideApplicationRepository } from "../../../infrastructure/database/rep
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { IGuideApplicationRepository } from "../../../infrastructure/database/repositories/interface/IGuideApplicationRepository";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
+import { IApplyForGuideUseCase } from "./interface/IApplyForGuideUseCase";
 
 
 
@@ -16,12 +17,11 @@ interface Input {
   experience: string;
   expertise: string;
   idFileUrl: string;
-  status: string;
   userId: string;
 }
 
 
-export class ApplyForGuideUseCase {
+export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
     private guideRepo: GuideApplicationRepository;
     private userRepo: UserRepository
     constructor() {
@@ -30,7 +30,7 @@ export class ApplyForGuideUseCase {
     }
 
     async execute(input: Input): Promise<GuideApplication>  {
-        const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, status, userId } = input;
+        const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, userId } = input;
 
         const user = await this.userRepo.getUserById(userId);
         if(!user) throw new Error('User not found');
@@ -51,7 +51,7 @@ export class ApplyForGuideUseCase {
             experience,
             expertise,
             idFileUrl,
-            status,
+            status: 'pending',
             userId,
             createdAt: new Date(),
             updatedAt: new Date()

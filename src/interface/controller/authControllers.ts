@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import IAuthController from "../../domain/interfaces/IAuthController";
+import IAuthController from "../../domain/interfaces/controller/IAuthController";
 import { register } from "../../application/usecase/user/registerUserUseCase";
 import { login } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
@@ -24,7 +24,7 @@ export default class AuthController implements IAuthController {
         const { name, email, password, confirmPassword, role } = req.body;
         const result = await register({ name, email, password, confirmPassword, role });
         res.status(result.status).json(result.data);    
-    };// OK 
+    };
 
     public async login (req: Request, res: Response): Promise<any> {
         const { email, password } = req.body;

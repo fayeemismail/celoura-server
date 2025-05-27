@@ -22,7 +22,7 @@ export const validatePasswordUpdate = async ({
     throw new Error("Stored password is missing.");
   }
 
-  // Ensure no spaces in the new password and confirm password
+  
   if (/\s/.test(newPassword) || /\s/.test(confirmPassword)) {
     errors.push("Password cannot contain spaces.");
   }

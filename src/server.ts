@@ -13,6 +13,8 @@ import passport from 'passport';
 import winston from 'winston';
 import morgan from 'morgan';
 
+
+
 //morgan setUp
 const logger = winston.createLogger({
   level: 'info',
@@ -35,9 +37,10 @@ const stream = {
 }
 
 
-
 dotenv.config();
 const app = express();
+
+
 
 //Middleware setup
 app.use(morgan('combined', { stream }));

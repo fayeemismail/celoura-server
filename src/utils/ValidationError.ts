@@ -1,4 +1,3 @@
-// utils/ValidationError.ts
 export class ValidationError extends Error {
     statusCode: number;
   
