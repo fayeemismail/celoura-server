@@ -1,5 +1,4 @@
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository"
-import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository"
 
 
 

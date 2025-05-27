@@ -1,7 +1,8 @@
 import { User } from "../../../domain/entities/User";
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
+import { ILoginUserUseCase } from "./interface/ILoginUserUseCase";
 
-export class loginUserUseCase {
+export class loginUserUseCase implements ILoginUserUseCase {
     private userRepo: UserRepository;
 
     constructor() {
@@ -16,7 +17,8 @@ export class loginUserUseCase {
             return user;
         }
 
-        if(user?.role == 'guide') throw new Error('Access denied')
+        if(user?.role == 'guide') throw new Error('Access denied');
+        if(user?.role == 'admin') throw new Error('Access denied');
 
         if(!user){
             user = await this.userRepo.createUser({

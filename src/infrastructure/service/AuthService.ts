@@ -1,5 +1,4 @@
 import { IAuthService } from "../../application/interfaces/services/IAuthService";
-import bcrypt from 'bcrypt';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import dotenv from 'dotenv';
 

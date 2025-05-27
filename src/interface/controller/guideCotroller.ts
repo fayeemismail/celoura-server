@@ -37,7 +37,7 @@ export default class  GuideController {
 
             return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
-            console.error("Admin refresh Error: ", error);
+            console.error("Guide refresh Error: ", error);
             return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid admin refresh token' });
         }
     }

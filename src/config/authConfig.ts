@@ -31,11 +31,11 @@ export const env = {
     },
 
     get ACCESS_TOKEN_EXPIRE() {
-        return parseInt(process.env.ACCESS_TOKEN_EXPIRE || "900000"); // default to 15 mins
+        return parseInt(process.env.ACCESS_TOKEN_EXPIRE || "900000"); 
     },
     
     get REFRESH_TOKEN_EXPIRE() {
-        return parseInt(process.env.REFRESH_TOKEN_EXPIRE || "604800000"); // default to 7 days
+        return parseInt(process.env.REFRESH_TOKEN_EXPIRE || "604800000"); 
     }, 
 
     get NODE_ENV() {
