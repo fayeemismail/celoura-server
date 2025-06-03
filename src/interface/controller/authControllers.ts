@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import IAuthController from "../../domain/interfaces/controller/IAuthController";
 import { register } from "../../application/usecase/user/registerUserUseCase";
 import { login } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
@@ -10,6 +9,7 @@ import { resendOtp } from "../../application/usecase/auth/resendOtp";
 import { AuthService } from "../../infrastructure/service/AuthService";
 import { User } from "../../domain/entities/User";
 import { loginUserUseCase } from "../../application/usecase/auth/loginUserUseCase";
+import IAuthController from "../../domain/interfaces/IAuthController";
 
 
 
