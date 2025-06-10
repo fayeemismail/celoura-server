@@ -23,12 +23,26 @@ export default class AdminContrller {
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
         try {
-            const data = await this.getAllUserUseCase.execute();
-            const users = data.filter((item) => item.role == 'user');
-            const guide = data.filter((item) => item.role == 'guide');
-            res.status(HttpStatusCode.OK).json({ status: true, data: {users, guide} });
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+            const role = req.query.role as 'user' | 'guide' || 'user';
+
+
+
+            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role);
+            res.status(HttpStatusCode.OK).json({
+                status: true,
+                data,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
         } catch (error: unknown) {
-            
+            console.error("GetAllUsers Error:", error);
+            res.status(500).json({ status: false, message: "Internal Server Error" });
         }
     }
 
@@ -54,10 +68,10 @@ export default class AdminContrller {
                 secure: env.NODE_ENV === 'production',
                 sameSite: 'strict',
                 maxAge: env.ACCESS_TOKEN_EXPIRE,
-                path: '/', 
+                path: '/',
             });
 
-            
+
             return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error('Admin Refresh Error: ', error);
@@ -68,7 +82,7 @@ export default class AdminContrller {
     public blockUser = async (req: Request, res: Response): Promise<any> => {
         const { userId } = req.params;
         try {
-            if(!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
+            if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
 
             const userUseCase = new BlockUserUseCase(this.userRepo);
             await userUseCase.execute(userId);
@@ -87,7 +101,7 @@ export default class AdminContrller {
     public unBlockUser = async (req: Request, res: Response): Promise<any> => {
         const { userId } = req.params;
         try {
-            if(!userId) res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
+            if (!userId) res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
 
             const userUseCase = new UnBlockUserUseCase(this.userRepo);
             await userUseCase.execute(userId);
@@ -102,9 +116,9 @@ export default class AdminContrller {
         }
     };
 
-    public getGuideApplications = async( req: Request, res: Response): Promise<any> => {
+    public getGuideApplications = async (req: Request, res: Response): Promise<any> => {
         try {
-            const applicationUseCase = new GetAllGuideAppliesUseCase() 
+            const applicationUseCase = new GetAllGuideAppliesUseCase()
             const applications = await applicationUseCase.execute();
             return res.status(HttpStatusCode.OK).json({ data: applications })
         } catch (error: any) {
@@ -113,17 +127,17 @@ export default class AdminContrller {
         }
     }
 
-    public approveGuide = async( req: Request, res: Response ): Promise<void> => {
+    public approveGuide = async (req: Request, res: Response): Promise<void> => {
         const { applicationId, userId } = req.body;
         try {
-            if(!applicationId){
+            if (!applicationId) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application not found' });
                 return
-            } 
-            if(!userId) {
+            }
+            if (!userId) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User Not found' });
-                return 
-            } 
+                return
+            }
             const approveUseCase = new ApproveAsGuideUseCase(this.userRepo);
             await approveUseCase.execute(applicationId, userId);
 
@@ -134,26 +148,43 @@ export default class AdminContrller {
         }
     }
 
-    public rejectGuide = async(req: Request, res: Response): Promise<any> => {
+    public rejectGuide = async (req: Request, res: Response): Promise<any> => {
         const { applicationId, userId } = req.body
         try {
-            if(!applicationId) {
+            if (!applicationId) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'application not found' });
                 return
             }
 
-            if(!userId) {
+            if (!userId) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
                 return;
             };
             console.log(applicationId, 'and', userId)
             const rejectUseCase = new RejectAsGuideUseCase(this.userRepo);
             await rejectUseCase.execute(applicationId, userId);
-            
+
             res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
         } catch (error: any) {
             console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
+        }
+    }
+
+    public getCount = async(req: Request, res: Response) => {
+        try {
+            const response = await this.userRepo.findAll()
+            const users = response.filter((item) => item.role == 'user');
+            const guide = response.filter((item) => item.role == 'guide');
+            res.status(HttpStatusCode.OK).json({
+                status: true, data: {users, guide}
+            })
+        } catch (error: any) {
+            console.log('Error On geting count: ', error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                status: false,
+                message: error.message || 'Failed to Fetch users'
+            })
         }
     }
 }

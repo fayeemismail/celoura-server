@@ -10,6 +10,7 @@ import { AuthService } from "../../infrastructure/service/AuthService";
 import { User } from "../../domain/entities/User";
 import { loginUserUseCase } from "../../application/usecase/auth/loginUserUseCase";
 import IAuthController from "../../domain/interfaces/IAuthController";
+import { loginGuideGoogleUseCase } from "../../application/usecase/auth/loginGuideGoogleUseCase";
 
 
 
@@ -17,7 +18,8 @@ export default class AuthController implements IAuthController {
    constructor( 
     private userRepo = new UserRepository,
     private authService = new AuthService,
-    private loginOrRegisterUseCase = new loginUserUseCase
+    private loginOrRegisterUseCase = new loginUserUseCase,
+    private _loginGuideGoogleUseCase = new loginGuideGoogleUseCase
    ) {}
 
     public signup = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
@@ -280,6 +282,54 @@ export default class AuthController implements IAuthController {
             console.error("Google Login Error", error);
             return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
                 message: error.message || 'Google Login Failed'
+            })
+        }
+    }
+
+    public googleVerifyGuide = async(req: Request, res: Response): Promise<any> => {
+        try {
+            const { email, name } = req.body;
+            const guide = await this._loginGuideGoogleUseCase.execute(email, name);
+            if(guide.blocked) {
+                return res.status(HttpStatusCode.UNAUTHORIZED).json({
+                    message: "Your Account is Blocked"
+                });
+            };
+
+            const accessToken = this.authService.generateAccessToken({ id: guide._id, role: guide.role });
+            const refreshToken = this.authService.generateRefreshToken({ id: guide._id, role: guide.role });
+
+            res.cookie('guideAccessToken', accessToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: env.NODE_ENV == 'production',
+                maxAge: env.ACCESS_TOKEN_EXPIRE
+            });
+
+            res.cookie('guideRefreshToken', refreshToken, {
+                httpOnly: true,
+                sameSite: 'strict',
+                secure: env.NODE_ENV == 'production',
+                maxAge: env.REFRESH_TOKEN_EXPIRE
+            });
+
+            return res.status(HttpStatusCode.OK).json({
+                message: 'login successfull',
+                data: {
+                    id: guide._id,
+                    name: guide.name,
+                    email: guide.email,
+                    role: guide.role
+                },
+            });
+
+        } catch (error: any) {
+            if(error.message == 'User not exists') {
+                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
+            }
+            console.error('Google Login Error', error);
+            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+                message: error.message || 'Guide Google Login Failed'
             })
         }
     }

@@ -20,6 +20,7 @@ router.post('/adminRefreshAccessToken', adminController.adminRefreshAccessToken)
 router.patch('/users/:userId/block', adminAuthenticate, adminController.blockUser);
 router.patch('/users/:userId/unBlock', adminAuthenticate, adminController.unBlockUser);
 router.get('/users/get-guide-applications', adminAuthenticate, adminController.getGuideApplications);
+router.get('/users/total-count', adminAuthenticate, adminController.getCount)
 router.patch('/users/approveAsGuide', adminAuthenticate, adminController.approveGuide);
 router.patch('/users/rejectAsGuide', adminAuthenticate, adminController.rejectGuide);
 
