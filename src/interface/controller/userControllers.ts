@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import IUserInterface from "../../domain/interfaces/controller/IUserController";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { getUserProfile } from "../../application/usecase/user/getUserProfile";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { editProfile } from "../../application/usecase/user/editProfile";
 import { ValidationError } from "../../utils/ValidationError";
 import { ApplyForGuideUseCase } from "../../application/usecase/user/ApplyForGuideUseCase";
+import IUserInterface from "../../domain/interfaces/IUserController";
 
 
 

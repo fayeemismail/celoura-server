@@ -28,5 +28,7 @@ router.get('/me',   authenticate, authController.getCurrentUser);
 //For Login User With Google
 router.post('/google-login', authController.googleLoginVerify);
 
+//For Login Guide With Google 
+router.post('/guide-google-login', authController.googleVerifyGuide);
 
 export default router;
