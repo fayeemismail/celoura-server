@@ -118,14 +118,24 @@ export default class AdminContrller {
 
     public getGuideApplications = async (req: Request, res: Response): Promise<any> => {
         try {
-            const applicationUseCase = new GetAllGuideAppliesUseCase()
-            const applications = await applicationUseCase.execute();
-            return res.status(HttpStatusCode.OK).json({ data: applications })
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const applicationUseCase = new GetAllGuideAppliesUseCase();
+            const { data, total, totalPages } = await applicationUseCase.execute(page, limit);
+
+            return res.status(HttpStatusCode.OK).json({
+                data,
+                total,
+                page,
+                totalPages
+            });
         } catch (error: any) {
-            console.log(error.message)
+            console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
     }
+
 
     public approveGuide = async (req: Request, res: Response): Promise<void> => {
         const { applicationId, userId } = req.body;
@@ -171,13 +181,13 @@ export default class AdminContrller {
         }
     }
 
-    public getCount = async(req: Request, res: Response) => {
+    public getCount = async (req: Request, res: Response) => {
         try {
             const response = await this.userRepo.findAll()
             const users = response.filter((item) => item.role == 'user');
             const guide = response.filter((item) => item.role == 'guide');
             res.status(HttpStatusCode.OK).json({
-                status: true, data: {users, guide}
+                status: true, data: { users, guide }
             })
         } catch (error: any) {
             console.log('Error On geting count: ', error);

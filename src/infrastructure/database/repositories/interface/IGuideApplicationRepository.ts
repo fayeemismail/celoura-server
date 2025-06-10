@@ -9,4 +9,5 @@ export interface IGuideApplicationRepository {
     findApplication(id: string): Promise<any>;
     approveGuideApplication(applicationId:string): Promise<any>;
     rejectGuideApplication(applicationId: string): Promise<any>;
+    findPaginated(page: number, limit: number): Promise<any>;
 }

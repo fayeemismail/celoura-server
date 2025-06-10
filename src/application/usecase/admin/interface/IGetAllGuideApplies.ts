@@ -2,5 +2,5 @@ import { GuideApplication } from "../../../../domain/entities/GuideApplication";
 
 
 export interface IGetAllGuideApplies {
-    execute(): Promise<GuideApplication[]>
+    execute(page: number, limit: number): Promise<{data: GuideApplication[], total: number, totalPages: number}>
 }
