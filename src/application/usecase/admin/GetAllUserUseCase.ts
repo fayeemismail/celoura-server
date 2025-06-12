@@ -7,8 +7,8 @@ import { IUserRepository } from "../../../infrastructure/database/repositories/i
 export class GetAllUserUseCase {
     constructor(private userRepository: IUserRepository) { }
 
-    async execute(page: number, limit: number, role: 'user' | 'guide'): Promise<{ data: User[]; total: number }> {
-        return await this.userRepository.findAllPaginated(page, limit, role);
+    async execute(page: number, limit: number, role: 'user' | 'guide', search: string): Promise<{ data: User[]; total: number }> {
+        return await this.userRepository.findAllPaginated(page, limit, role, search);
     }
     async find() : Promise<any> {
         return await this.userRepository.findAll()

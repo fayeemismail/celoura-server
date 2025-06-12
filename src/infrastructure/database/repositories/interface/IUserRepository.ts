@@ -12,5 +12,5 @@ export interface IUserRepository {
   unBlockUser(userId: string): Promise<any>;
   approveAsGuide(userId: string): Promise<any>;
   rejectAsGuide(userId: string): Promise<any>;
-  findAllPaginated(page: number, limit: number, role: string): Promise<{ data: User[]; total: number }>;
+  findAllPaginated(page: number, limit: number, role: string, search: string): Promise<{ data: User[]; total: number }>;
 }

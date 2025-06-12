@@ -26,10 +26,10 @@ export default class AdminContrller {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
             const role = req.query.role as 'user' | 'guide' || 'user';
+            const search = (req.query.search as string) || '';
 
 
-
-            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role);
+            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role, search);
             res.status(HttpStatusCode.OK).json({
                 status: true,
                 data,
