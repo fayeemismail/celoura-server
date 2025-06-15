@@ -68,6 +68,22 @@ export const env = {
 
     get CLOUDINARY_API_SECRET() {
         return process.env.CLOUDINARY_API_SECRET;
+    },
+
+    get AWS_ACCESS_KEY() {
+        return process.env.AWS_ACCESS_KEY_ID;
+    },
+
+    get AWS_SECRET_ACCESS_KEY() {
+        return process.env.AWS_SECRET_ACCESS_KEY;
+    },
+
+    get AWS_REGION() {
+        return process.env.AWS_REGION;
+    },
+
+    get S3_BUCKET() {
+        return process.env.S3_BUCKET;
     }
 
 };

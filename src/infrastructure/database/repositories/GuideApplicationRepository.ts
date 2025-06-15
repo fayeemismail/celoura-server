@@ -11,12 +11,12 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
     }
 
     async findUser(userId: string): Promise<any> {
-        const result = await guideApplicationModel.findOne({userId});
+        const result = await guideApplicationModel.findOne({ userId });
         return result
     }
 
     async findUserByEmail(email: string): Promise<any> {
-        const result = await guideApplicationModel.findOne({email});
+        const result = await guideApplicationModel.findOne({ email });
         return result
     }
 
@@ -44,6 +44,21 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
             { new: true }
         );
         return application ?? null;
+    }
+
+    async findPaginated(page: number, limit: number): Promise<{ data: GuideApplication[], total: number, totalPages: number }> {
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await Promise.all([
+            guideApplicationModel.find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit),
+            guideApplicationModel.countDocuments()
+        ]);
+
+        const totalPages = Math.ceil(total / limit);
+        return { data, total, totalPages };
     }
 
 }

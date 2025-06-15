@@ -11,6 +11,10 @@ import { GuideApplication } from "../../domain/entities/GuideApplication";
 import { GetAllGuideAppliesUseCase } from "../../application/usecase/admin/GetAllGuideAppliesUseCase";
 import { ApproveAsGuideUseCase } from "../../application/usecase/admin/ApproveAsGuideUseCase";
 import { RejectAsGuideUseCase } from "../../application/usecase/admin/RejectAsGuideUseCase";
+import { v4 as uuidv4 } from 'uuid'
+import { s3 } from "../../config/s3Config";
+import { DestinationRepository } from "../../infrastructure/database/repositories/DestinationRepository";
+import { CreateDestinationUseCase } from "../../application/usecase/admin/CreateDestinationUseCase";
 
 
 
@@ -26,10 +30,10 @@ export default class AdminContrller {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
             const role = req.query.role as 'user' | 'guide' || 'user';
+            const search = (req.query.search as string) || '';
 
 
-
-            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role);
+            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role, search);
             res.status(HttpStatusCode.OK).json({
                 status: true,
                 data,
@@ -118,14 +122,24 @@ export default class AdminContrller {
 
     public getGuideApplications = async (req: Request, res: Response): Promise<any> => {
         try {
-            const applicationUseCase = new GetAllGuideAppliesUseCase()
-            const applications = await applicationUseCase.execute();
-            return res.status(HttpStatusCode.OK).json({ data: applications })
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 10;
+
+            const applicationUseCase = new GetAllGuideAppliesUseCase();
+            const { data, total, totalPages } = await applicationUseCase.execute(page, limit);
+
+            return res.status(HttpStatusCode.OK).json({
+                data,
+                total,
+                page,
+                totalPages
+            });
         } catch (error: any) {
-            console.log(error.message)
+            console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
     }
+
 
     public approveGuide = async (req: Request, res: Response): Promise<void> => {
         const { applicationId, userId } = req.body;
@@ -171,13 +185,13 @@ export default class AdminContrller {
         }
     }
 
-    public getCount = async(req: Request, res: Response) => {
+    public getCount = async (req: Request, res: Response) => {
         try {
             const response = await this.userRepo.findAll()
             const users = response.filter((item) => item.role == 'user');
             const guide = response.filter((item) => item.role == 'guide');
             res.status(HttpStatusCode.OK).json({
-                status: true, data: {users, guide}
+                status: true, data: { users, guide }
             })
         } catch (error: any) {
             console.log('Error On geting count: ', error);
@@ -187,4 +201,37 @@ export default class AdminContrller {
             })
         }
     }
+
+    public createDestination = async (req: Request, res: Response): Promise<any> => {
+        try {
+            // console.log(req.body, 'this is req.body')
+            const { name, description, location, country, features } = req.body;
+            const files = req.files as Express.Multer.File[];
+            const featuresParsed = typeof features === 'string' ? JSON.parse(features) : [];
+            // console.log(req.files, 'this is files')
+
+            const createDestinationUseCase = new CreateDestinationUseCase();
+
+            const newDestination = await createDestinationUseCase.execute(
+                name,
+                location,
+                country,
+                description,
+                files ?? [],
+                featuresParsed
+            );
+
+            return res.status(201).json({
+                message: 'Destination created successfully',
+                data: newDestination,
+            });
+        } catch (error: any) {
+            console.error("Error on uploading: ", error);
+            res.status(500).json({
+                message: error.message || 'Internal Server Error',
+            });
+        }
+    };
+
+
 }

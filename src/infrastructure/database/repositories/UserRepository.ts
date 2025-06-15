@@ -93,15 +93,23 @@ export class UserRepository implements IUserRepository {
         return user ?? null;
     };
 
-    async findAllPaginated(page: number, limit: number, role: string): Promise<{ data: User[]; total: number; }> {
+    async findAllPaginated(page: number, limit: number, role: string, search: string): Promise<{ data: User[]; total: number; }> {
         const skip = (page - 1) * limit;
+        const query: any = { role };
+
+        if(search){
+            query.$or = [
+                { name: { $regex: search, $options: "i" } },
+                { email: { $regex: search, $options: "i" } }
+            ];
+        };
 
         const [data, total] = await Promise.all([
-            userModel.find({ role })
+            userModel.find(query)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit),
-            userModel.countDocuments({ role })
+            userModel.countDocuments(query)
         ]);
 
         return { data, total }

@@ -49,7 +49,6 @@ app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true 
 }));
-app.use(express.json());
 app.use(cookieParser());
 app.use(passport.initialize())
 
@@ -60,6 +59,7 @@ app.use('/api/user', userRoute);
 app.use('/api/admin', adminRouter);
 app.use('/api/guide', guideRouter);
 
+app.use(express.json());
 
 
 //connecting mongoDB
