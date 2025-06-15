@@ -11,6 +11,10 @@ import { GuideApplication } from "../../domain/entities/GuideApplication";
 import { GetAllGuideAppliesUseCase } from "../../application/usecase/admin/GetAllGuideAppliesUseCase";
 import { ApproveAsGuideUseCase } from "../../application/usecase/admin/ApproveAsGuideUseCase";
 import { RejectAsGuideUseCase } from "../../application/usecase/admin/RejectAsGuideUseCase";
+import { v4 as uuidv4 } from 'uuid'
+import { s3 } from "../../config/s3Config";
+import { DestinationRepository } from "../../infrastructure/database/repositories/DestinationRepository";
+import { CreateDestinationUseCase } from "../../application/usecase/admin/CreateDestinationUseCase";
 
 
 
@@ -197,4 +201,37 @@ export default class AdminContrller {
             })
         }
     }
+
+    public createDestination = async (req: Request, res: Response): Promise<any> => {
+        try {
+            // console.log(req.body, 'this is req.body')
+            const { name, description, location, country, features } = req.body;
+            const files = req.files as Express.Multer.File[];
+            const featuresParsed = typeof features === 'string' ? JSON.parse(features) : [];
+            // console.log(req.files, 'this is files')
+
+            const createDestinationUseCase = new CreateDestinationUseCase();
+
+            const newDestination = await createDestinationUseCase.execute(
+                name,
+                location,
+                country,
+                description,
+                files ?? [],
+                featuresParsed
+            );
+
+            return res.status(201).json({
+                message: 'Destination created successfully',
+                data: newDestination,
+            });
+        } catch (error: any) {
+            console.error("Error on uploading: ", error);
+            res.status(500).json({
+                message: error.message || 'Internal Server Error',
+            });
+        }
+    };
+
+
 }
