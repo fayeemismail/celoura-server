@@ -6,6 +6,7 @@ import { editProfile } from "../../application/usecase/user/editProfile";
 import { ValidationError } from "../../utils/ValidationError";
 import { ApplyForGuideUseCase } from "../../application/usecase/user/ApplyForGuideUseCase";
 import IUserInterface from "../../domain/interfaces/IUserController";
+import { GetDestinationsUseCase } from "../../application/usecase/user/GetDestinationsUseCase";
 
 
 
@@ -82,6 +83,31 @@ export default class UserController implements IUserInterface {
     } catch (error: any) {
       console.log('Error', error.message);
       res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: error.message })
+    }
+  }
+
+  public getDestinations = async( req: Request, res: Response ) => {
+    try {
+      const destinationUseCase = new GetDestinationsUseCase();
+      const data = await destinationUseCase.findAll();
+      res.status(HttpStatusCode.OK).json({data})
+    } catch (error: any) {
+      console.log(error.message)
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message : error.message || "Unexpected error on fetching data"})
+    }
+  }
+
+  public getSingleDestination = async( req: Request, res:Response ) => {
+    try {
+      const {id} = req.params
+      const destinationUseCase = new GetDestinationsUseCase();
+      const data = await destinationUseCase.findById(id);
+      res.status(HttpStatusCode.OK).json({data})
+    } catch (error: any) {
+      console.log(error.message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        message: error.message || "Cannot get destination"
+      })
     }
   }
 
