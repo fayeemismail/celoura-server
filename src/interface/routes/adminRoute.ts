@@ -25,6 +25,7 @@ router.patch('/users/approveAsGuide', adminAuthenticate, adminController.approve
 router.patch('/users/rejectAsGuide', adminAuthenticate, adminController.rejectGuide);
 
 
+router.get('/destinations', adminAuthenticate, adminController.getAllDestinations)
 router.post('/destination/create-destination', upload.array('photos', 5), adminController.createDestination);
 
 
