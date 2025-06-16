@@ -43,6 +43,7 @@ const app = express();
 
 
 //Middleware setup
+app.use(express.json());
 app.use(morgan('combined', { stream }));
 
 app.use(cors({
@@ -59,7 +60,6 @@ app.use('/api/user', userRoute);
 app.use('/api/admin', adminRouter);
 app.use('/api/guide', guideRouter);
 
-app.use(express.json());
 
 
 //connecting mongoDB

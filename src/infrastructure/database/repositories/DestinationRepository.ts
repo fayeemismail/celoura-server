@@ -13,4 +13,8 @@ export class DestinationRepository implements IDestinationRepository {
     async findByName(name: string): Promise<Destination | null> {
         return destinationModel.findOne({name})
     }
+
+    async findAll(): Promise<Destination[]> {
+        return destinationModel.find();
+    }
 }

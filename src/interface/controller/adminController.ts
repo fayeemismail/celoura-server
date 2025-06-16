@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { s3 } from "../../config/s3Config";
 import { DestinationRepository } from "../../infrastructure/database/repositories/DestinationRepository";
 import { CreateDestinationUseCase } from "../../application/usecase/admin/CreateDestinationUseCase";
+import { GetAllDestinationsUseCase } from "../../application/usecase/admin/GetAllDestinationsUseCase";
 
 
 
@@ -233,5 +234,17 @@ export default class AdminContrller {
         }
     };
 
+    public getAllDestinations = async(req: Request, res: Response) => {
+        try {
+            const getDestinations = new GetAllDestinationsUseCase();
+            let response = await getDestinations.findAll();
+            res.status(HttpStatusCode.OK).json({
+                data: response
+            })
+        } catch (error: any) {
+            console.log(error.message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "CAN'T fetch the data" });
+        }
+    }
 
 }

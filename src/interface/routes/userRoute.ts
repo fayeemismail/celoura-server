@@ -11,7 +11,9 @@ const applyForGuideUseCase = new ApplyForGuideUseCase()
 const userController = new UserController(applyForGuideUseCase);
 
 router.get('/get-UserProfile/:id', authenticate, checkUserStatus, userController.getProfile);
+router.get('/destinations', authenticate, checkUserStatus, userController.getDestinations);
+router.get('/destinations/:id', authenticate, checkUserStatus, userController.getSingleDestination)
 router.put('/editProfile', authenticate, checkUserStatus, userController.editProfile);
-router.post('/apply-for-guide', upload.single('idFile'), checkUserStatus, userController.applyForGuide)
+router.post('/apply-for-guide', upload.single('idFile'), checkUserStatus, userController.applyForGuide);
 
 export default router;
