@@ -7,6 +7,7 @@ import { ValidationError } from "../../utils/ValidationError";
 import { ApplyForGuideUseCase } from "../../application/usecase/user/ApplyForGuideUseCase";
 import IUserInterface from "../../domain/interfaces/IUserController";
 import { GetDestinationsUseCase } from "../../application/usecase/user/GetDestinationsUseCase";
+import { GetAllDestinationsUseCase } from "../../application/usecase/admin/GetAllDestinationsUseCase";
 
 
 
@@ -58,56 +59,94 @@ export default class UserController implements IUserInterface {
     }
   }
 
-  public applyForGuide = async(req: Request, res: Response): Promise<any> =>  {
+  public applyForGuide = async (req: Request, res: Response): Promise<any> => {
     try {
-      const { fullName, dob, phone, email, address,  experience, expertise, userId } = req.body;
+      const { fullName, dob, phone, email, address, experience, expertise, userId } = req.body;
       const idFileUrl = req.file?.path;
 
-      if(!idFileUrl) {
+      if (!idFileUrl) {
         return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Identity proof file is required' });
       }
 
       const application = {
-      fullName,
-      dob,
-      phone,
-      email,
-      address,
-      experience,
-      expertise,
-      idFileUrl, 
-      userId
-    };
-    const result = await this._applyForGuideUseCase.execute(application)
-    return res.status(HttpStatusCode.CREATED).json({success: true, message: 'Application submited SuccessFully'})
+        fullName,
+        dob,
+        phone,
+        email,
+        address,
+        experience,
+        expertise,
+        idFileUrl,
+        userId
+      };
+      const result = await this._applyForGuideUseCase.execute(application)
+      return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'Application submited SuccessFully' })
     } catch (error: any) {
       console.log('Error', error.message);
       res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: error.message })
     }
   }
 
-  public getDestinations = async( req: Request, res: Response ) => {
+  public getDestinations = async (req: Request, res: Response) => {
     try {
       const destinationUseCase = new GetDestinationsUseCase();
       const data = await destinationUseCase.findAll();
-      res.status(HttpStatusCode.OK).json({data})
+      res.status(HttpStatusCode.OK).json({ data })
     } catch (error: any) {
       console.log(error.message)
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message : error.message || "Unexpected error on fetching data"})
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "Unexpected error on fetching data" })
     }
   }
 
-  public getSingleDestination = async( req: Request, res:Response ) => {
+  public getSingleDestination = async (req: Request, res: Response) => {
     try {
-      const {id} = req.params
+      const { id } = req.params
       const destinationUseCase = new GetDestinationsUseCase();
       const data = await destinationUseCase.findById(id);
-      res.status(HttpStatusCode.OK).json({data})
+      res.status(HttpStatusCode.OK).json({ data })
     } catch (error: any) {
       console.log(error.message);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         message: error.message || "Cannot get destination"
       })
+    }
+  }
+
+  public getPaginatedDestinations = async (req: Request, res: Response) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 9;
+      const search = req.query.search?.toString() || "";
+      const attraction = req.query.attraction?.toString() || "";
+
+      const _destinationsUseCase = new GetAllDestinationsUseCase();
+      const { data, total } = await _destinationsUseCase.execute(page, limit, search, attraction);
+
+      res.status(HttpStatusCode.OK).json({
+        status: true,
+        data,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error: any) {
+      console.error("GetAllDestinations Error:", error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
+    }
+  }
+
+  public getNewDestinations = async(req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.params.limit as string) || 3;
+      const destinationUseCase = new GetAllDestinationsUseCase();
+      const data = await destinationUseCase.findNew(limit);
+      res.status(HttpStatusCode.OK).json({data})
+    } catch (error: any) {
+      console.log(error.message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "Something went wrong" });
     }
   }
 

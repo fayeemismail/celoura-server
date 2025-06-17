@@ -21,6 +21,7 @@ import { GetAllDestinationsUseCase } from "../../application/usecase/admin/GetAl
 
 
 export default class AdminContrller {
+    private _destinationRep = new DestinationRepository()
     constructor(
         private getAllUserUseCase: GetAllUserUseCase,
         private userRepo: UserRepository
@@ -189,10 +190,11 @@ export default class AdminContrller {
     public getCount = async (req: Request, res: Response) => {
         try {
             const response = await this.userRepo.findAll()
+            const destination = await this._destinationRep.findAll()
             const users = response.filter((item) => item.role == 'user');
             const guide = response.filter((item) => item.role == 'guide');
             res.status(HttpStatusCode.OK).json({
-                status: true, data: { users, guide }
+                status: true, data: { users, guide, destination }
             })
         } catch (error: any) {
             console.log('Error On geting count: ', error);
@@ -234,7 +236,7 @@ export default class AdminContrller {
         }
     };
 
-    public getAllDestinations = async(req: Request, res: Response) => {
+    public getAllDestinations = async (req: Request, res: Response) => {
         try {
             const getDestinations = new GetAllDestinationsUseCase();
             let response = await getDestinations.findAll();
@@ -244,6 +246,32 @@ export default class AdminContrller {
         } catch (error: any) {
             console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "CAN'T fetch the data" });
+        }
+    };
+
+    public getPaginatedDestinations = async (req: Request, res: Response) => {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 9;
+            const search = req.query.search?.toString() || "";
+            const attraction = req.query.attraction?.toString() || "";
+
+            const _destinationsUseCase = new GetAllDestinationsUseCase();
+            const { data, total } = await _destinationsUseCase.execute(page, limit, search, attraction);
+
+            res.status(HttpStatusCode.OK).json({
+                status: true,
+                data,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
+        } catch (error: any) {
+            console.error("GetAllDestinations Error:", error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
         }
     }
 
