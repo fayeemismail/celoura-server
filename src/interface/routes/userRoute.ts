@@ -16,7 +16,7 @@ router.post('/apply-for-guide', upload.single('idFile'), checkUserStatus, userCo
 
 router.get('/destinations', authenticate, checkUserStatus, userController.getDestinations);
 router.get('/destinations/:id', authenticate, checkUserStatus, userController.getSingleDestination);
-router.get('/destination', authenticate, userController.getPaginatedDestinations);
+router.get('/destination', authenticate, checkUserStatus, userController.getPaginatedDestinations);
 router.get('/destinations/new-spots/:limit', authenticate, userController.getNewDestinations);
 
 export default router;

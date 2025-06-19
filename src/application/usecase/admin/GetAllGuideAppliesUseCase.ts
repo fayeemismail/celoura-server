@@ -7,8 +7,9 @@ import { IGetAllGuideApplies } from "./interface/IGetAllGuideApplies";
 
 
 export class GetAllGuideAppliesUseCase implements IGetAllGuideApplies {
-    private _guideRepo = new GuideApplicationRepository()
-    constructor(){}
+    constructor(
+      private readonly _guideRepo: IGuideApplicationRepository
+    ){}
     async execute(page: number, limit: number): Promise<{ data: GuideApplication[], total: number, totalPages: number }> {
     return await this._guideRepo.findPaginated(page, limit);
   }

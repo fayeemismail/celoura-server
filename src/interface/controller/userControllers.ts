@@ -8,6 +8,7 @@ import { ApplyForGuideUseCase } from "../../application/usecase/user/ApplyForGui
 import IUserInterface from "../../domain/interfaces/IUserController";
 import { GetDestinationsUseCase } from "../../application/usecase/user/GetDestinationsUseCase";
 import { GetAllDestinationsUseCase } from "../../application/usecase/admin/GetAllDestinationsUseCase";
+import { DestinationRepository } from "../../infrastructure/database/repositories/DestinationRepository";
 
 
 
@@ -119,7 +120,8 @@ export default class UserController implements IUserInterface {
       const search = req.query.search?.toString() || "";
       const attraction = req.query.attraction?.toString() || "";
 
-      const _destinationsUseCase = new GetAllDestinationsUseCase();
+      const destinationRepo = new DestinationRepository()
+      const _destinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
       const { data, total } = await _destinationsUseCase.execute(page, limit, search, attraction);
 
       res.status(HttpStatusCode.OK).json({
@@ -141,7 +143,9 @@ export default class UserController implements IUserInterface {
   public getNewDestinations = async(req: Request, res: Response) => {
     try {
       const limit = parseInt(req.params.limit as string) || 3;
-      const destinationUseCase = new GetAllDestinationsUseCase();
+      
+      const destinationRepo = new DestinationRepository()
+      const destinationUseCase = new GetAllDestinationsUseCase(destinationRepo);
       const data = await destinationUseCase.findNew(limit);
       res.status(HttpStatusCode.OK).json({data})
     } catch (error: any) {
