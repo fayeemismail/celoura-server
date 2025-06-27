@@ -6,9 +6,9 @@ import { IApproveAsGuide } from "./interface/IApproveAsGuide";
 
 
 export class ApproveAsGuideUseCase implements IApproveAsGuide {
-    private _guideRepo = new GuideApplicationRepository()
     constructor(
-        private _userRepo: IUserRepository
+        private readonly _userRepo: IUserRepository,
+        private readonly _guideRepo: IGuideApplicationRepository
     ){}
     async execute(applicationId: string, userId: string): Promise<any> {
         const application = await this._guideRepo.findApplication(applicationId);

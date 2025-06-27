@@ -1,39 +1,46 @@
 import { Request, Response, NextFunction } from "express";
-import { register } from "../../application/usecase/user/registerUserUseCase";
-import { login } from "../../application/usecase/user/loginUser";
 import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
 import { env } from "../../config/authConfig";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
+import { AuthService } from "../../infrastructure/service/AuthService";
+import IAuthController from "../../domain/interfaces/IAuthController";
+import { ILoginGuideGoogleUseCase } from "../../application/usecase/auth/interface/ILoginGuideGoogleUseCase";
+import { IRegisterUserUseCase } from "../../application/usecase/user/interface/IRegisterUserUseCase";
 import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
 import { resendOtp } from "../../application/usecase/auth/resendOtp";
-import { AuthService } from "../../infrastructure/service/AuthService";
-import { User } from "../../domain/entities/User";
-import { loginUserUseCase } from "../../application/usecase/auth/loginUserUseCase";
-import IAuthController from "../../domain/interfaces/IAuthController";
-import { loginGuideGoogleUseCase } from "../../application/usecase/auth/loginGuideGoogleUseCase";
+import { login } from "../../application/usecase/user/loginUser";
+import { ILoginUserUseCase } from "../../application/usecase/user/interface/ILoginUserUseCase";
 
 
 
 export default class AuthController implements IAuthController {
-   constructor( 
-    private userRepo = new UserRepository,
-    private authService = new AuthService,
-    private loginOrRegisterUseCase = new loginUserUseCase,
-    private _loginGuideGoogleUseCase = new loginGuideGoogleUseCase
-   ) {}
+    constructor(
+        private userRepo: UserRepository,
+        private authService: AuthService,
+        private loginOrRegisterUseCase: ILoginGuideGoogleUseCase,
+        private _loginGuideGoogleUseCase: ILoginGuideGoogleUseCase,
+        private registerUseCase: IRegisterUserUseCase,
+        private loginUserUseCase: ILoginUserUseCase
+    ) { }
 
-    public signup = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
-        const { name, email, password, confirmPassword, role } = req.body;
-        const result = await register({ name, email, password, confirmPassword, role });
-        res.status(result.status).json(result.data);    
+    public signup = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { name, email, password, confirmPassword, role } = req.body;
+            const result = await this.registerUseCase.execute({ name, email, password, confirmPassword, role });
+            res.status(result.status).json(result.data);
+        } catch (error) {
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error || "Some thing went wrong" });
+        }
     };
 
-    public async login (req: Request, res: Response): Promise<any> {
+    public login = async (req: Request, res: Response): Promise<any> => {
         const { email, password } = req.body;
-        const result = await login({ email, password, role: ['user'] });
-
-        if(result.status !== HttpStatusCode.OK) {
-            return res.status(result.status).json(result.data);
+        const result = await this.loginUserUseCase.execute({ email, password, role: ['user'] });
+        if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
+            return res.status(result.status).json({
+                success: false,
+                message: result.data?.error
+            });
         }
 
         //setting the access token in cookie
@@ -50,7 +57,7 @@ export default class AuthController implements IAuthController {
             maxAge: env.REFRESH_TOKEN_EXPIRE,
         });
         const { token, refreshToken, data } = result;
-        res.status(HttpStatusCode.OK).json(data.user)
+        res.status(HttpStatusCode.OK).json(data.user);
     };
 
     public logoutUser = (req: Request, res: Response): void => {
@@ -73,7 +80,7 @@ export default class AuthController implements IAuthController {
         const { email, password } = req.body;
         const result = await login({ email, password, role: ['admin'] });
 
-        if(result.status !== HttpStatusCode.OK){
+        if (result.status !== HttpStatusCode.OK) {
             return res.status(result.status).json(result.data);
         }
 
@@ -116,31 +123,31 @@ export default class AuthController implements IAuthController {
         res.status(HttpStatusCode.OK).json({ message: "Admin logged out successfully" });
     };
 
-    public async guideLogin (req: Request, res: Response): Promise<any> {
-       const { email, password } = req.body;
-       const result = await login({ email, password, role: ['guide'] });
+    public async guideLogin(req: Request, res: Response): Promise<any> {
+        const { email, password } = req.body;
+        const result = await login({ email, password, role: ['guide'] });
 
-       if(result.status !== HttpStatusCode.OK){
-        return res.status(result.status).json(result.data);
-       };
+        if (result.status !== HttpStatusCode.OK) {
+            return res.status(result.status).json(result.data);
+        };
 
-       const { token, refreshToken, data } = result
+        const { token, refreshToken, data } = result
 
-       res.cookie('guideAccessToken', token, {
+        res.cookie('guideAccessToken', token, {
             httpOnly: true,
             secure: env.NODE_ENV == 'production',
             sameSite: 'strict',
             maxAge: env.ACCESS_TOKEN_EXPIRE,
-       });
+        });
 
-       res.cookie('guideRefreshToken', refreshToken, {
-        httpOnly: true,
-        secure: env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: env.REFRESH_TOKEN_EXPIRE,
-       });
+        res.cookie('guideRefreshToken', refreshToken, {
+            httpOnly: true,
+            secure: env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: env.REFRESH_TOKEN_EXPIRE,
+        });
 
-       return res.status(result.status).json(data.user);
+        return res.status(result.status).json(data.user);
     }
 
     public guideLogout = (req: Request, res: Response): void => {
@@ -169,11 +176,11 @@ export default class AuthController implements IAuthController {
             const payload = this.authService.verifyRefreshToken(token);
             const user = await this.userRepo.getUserById(payload.id);
 
-            if(!user) {
+            if (!user) {
                 return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
             }
 
-            const newAccessToken = this.authService.generateAccessToken({id: user?._id, role: user?.role});
+            const newAccessToken = this.authService.generateAccessToken({ id: user?._id, role: user?.role });
 
             res.cookie('accessToken', newAccessToken, {
                 httpOnly: true,
@@ -192,8 +199,8 @@ export default class AuthController implements IAuthController {
     public verifyOtp = async (req: Request, res: Response): Promise<any> => {
         try {
             const { email, otp } = req.body;
-            const result = await verifyOtp({email, otp});
-            if(result.status !== HttpStatusCode.CREATED){
+            const result = await verifyOtp({ email, otp });
+            if (result.status !== HttpStatusCode.CREATED) {
                 return res.status(result.status).json(result.data);
             }
             return res.status(result.status).json(result.data);
@@ -207,7 +214,7 @@ export default class AuthController implements IAuthController {
             const { email } = req.body;
 
             const result = await resendOtp(email);
-            if(result.status !== HttpStatusCode.OK){
+            if (result.status !== HttpStatusCode.OK) {
                 return res.status(result.status).json(result.data);
             };
             return res.status(result.status).json(result.data)
@@ -238,11 +245,11 @@ export default class AuthController implements IAuthController {
 
     }
 
-    public googleLoginVerify = async ( req: Request, res: Response ): Promise<any> => {
+    public googleLoginVerify = async (req: Request, res: Response): Promise<any> => {
         try {
             const { email, name } = req.body;
             const user = await this.loginOrRegisterUseCase.execute(email, name);
-            if(user.blocked){
+            if (user.blocked) {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({
                     message: "Your account is Blocked"
                 })
@@ -267,7 +274,7 @@ export default class AuthController implements IAuthController {
 
             return res.status(HttpStatusCode.OK).json({
                 message: "login Successfull",
-                data:{
+                data: {
                     id: user._id,
                     name: user.name,
                     email: user.email,
@@ -276,7 +283,7 @@ export default class AuthController implements IAuthController {
             });
 
         } catch (error: any) {
-            if(error.message == 'User not exists') {
+            if (error.message == 'User not exists') {
                 return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
             }
             console.error("Google Login Error", error);
@@ -286,11 +293,11 @@ export default class AuthController implements IAuthController {
         }
     }
 
-    public googleVerifyGuide = async(req: Request, res: Response): Promise<any> => {
+    public googleVerifyGuide = async (req: Request, res: Response): Promise<any> => {
         try {
             const { email, name } = req.body;
             const guide = await this._loginGuideGoogleUseCase.execute(email, name);
-            if(guide.blocked) {
+            if (guide.blocked) {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({
                     message: "Your Account is Blocked"
                 });
@@ -324,7 +331,7 @@ export default class AuthController implements IAuthController {
             });
 
         } catch (error: any) {
-            if(error.message == 'User not exists') {
+            if (error.message == 'User not exists') {
                 return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
             }
             console.error('Google Login Error', error);
@@ -334,5 +341,5 @@ export default class AuthController implements IAuthController {
         }
     }
 
-    
+
 }

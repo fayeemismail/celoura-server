@@ -6,7 +6,7 @@ import { IBlockUserUseCase } from "./interface/IBlockUserUseCase";
 export class BlockUserUseCase implements IBlockUserUseCase {
 
     constructor( 
-        private _userRepo: IUserRepository
+        private readonly _userRepo: IUserRepository
     ) {}
     async execute(userId: string): Promise<void> {
         const user = await this._userRepo.getUserById(userId);

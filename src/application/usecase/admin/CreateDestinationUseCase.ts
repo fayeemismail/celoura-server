@@ -1,15 +1,17 @@
 import { env } from "../../../config/authConfig";
 import { s3 } from "../../../config/s3Config";
 import { DestinationRepository } from "../../../infrastructure/database/repositories/DestinationRepository";
+import { IDestinationRepository } from "../../../infrastructure/database/repositories/interface/IDestinationRepository";
 import { ICreateDestintaion } from "./interface/ICreateDestination";
 import { v4 as uuidv4 } from 'uuid';
 
 
 
 export class CreateDestinationUseCase implements ICreateDestintaion {
-    private _destinationRepo = new DestinationRepository();
 
-    constructor() {}
+    constructor(
+        private readonly _destinationRepo: IDestinationRepository
+    ) {}
 
     async execute(
     name: string,

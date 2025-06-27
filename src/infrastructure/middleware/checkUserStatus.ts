@@ -16,11 +16,10 @@ export const checkUserStatus = async (req: Request, res: Response, next: NextFun
     if (!user) {
       return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not found' });
     }
-
     if (user.blocked === true) {
         res.clearCookie('accessToken', { httpOnly: true, sameSite: 'strict', secure: true });
         res.clearCookie('refreshToken', { httpOnly: true, sameSite: 'strict', secure: true });
-        return res.status(HttpStatusCode.FORBIDDEN).json({ message: 'Your account is blocked', blocked: true });
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'Your account is blocked', blocked: true });
     }
 
     next();

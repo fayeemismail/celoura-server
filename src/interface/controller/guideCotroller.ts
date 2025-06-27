@@ -2,14 +2,15 @@ import { Request, Response } from "express";
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import { env } from "../../config/authConfig";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
-import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
+import { IGetGuideProfile } from "../../application/usecase/guide/Interface/IGetGuideProfileUseCase";
+import { GuideProfileDto } from "../../application/dto/guide/guideProfileDto";
 
 
 
 export default class  GuideController {
-    
-    private userRepo = new UserRepository();
-    constructor() {}
+    constructor(
+        private readonly getGuideUseCase : IGetGuideProfile
+    ) {}
 
     public guideRefreshAccessToken = (req: Request, res: Response): any => {
         const token = req.cookies?.guideRefreshToken;
@@ -49,17 +50,10 @@ export default class  GuideController {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Unauthorized' });
             }
 
-            const user = await this.userRepo.getUserById(userId);
-            if (!user) return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
+            const user = await this.getGuideUseCase.findById(userId);
+            const userDTO = GuideProfileDto.formDomain(user);
 
-            const userData = {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            };
-
-            res.status(HttpStatusCode.OK).json({ data: userData });
+            res.status(HttpStatusCode.OK).json({ data: userDTO });
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
         }

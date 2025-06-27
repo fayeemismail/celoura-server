@@ -2,7 +2,7 @@ import { User } from "../../../domain/entities/User";
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { ILoginGuideGoogleUseCase } from "./interface/ILoginGuideGoogleUseCase";
 
-export class loginGuideGoogleUseCase implements ILoginGuideGoogleUseCase{
+export class LoginGuideGoogleUseCase implements ILoginGuideGoogleUseCase{
     private userRepo: UserRepository
 
     constructor() {

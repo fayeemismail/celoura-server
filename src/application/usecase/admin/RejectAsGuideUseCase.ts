@@ -1,12 +1,14 @@
 import { GuideApplicationRepository } from "../../../infrastructure/database/repositories/GuideApplicationRepository";
+import { IGuideApplicationRepository } from "../../../infrastructure/database/repositories/interface/IGuideApplicationRepository";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 import { IRejectAsGuide } from "./interface/IRejectAsGuide";
 
 
 export class RejectAsGuideUseCase implements IRejectAsGuide {
-    private _guideRepo = new GuideApplicationRepository()
+    
     constructor(
-        private _userRepo: IUserRepository
+        private readonly _userRepo: IUserRepository,
+        private readonly _guideRepo: IGuideApplicationRepository
     ) {}
     async execute(applicationId: string, userId: string): Promise<any> {
         const application = await this._guideRepo.findApplication(applicationId);

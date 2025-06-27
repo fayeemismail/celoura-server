@@ -1,30 +1,30 @@
 import { Request, Response } from "express";
-import { GetAllUserUseCase } from "../../application/usecase/admin/GetAllUserUseCase";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
-import { env } from "../../config/authConfig";
 import { JwtPayload } from "jsonwebtoken";
-import jwt from 'jsonwebtoken'
-import { BlockUserUseCase } from "../../application/usecase/user/BlockUserUseCase";
-import { UserRepository } from "../../infrastructure/database/repositories/UserRepository";
-import { UnBlockUserUseCase } from "../../application/usecase/user/UnBlockUserUseCase";
-import { GuideApplication } from "../../domain/entities/GuideApplication";
-import { GetAllGuideAppliesUseCase } from "../../application/usecase/admin/GetAllGuideAppliesUseCase";
-import { ApproveAsGuideUseCase } from "../../application/usecase/admin/ApproveAsGuideUseCase";
-import { RejectAsGuideUseCase } from "../../application/usecase/admin/RejectAsGuideUseCase";
-import { v4 as uuidv4 } from 'uuid'
-import { s3 } from "../../config/s3Config";
-import { DestinationRepository } from "../../infrastructure/database/repositories/DestinationRepository";
-import { CreateDestinationUseCase } from "../../application/usecase/admin/CreateDestinationUseCase";
-import { GetAllDestinationsUseCase } from "../../application/usecase/admin/GetAllDestinationsUseCase";
+import jwt from 'jsonwebtoken';
+import { env } from "../../config/authConfig";
+import { IGetAllUserUseCase } from "../../application/usecase/admin/interface/IGetAllUserUseCase";
+import { IBlockUserUseCase } from "../../application/usecase/user/interface/IBlockUserUseCase";
+import { IUnBlockUserUseCase } from "../../application/usecase/user/interface/IUnBlockUserUseCase";
+import { IGetAllGuideApplies } from "../../application/usecase/admin/interface/IGetAllGuideApplies";
+import { IRejectAsGuide } from "../../application/usecase/admin/interface/IRejectAsGuide";
+import { ICreateDestintaion } from "../../application/usecase/admin/interface/ICreateDestination";
+import { IGetAllDestinations } from "../../application/usecase/admin/interface/IGetAllDestinations";
+import { IApproveAsGuide } from "../../application/usecase/admin/interface/IApproveAsGuide";
+import { IGetCountUseCase } from "../../application/usecase/admin/interface/IGetCountUseCase";
 
-
-
-
-export default class AdminContrller {
+export default class AdminController {
     constructor(
-        private getAllUserUseCase: GetAllUserUseCase,
-        private userRepo: UserRepository
-    ) { };
+        private readonly getAllUserUseCase: IGetAllUserUseCase,
+        private readonly blockUserUseCase: IBlockUserUseCase,
+        private readonly unBlockUserUseCase: IUnBlockUserUseCase,
+        private readonly getAllGuideAppliesUseCase: IGetAllGuideApplies,
+        private readonly approveAsGuideUseCase: IApproveAsGuide,
+        private readonly rejectAsGuideUseCase: IRejectAsGuide,
+        private readonly createDestinationUseCase: ICreateDestintaion,
+        private readonly getAllDestinationsUseCase: IGetAllDestinations,
+        private readonly getCountUseCase: IGetCountUseCase
+    ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
         try {
@@ -32,7 +32,6 @@ export default class AdminContrller {
             const limit = parseInt(req.query.limit as string) || 10;
             const role = req.query.role as 'user' | 'guide' || 'user';
             const search = (req.query.search as string) || '';
-
 
             const { data, total } = await this.getAllUserUseCase.execute(page, limit, role, search);
             res.status(HttpStatusCode.OK).json({
@@ -45,12 +44,11 @@ export default class AdminContrller {
                     totalPages: Math.ceil(total / limit),
                 },
             });
-        } catch (error: unknown) {
+        } catch (error) {
             console.error("GetAllUsers Error:", error);
-            res.status(500).json({ status: false, message: "Internal Server Error" });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
         }
-    }
-
+    };
 
     public adminRefreshAccessToken = (req: Request, res: Response): any => {
         const token = req.cookies?.adminRefreshToken;
@@ -76,7 +74,6 @@ export default class AdminContrller {
                 path: '/',
             });
 
-
             return res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error('Admin Refresh Error: ', error);
@@ -88,36 +85,23 @@ export default class AdminContrller {
         const { userId } = req.params;
         try {
             if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
-
-            const userUseCase = new BlockUserUseCase(this.userRepo);
-            await userUseCase.execute(userId);
-
-            return res.status(HttpStatusCode.OK).json({
-                message: 'User Has been Blocked successfully'
-            })
+            await this.blockUserUseCase.execute(userId);
+            return res.status(HttpStatusCode.OK).json({ message: 'User Has been Blocked successfully' });
         } catch (error: any) {
             console.log(error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                message: error.message || 'Failed to Block user'
-            })
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Failed to Block user' });
         }
-    }
+    };
 
     public unBlockUser = async (req: Request, res: Response): Promise<any> => {
         const { userId } = req.params;
         try {
-            if (!userId) res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
-
-            const userUseCase = new UnBlockUserUseCase(this.userRepo);
-            await userUseCase.execute(userId);
-            res.status(HttpStatusCode.OK).json({
-                message: 'UnBlocked User'
-            })
+            if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
+            await this.unBlockUserUseCase.execute(userId);
+            res.status(HttpStatusCode.OK).json({ message: 'UnBlocked User' });
         } catch (error: any) {
             console.log(error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                message: error.message || 'Failed to unBlock User'
-            })
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Failed to unBlock User' });
         }
     };
 
@@ -125,126 +109,101 @@ export default class AdminContrller {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
-
-            const applicationUseCase = new GetAllGuideAppliesUseCase();
-            const { data, total, totalPages } = await applicationUseCase.execute(page, limit);
-
-            return res.status(HttpStatusCode.OK).json({
-                data,
-                total,
-                page,
-                totalPages
-            });
+            const { data, total, totalPages } = await this.getAllGuideAppliesUseCase.execute(page, limit);
+            return res.status(HttpStatusCode.OK).json({ data, total, page, totalPages });
         } catch (error: any) {
             console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
         }
-    }
-
+    };
 
     public approveGuide = async (req: Request, res: Response): Promise<void> => {
         const { applicationId, userId } = req.body;
         try {
-            if (!applicationId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application not found' });
-                return
+            if (!applicationId || !userId) {
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
+                return;
             }
-            if (!userId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User Not found' });
-                return
-            }
-            const approveUseCase = new ApproveAsGuideUseCase(this.userRepo);
-            await approveUseCase.execute(applicationId, userId);
-
-            res.status(HttpStatusCode.OK).json({ message: 'Approves as guide Successfully' })
+            await this.approveAsGuideUseCase.execute(applicationId, userId);
+            res.status(HttpStatusCode.OK).json({ message: 'Approved as guide Successfully' });
         } catch (error: any) {
-            console.log(error.message)
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message })
+            console.log(error.message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
         }
-    }
+    };
 
     public rejectGuide = async (req: Request, res: Response): Promise<any> => {
-        const { applicationId, userId } = req.body
+        const { applicationId, userId } = req.body;
         try {
-            if (!applicationId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'application not found' });
-                return
-            }
-
-            if (!userId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
+            if (!applicationId || !userId) {
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
                 return;
-            };
-            console.log(applicationId, 'and', userId)
-            const rejectUseCase = new RejectAsGuideUseCase(this.userRepo);
-            await rejectUseCase.execute(applicationId, userId);
-
+            }
+            await this.rejectAsGuideUseCase.execute(applicationId, userId);
             res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
         } catch (error: any) {
             console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
         }
-    }
+    };
 
     public getCount = async (req: Request, res: Response) => {
         try {
-            const response = await this.userRepo.findAll()
-            const users = response.filter((item) => item.role == 'user');
-            const guide = response.filter((item) => item.role == 'guide');
-            res.status(HttpStatusCode.OK).json({
-                status: true, data: { users, guide }
-            })
+            const user = await this.getCountUseCase.findUser();
+            const guide = await this.getCountUseCase.findGuide();
+            const destination = await this.getCountUseCase.findDestination();
+            res.status(HttpStatusCode.OK).json({ user, guide, destination  });
         } catch (error: any) {
-            console.log('Error On geting count: ', error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                status: false,
-                message: error.message || 'Failed to Fetch users'
-            })
-        }
-    }
-
-    public createDestination = async (req: Request, res: Response): Promise<any> => {
-        try {
-            // console.log(req.body, 'this is req.body')
-            const { name, description, location, country, features } = req.body;
-            const files = req.files as Express.Multer.File[];
-            const featuresParsed = typeof features === 'string' ? JSON.parse(features) : [];
-            // console.log(req.files, 'this is files')
-
-            const createDestinationUseCase = new CreateDestinationUseCase();
-
-            const newDestination = await createDestinationUseCase.execute(
-                name,
-                location,
-                country,
-                description,
-                files ?? [],
-                featuresParsed
-            );
-
-            return res.status(201).json({
-                message: 'Destination created successfully',
-                data: newDestination,
-            });
-        } catch (error: any) {
-            console.error("Error on uploading: ", error);
-            res.status(500).json({
-                message: error.message || 'Internal Server Error',
-            });
+            console.log('Error On getting count: ', error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error.message || 'Failed to Fetch users' });
         }
     };
 
-    public getAllDestinations = async(req: Request, res: Response) => {
+    public createDestination = async (req: Request, res: Response): Promise<any> => {
         try {
-            const getDestinations = new GetAllDestinationsUseCase();
-            let response = await getDestinations.findAll();
-            res.status(HttpStatusCode.OK).json({
-                data: response
-            })
+            const { name, description, location, country, features } = req.body;
+            const files = req.files as Express.Multer.File[];
+            const parsedFeatures = typeof features === 'string' ? JSON.parse(features) : [];
+            const destination = await this.createDestinationUseCase.execute(name, location, country, description, files, parsedFeatures);
+            return res.status(HttpStatusCode.CREATED).json({ message: 'Destination created successfully', data: destination });
+        } catch (error: any) {
+            console.error("Error on uploading: ", error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
+        }
+    };
+
+    public getAllDestinations = async (req: Request, res: Response) => {
+        try {
+            let response = await this.getAllDestinationsUseCase.findAll();
+            res.status(HttpStatusCode.OK).json({ data: response });
         } catch (error: any) {
             console.log(error.message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "CAN'T fetch the data" });
         }
-    }
+    };
 
+    public getPaginatedDestinations = async (req: Request, res: Response) => {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = parseInt(req.query.limit as string) || 9;
+            const search = req.query.search?.toString() || "";
+            const attraction = req.query.attraction?.toString() || "";
+
+            const { data, total } = await this.getAllDestinationsUseCase.execute(page, limit, search, attraction);
+
+            res.status(HttpStatusCode.OK).json({
+                status: true,
+                data,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit),
+                },
+            });
+        } catch (error: any) {
+            console.error("GetAllDestinations Error:", error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
+        }
+    };
 }
