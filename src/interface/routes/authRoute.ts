@@ -1,10 +1,38 @@
 import express from 'express';
 import AuthController from '../controller/authControllers';
 import { authenticate } from '../../infrastructure/middleware/authMiddleware';
+import { UserRepository } from '../../infrastructure/database/repositories/UserRepository';
+import { AuthService } from '../../infrastructure/service/AuthService';
+import { OtpRepository } from '../../infrastructure/database/repositories/OtpService';
+import { EmailService } from '../../infrastructure/service/EmailService';
+import { loginUserUseCase } from '../../application/usecase/auth/loginUserUseCase';
+import { LoginGuideGoogleUseCase } from '../../application/usecase/auth/loginGuideGoogleUseCase';
+import { RegisterUseCase } from '../../application/usecase/user/registerUserUseCase';
+import { LoginUserUseCase } from '../../application/usecase/user/loginUser';
+import { PasswordService } from '../../infrastructure/service/PasswordService';
 
 
 const router = express.Router();
-const authController = new AuthController();
+const userRepo = new UserRepository();// after cleaning the code remove the user ropo from the controller and here
+const authService = new AuthService(); // after cleaning remove this from controller and here
+const passwordService = new PasswordService()
+
+const loginOrRegisterUseCase = new loginUserUseCase();
+const loginGuideGoogleUseCase = new LoginGuideGoogleUseCase();
+const otpRepo = new OtpRepository();
+const emailService = new EmailService();
+const registerUserUseCase = new RegisterUseCase(userRepo, otpRepo, emailService);
+const loginUsersUseCase = new LoginUserUseCase(userRepo, authService, passwordService)
+
+
+const authController = new AuthController(
+    userRepo,
+    authService,
+    loginOrRegisterUseCase,
+    loginGuideGoogleUseCase,
+    registerUserUseCase,
+    loginUsersUseCase
+);
 
 //sugnup routes.
 router.post('/signup', authController.signup);

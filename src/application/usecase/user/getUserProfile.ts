@@ -1,19 +1,16 @@
+import { User } from "../../../domain/entities/User";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository"
+import { IGetUserProfile } from "./interface/IGetUserProfileUseCase";
 
 
 
-export const getUserProfile = async (
-    id: string,
-    userRepo: IUserRepository
-) => {
-    const userData = await userRepo.getUserById(id);
-    if (!userData) throw new Error('User not found');
-    if( userData.blocked ) throw new Error('User is blocked');
-    const user = {
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        isBlocked: userData.blocked
+export class GetUserProfile implements IGetUserProfile {
+    constructor(
+        private readonly _userRepo: IUserRepository
+    ){}
+    async execute(id: string): Promise<User> {
+        const user = await this._userRepo.getUserById(id);
+        if(!user) throw new Error('User not found');
+        return user;
     }
-    return user
 }

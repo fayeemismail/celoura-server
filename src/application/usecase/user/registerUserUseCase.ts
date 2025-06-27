@@ -2,15 +2,10 @@ import { UserRepository } from "../../../infrastructure/database/repositories/Us
 import { EmailService } from "../../../infrastructure/service/EmailService";
 import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
+import { IRegisterUserUseCase, UseCaseErrorResponse, UseCaseSuccessResponse } from "./interface/IRegisterUserUseCase";
+import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
+import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 import { sendSignupOtp } from "./sendSignupOtp";
-
-
-
-
-
-const userRepo = new UserRepository();
-const otpRepo = new OtpRepository();
-const emailService = new EmailService();
 
 
 interface RegisterInput {
@@ -21,22 +16,27 @@ interface RegisterInput {
     role: string;
 };
 
-export const register = async ({ name, email, password, confirmPassword, role  }: RegisterInput) => {
-    try {
-        const existingUser = await userRepo.findByEmail(email);
-        if(existingUser) {
-            return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'User already exists' } };
+
+export class RegisterUseCase implements IRegisterUserUseCase{
+    constructor(
+        private readonly userRepo : IUserRepository,
+        private readonly otpRepo : IOtpRepository,
+        private readonly emailService: EmailService
+    ){}
+    async execute(input: RegisterInput): Promise<UseCaseErrorResponse | UseCaseSuccessResponse<{ message: string; }>> {
+        const { name, email, password, confirmPassword, role } = input;
+        const existingUser = await this.userRepo.findByEmail(email);
+        if(existingUser){
+            return { status: HttpStatusCode.BAD_REQUEST, data: { error: "User already exists" } };
         };
 
         if(password !== confirmPassword){
-            return { status: HttpStatusCode.BAD_REQUEST, data: { error: 'Password do not match' } };
+            return { status: HttpStatusCode.BAD_REQUEST, data: { error: "Password do not match" } };
         };
 
-        await otpRepo.setTempUser(email, { name, email, confirmPassword, role });
-        await sendSignupOtp(email, otpRepo, emailService);
-
-        return {status: HttpStatusCode.OK, data: { message: 'OTP sent to email' } };
-    } catch (error: any) {
-        return { status: HttpStatusCode.INTERNAL_SERVER_ERROR, data: { error: error.message } };
-    };
-}
+        await this.otpRepo.setTempUser(email, { name, email, password, role });
+        await sendSignupOtp(email, this.otpRepo, this.emailService);
+        
+        return { status: HttpStatusCode.OK, data: { message: "OTP sent to email" } };
+    }
+};
