@@ -6,21 +6,19 @@ import { AuthService } from "../../infrastructure/service/AuthService";
 import IAuthController from "../../domain/interfaces/IAuthController";
 import { ILoginGuideGoogleUseCase } from "../../application/usecase/auth/interface/ILoginGuideGoogleUseCase";
 import { IRegisterUserUseCase } from "../../application/usecase/user/interface/IRegisterUserUseCase";
-import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
-import { resendOtp } from "../../application/usecase/auth/resendOtp";
 import { ILoginUserUseCase } from "../../application/usecase/user/interface/ILoginUserUseCase";
 import { IRegisterGoogleUseCase } from "../../application/usecase/auth/interface/IRegisterGoogleUseCase";
 import { IRefreshAccessTokenUseCase } from "../../application/usecase/auth/interface/IRefreshAccessTokenUseCase";
 import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUserProfileUseCase";
 import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
 import { GuideProfileDto } from "../../application/dto/guide/guideProfileDto";
+import { verifyOtp } from "../../application/usecase/auth/VerifyOtp";
+import { resendOtp } from "../../application/usecase/auth/ResendOtp";
 
 
 
 export default class AuthController implements IAuthController {
     constructor(
-        private userRepo: UserRepository,
-        private authService: AuthService,
         private loginOrRegisterGoogleUseCase: IRegisterGoogleUseCase,
         private _loginGuideGoogleUseCase: ILoginGuideGoogleUseCase,
         private registerUseCase: IRegisterUserUseCase,

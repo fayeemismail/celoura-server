@@ -14,13 +14,14 @@ import { GetAllDestinationsUseCase } from '../../application/usecase/admin/GetAl
 import { GetCountUseCase } from '../../application/usecase/admin/GetCountUseCase';
 import { GuideApplicationRepository } from '../../infrastructure/database/repositories/GuideApplicationRepository';
 import { DestinationRepository } from '../../infrastructure/database/repositories/DestinationRepository';
+import { GetDestinationUseCase } from '../../application/usecase/admin/GetDestinationSingleUseCase';
 
 
 const router = express.Router();
 
 const userRepository = new UserRepository();
 const guideRepo = new GuideApplicationRepository();
-const destinationReop = new DestinationRepository()
+const destinationRepo = new DestinationRepository()
 
 const getAllUserUseCase = new GetAllUserUseCase(userRepository);
 const blockUserUseCase = new BlockUserUseCase(userRepository);
@@ -28,9 +29,11 @@ const unblockUserUseCase = new UnBlockUserUseCase(userRepository);
 const getAllGuideAppliesUseCase = new GetAllGuideAppliesUseCase(guideRepo);
 const approveAsGuide = new ApproveAsGuideUseCase(userRepository, guideRepo);
 const rejectAsGuide = new RejectAsGuideUseCase(userRepository, guideRepo);
-const createDestiantionUseCase = new CreateDestinationUseCase(destinationReop)
-const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationReop);
-const getCountUsecase = new GetCountUseCase(userRepository, destinationReop)
+const createDestiantionUseCase = new CreateDestinationUseCase(destinationRepo)
+const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
+const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);
+const getDestination = new GetDestinationUseCase(destinationRepo);
+
 
 
 
@@ -44,7 +47,8 @@ const adminController = new AdminContrller(
     rejectAsGuide,
     createDestiantionUseCase,
     getAllDestinationsUseCase,
-    getCountUsecase    
+    getCountUsecase,
+    getDestination
 );
 
 
@@ -63,8 +67,10 @@ router.patch('/users/rejectAsGuide', adminAuthenticate, adminController.rejectGu
 
 router.get('/destinations', adminAuthenticate, adminController.getAllDestinations);
 router.get('/destination', adminAuthenticate, adminController.getPaginatedDestinations);
+router.get('/destinations/get-destinations/:destinationId', adminAuthenticate, adminController.getDestination); //check with postman api
+router.put('/destination/edit-destination/:destinationId', upload.array('photos', 5), adminAuthenticate, adminController.editDestination)
 router.post('/destination/create-destination', upload.array('photos', 5), adminController.createDestination);
-router.delete('/destinations/:destinationId/delete', adminAuthenticate, )
+router.delete('/destinations/:destinationId/delete', adminAuthenticate, );
 
 
 export default router;

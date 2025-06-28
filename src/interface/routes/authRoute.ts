@@ -5,13 +5,13 @@ import { UserRepository } from '../../infrastructure/database/repositories/UserR
 import { AuthService } from '../../infrastructure/service/AuthService';
 import { OtpRepository } from '../../infrastructure/database/repositories/OtpService';
 import { EmailService } from '../../infrastructure/service/EmailService';
-import { LoginGuideGoogleUseCase } from '../../application/usecase/auth/loginGuideGoogleUseCase';
-import { RegisterUseCase } from '../../application/usecase/user/registerUserUseCase';
-import { LoginUserUseCase } from '../../application/usecase/user/loginUser';
 import { PasswordService } from '../../infrastructure/service/PasswordService';
 import { RegisterGoogleUserUseCase } from '../../application/usecase/auth/RegisterGoogleUseCase';
 import { GetUserProfile } from '../../application/usecase/user/GetUserProfile';
 import { RefreshAccessTokenUseCase } from '../../application/usecase/auth/RefreshAccessTokenUseCase';
+import { LoginGuideGoogleUseCase } from '../../application/usecase/auth/LoginGuideGoogleUseCase';
+import { RegisterUseCase } from '../../application/usecase/user/RegisterUserUseCase';
+import { LoginUserUseCase } from '../../application/usecase/user/LoginUser';
 
 
 const router = express.Router();
@@ -30,8 +30,6 @@ const getUserUseCasse = new GetUserProfile(userRepo);
 
 
 const authController = new AuthController(
-    userRepo,
-    authService,
     loginOrRegisterUseCase,
     loginGuideGoogleUseCase,
     registerUserUseCase,

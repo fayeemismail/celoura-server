@@ -12,6 +12,7 @@ import { ICreateDestintaion } from "../../application/usecase/admin/interface/IC
 import { IGetAllDestinations } from "../../application/usecase/admin/interface/IGetAllDestinations";
 import { IApproveAsGuide } from "../../application/usecase/admin/interface/IApproveAsGuide";
 import { IGetCountUseCase } from "../../application/usecase/admin/interface/IGetCountUseCase";
+import { IGetDestinationUseCase } from "../../application/usecase/admin/interface/IGetDestinationUseCase";
 
 export default class AdminController {
     constructor(
@@ -24,6 +25,7 @@ export default class AdminController {
         private readonly createDestinationUseCase: ICreateDestintaion,
         private readonly getAllDestinationsUseCase: IGetAllDestinations,
         private readonly getCountUseCase: IGetCountUseCase,
+        private readonly getDestinationUseCase: IGetDestinationUseCase
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
@@ -152,7 +154,7 @@ export default class AdminController {
             const user = await this.getCountUseCase.findUser();
             const guide = await this.getCountUseCase.findGuide();
             const destination = await this.getCountUseCase.findDestination();
-            res.status(HttpStatusCode.OK).json({ user, guide, destination  });
+            res.status(HttpStatusCode.OK).json({ user, guide, destination });
         } catch (error: any) {
             console.log('Error On getting count: ', error);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error.message || 'Failed to Fetch users' });
@@ -206,4 +208,44 @@ export default class AdminController {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
         }
     };
+
+    public getDestination = async (req: Request, res: Response) => {
+        const { destinationId } = req.params;
+        if (!destinationId) {
+            res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'DestinationId parameter is required' });
+            return;
+        }
+
+        try {
+            const data = await this.getDestinationUseCase.execute(destinationId);
+            res.status(HttpStatusCode.OK).json({ data });
+        } catch (error: unknown) {
+            console.error(error);
+
+            if (error instanceof Error) {
+                if (error.message === 'Invalid DestinationId') {
+                    res.status(HttpStatusCode.BAD_REQUEST).json({ message: error.message });
+                    return;
+                }
+                res.status(HttpStatusCode.NOT_FOUND).json({ message: error.message || 'Cannot find Destination' });
+                return;
+            }
+
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Something went wrong' });
+        }
+    };
+
+
+    public editDestination = async(req: Request, res: Response) => {
+        const { destinationId } = req.params;
+        // const data = req.body;
+        console.log(req.body)
+        try {
+            console.log(destinationId);
+            // console.log(data)
+        } catch (error) {
+            console.log(error, 'thei si sdfhsdf');
+        }
+    }
+
 }
