@@ -22,12 +22,11 @@ interface Input {
 
 
 export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
-    private guideRepo: GuideApplicationRepository;
-    private userRepo: UserRepository
-    constructor() {
-        this.guideRepo = new GuideApplicationRepository();
-        this.userRepo = new UserRepository();
-    }
+    
+    constructor(
+        private guideRepo: GuideApplicationRepository,
+        private userRepo: UserRepository
+    ) {}
 
     async execute(input: Input): Promise<GuideApplication>  {
         const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, userId } = input;

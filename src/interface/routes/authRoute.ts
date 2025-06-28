@@ -5,11 +5,13 @@ import { UserRepository } from '../../infrastructure/database/repositories/UserR
 import { AuthService } from '../../infrastructure/service/AuthService';
 import { OtpRepository } from '../../infrastructure/database/repositories/OtpService';
 import { EmailService } from '../../infrastructure/service/EmailService';
-import { loginUserUseCase } from '../../application/usecase/auth/loginUserUseCase';
 import { LoginGuideGoogleUseCase } from '../../application/usecase/auth/loginGuideGoogleUseCase';
 import { RegisterUseCase } from '../../application/usecase/user/registerUserUseCase';
 import { LoginUserUseCase } from '../../application/usecase/user/loginUser';
 import { PasswordService } from '../../infrastructure/service/PasswordService';
+import { RegisterGoogleUserUseCase } from '../../application/usecase/auth/RegisterGoogleUseCase';
+import { GetUserProfile } from '../../application/usecase/user/GetUserProfile';
+import { RefreshAccessTokenUseCase } from '../../application/usecase/auth/RefreshAccessTokenUseCase';
 
 
 const router = express.Router();
@@ -17,12 +19,14 @@ const userRepo = new UserRepository();// after cleaning the code remove the user
 const authService = new AuthService(); // after cleaning remove this from controller and here
 const passwordService = new PasswordService()
 
-const loginOrRegisterUseCase = new loginUserUseCase();
-const loginGuideGoogleUseCase = new LoginGuideGoogleUseCase();
+const loginOrRegisterUseCase = new RegisterGoogleUserUseCase(userRepo, authService);
+const loginGuideGoogleUseCase = new LoginGuideGoogleUseCase(userRepo, authService);
 const otpRepo = new OtpRepository();
 const emailService = new EmailService();
 const registerUserUseCase = new RegisterUseCase(userRepo, otpRepo, emailService);
-const loginUsersUseCase = new LoginUserUseCase(userRepo, authService, passwordService)
+const loginUsersUseCase = new LoginUserUseCase(userRepo, authService, passwordService);
+const refreshAccessTokenUseCase = new RefreshAccessTokenUseCase(authService, userRepo)
+const getUserUseCasse = new GetUserProfile(userRepo);
 
 
 const authController = new AuthController(
@@ -31,7 +35,9 @@ const authController = new AuthController(
     loginOrRegisterUseCase,
     loginGuideGoogleUseCase,
     registerUserUseCase,
-    loginUsersUseCase
+    loginUsersUseCase,
+    refreshAccessTokenUseCase,
+    getUserUseCasse
 );
 
 //sugnup routes.

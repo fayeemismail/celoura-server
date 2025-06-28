@@ -4,12 +4,14 @@ import { env } from "../../config/authConfig";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { IGetGuideProfile } from "../../application/usecase/guide/Interface/IGetGuideProfileUseCase";
 import { GuideProfileDto } from "../../application/dto/guide/guideProfileDto";
+import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUserProfileUseCase";
 
 
 
 export default class  GuideController {
     constructor(
-        private readonly getGuideUseCase : IGetGuideProfile
+        private readonly getGuideUseCase : IGetGuideProfile,
+        private readonly getCurrentGuideUseCase : IGetUserProfile
     ) {}
 
     public guideRefreshAccessToken = (req: Request, res: Response): any => {
@@ -50,7 +52,8 @@ export default class  GuideController {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Unauthorized' });
             }
 
-            const user = await this.getGuideUseCase.findById(userId);
+            const user = await this.getCurrentGuideUseCase.execute(userId);
+            if(!user) res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' })
             const userDTO = GuideProfileDto.formDomain(user);
 
             res.status(HttpStatusCode.OK).json({ data: userDTO });

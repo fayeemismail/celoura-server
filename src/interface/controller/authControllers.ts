@@ -8,8 +8,12 @@ import { ILoginGuideGoogleUseCase } from "../../application/usecase/auth/interfa
 import { IRegisterUserUseCase } from "../../application/usecase/user/interface/IRegisterUserUseCase";
 import { verifyOtp } from "../../application/usecase/auth/verifyOtp";
 import { resendOtp } from "../../application/usecase/auth/resendOtp";
-import { login } from "../../application/usecase/user/loginUser";
 import { ILoginUserUseCase } from "../../application/usecase/user/interface/ILoginUserUseCase";
+import { IRegisterGoogleUseCase } from "../../application/usecase/auth/interface/IRegisterGoogleUseCase";
+import { IRefreshAccessTokenUseCase } from "../../application/usecase/auth/interface/IRefreshAccessTokenUseCase";
+import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUserProfileUseCase";
+import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
+import { GuideProfileDto } from "../../application/dto/guide/guideProfileDto";
 
 
 
@@ -17,10 +21,12 @@ export default class AuthController implements IAuthController {
     constructor(
         private userRepo: UserRepository,
         private authService: AuthService,
-        private loginOrRegisterUseCase: ILoginGuideGoogleUseCase,
+        private loginOrRegisterGoogleUseCase: IRegisterGoogleUseCase,
         private _loginGuideGoogleUseCase: ILoginGuideGoogleUseCase,
         private registerUseCase: IRegisterUserUseCase,
-        private loginUserUseCase: ILoginUserUseCase
+        private loginUserUseCase: ILoginUserUseCase,
+        private readonly refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
+        private readonly getUserUseCase : IGetUserProfile
     ) { }
 
     public signup = async (req: Request, res: Response, next: NextFunction) => {
@@ -78,10 +84,13 @@ export default class AuthController implements IAuthController {
 
     public adminLogin = async (req: Request, res: Response): Promise<any> => {
         const { email, password } = req.body;
-        const result = await login({ email, password, role: ['admin'] });
+        const result = await this.loginUserUseCase.execute({ email, password, role: ['admin'] });
 
-        if (result.status !== HttpStatusCode.OK) {
-            return res.status(result.status).json(result.data);
+        if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
+            return res.status(result.status).json({
+                success: false,
+                message: result.data?.error
+            });
         }
 
         res.clearCookie('adminRefreshToken', { path: '/admin' });
@@ -123,12 +132,15 @@ export default class AuthController implements IAuthController {
         res.status(HttpStatusCode.OK).json({ message: "Admin logged out successfully" });
     };
 
-    public async guideLogin(req: Request, res: Response): Promise<any> {
+    public guideLogin = async (req: Request, res: Response): Promise<any> => {
         const { email, password } = req.body;
-        const result = await login({ email, password, role: ['guide'] });
+        const result = await this.loginUserUseCase.execute({ email, password, role: ['guide'] });
 
-        if (result.status !== HttpStatusCode.OK) {
-            return res.status(result.status).json(result.data);
+        if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
+            return res.status(result.status).json({
+                success: false,
+                message: result.data?.error
+            });
         };
 
         const { token, refreshToken, data } = result
@@ -167,22 +179,16 @@ export default class AuthController implements IAuthController {
 
     }
 
-    public refreshAccessToken = async (req: Request, res: Response): Promise<any> => {
+    public refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
         const token = req.cookies?.refreshToken;
-        if (!token) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh Token is missing' });
-
+        if (!token) {
+            res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh Token is missing' });
+            return;
+        }
         try {
+            const { accessToken } = await this.refreshAccessTokenUseCase.execute(token);
 
-            const payload = this.authService.verifyRefreshToken(token);
-            const user = await this.userRepo.getUserById(payload.id);
-
-            if (!user) {
-                return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
-            }
-
-            const newAccessToken = this.authService.generateAccessToken({ id: user?._id, role: user?.role });
-
-            res.cookie('accessToken', newAccessToken, {
+            res.cookie('accessToken', accessToken, {
                 httpOnly: true,
                 secure: env.NODE_ENV === 'production',
                 sameSite: 'strict',
@@ -190,9 +196,17 @@ export default class AuthController implements IAuthController {
             });
 
             res.status(HttpStatusCode.OK).json({ success: true });
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Refresh Error: ', error);
-            res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid refresh token" });
+            if (error instanceof Error) {
+                if (error.message === 'User not found') {
+                    res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
+                } else {
+                    res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid refresh token' });
+                }
+            } else {
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: 'Unexpected error' });
+            }
         }
     };
 
@@ -204,8 +218,8 @@ export default class AuthController implements IAuthController {
                 return res.status(result.status).json(result.data);
             }
             return res.status(result.status).json(result.data);
-        } catch (error: any) {
-            console.log("Error in verify OTP", error.message);
+        } catch (error: unknown) {
+            console.log("Error in verify OTP", error);
         }
     };
 
@@ -228,15 +242,10 @@ export default class AuthController implements IAuthController {
             const userId = (req as any).user?.id;
             if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'UnAuthorized' });
 
-            const user = await this.userRepo.getUserById(userId);
+            const user = await this.getUserUseCase.execute(userId);
             if (!user) return res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
 
-            const userData = {
-                id: user?._id,
-                name: user?.name,
-                email: user?.email,
-                role: user?.role
-            };
+            const userData = UserProfileDTO.formDomain(user)
 
             res.status(HttpStatusCode.OK).json(userData);
         } catch (error) {
@@ -248,15 +257,12 @@ export default class AuthController implements IAuthController {
     public googleLoginVerify = async (req: Request, res: Response): Promise<any> => {
         try {
             const { email, name } = req.body;
-            const user = await this.loginOrRegisterUseCase.execute(email, name);
+            const { user, accessToken, refreshToken } = await this.loginOrRegisterGoogleUseCase.execute(email, name);
             if (user.blocked) {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({
                     message: "Your account is Blocked"
                 })
-            }
-
-            const accessToken = this.authService.generateAccessToken({ id: user._id, role: user.role })
-            const refreshToken = this.authService.generateRefreshToken({ id: user._id, role: user.role });
+            };
 
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
@@ -272,39 +278,33 @@ export default class AuthController implements IAuthController {
                 maxAge: env.REFRESH_TOKEN_EXPIRE,
             });
 
+            const userData = UserProfileDTO.formDomain(user)
+
             return res.status(HttpStatusCode.OK).json({
                 message: "login Successfull",
-                data: {
-                    id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role,
-                },
+                data: userData,
             });
 
-        } catch (error: any) {
-            if (error.message == 'User not exists') {
-                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
+        } catch (error: unknown) {
+            console.error('Google Login Error: ', error);
+            if(error instanceof Error && error.message === 'Access denied'){
+                res.status(HttpStatusCode.FORBIDDEN).json({ message: error.message })
+            } else {
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Google Login failed"  })
             }
-            console.error("Google Login Error", error);
-            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                message: error.message || 'Google Login Failed'
-            })
+            
         }
     }
 
     public googleVerifyGuide = async (req: Request, res: Response): Promise<any> => {
         try {
             const { email, name } = req.body;
-            const guide = await this._loginGuideGoogleUseCase.execute(email, name);
+            const {guide, accessToken, refreshToken} = await this._loginGuideGoogleUseCase.execute(email, name);
             if (guide.blocked) {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({
                     message: "Your Account is Blocked"
                 });
             };
-
-            const accessToken = this.authService.generateAccessToken({ id: guide._id, role: guide.role });
-            const refreshToken = this.authService.generateRefreshToken({ id: guide._id, role: guide.role });
 
             res.cookie('guideAccessToken', accessToken, {
                 httpOnly: true,
@@ -320,24 +320,20 @@ export default class AuthController implements IAuthController {
                 maxAge: env.REFRESH_TOKEN_EXPIRE
             });
 
+            const guideData = GuideProfileDto.formDomain(guide)
+
             return res.status(HttpStatusCode.OK).json({
                 message: 'login successfull',
-                data: {
-                    id: guide._id,
-                    name: guide.name,
-                    email: guide.email,
-                    role: guide.role
-                },
+                data: guideData,
             });
 
         } catch (error: any) {
-            if (error.message == 'User not exists') {
-                return res.status(HttpStatusCode.NOT_FOUND).json({ message: 'User not exists' });
+            console.error('Google Login Error: ', error);
+            if(error instanceof Error && error.message === 'Access denied'){
+                res.status(HttpStatusCode.FORBIDDEN).json({ message: error.message })
+            } else {
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Google Login failed"  })
             }
-            console.error('Google Login Error', error);
-            return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-                message: error.message || 'Guide Google Login Failed'
-            })
         }
     }
 

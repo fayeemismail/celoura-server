@@ -23,7 +23,7 @@ export default class AdminController {
         private readonly rejectAsGuideUseCase: IRejectAsGuide,
         private readonly createDestinationUseCase: ICreateDestintaion,
         private readonly getAllDestinationsUseCase: IGetAllDestinations,
-        private readonly getCountUseCase: IGetCountUseCase
+        private readonly getCountUseCase: IGetCountUseCase,
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
