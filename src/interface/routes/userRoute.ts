@@ -11,14 +11,16 @@ import { PasswordService } from '../../infrastructure/service/PasswordService';
 import { GetDestinationsUseCase } from '../../application/usecase/user/GetDestinationsUseCase';
 import { GetAllDestinationsUseCase } from '../../application/usecase/admin/GetAllDestinationsUseCase';
 import { DestinationRepository } from '../../infrastructure/database/repositories/DestinationRepository';
+import { GuideApplicationRepository } from '../../infrastructure/database/repositories/GuideApplicationRepository';
 
 const router = express.Router();
 
 const userRepo = new UserRepository();
 const destinationRepo = new DestinationRepository();
 const passwordService = new PasswordService();
+const guideRepository = new GuideApplicationRepository()
 
-const applyForGuideUseCase = new ApplyForGuideUseCase();
+const applyForGuideUseCase = new ApplyForGuideUseCase(guideRepository, userRepo);
 const getUserProfile = new GetUserProfile(userRepo);
 const editProfileUseCase = new EditProfile(userRepo, passwordService);
 const getSingleDestinationUseCase = new GetDestinationsUseCase();

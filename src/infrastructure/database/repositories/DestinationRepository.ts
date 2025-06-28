@@ -47,4 +47,9 @@ export class DestinationRepository implements IDestinationRepository {
         const data = await destinationModel.find().limit(limit).sort({ createdAt: -1 });
         return data;
     }
+
+    async findById(_id: string): Promise<Destination | null> {
+        return destinationModel.findById(_id);
+
+    }
 }

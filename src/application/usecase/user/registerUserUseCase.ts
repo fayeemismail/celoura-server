@@ -1,6 +1,4 @@
-import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { EmailService } from "../../../infrastructure/service/EmailService";
-import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
 import { IRegisterUserUseCase, UseCaseErrorResponse, UseCaseSuccessResponse } from "./interface/IRegisterUserUseCase";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";

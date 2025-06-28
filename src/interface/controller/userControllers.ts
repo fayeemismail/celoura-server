@@ -8,6 +8,7 @@ import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
 import { IEditUserProfileUseCase } from "../../application/usecase/user/interface/IEditUserProfileUseCase";
 import { IGetDestinationsUseCase } from "../../application/usecase/user/interface/IGetDestinationsUseCase";
 import { IGetAllDestinations } from "../../application/usecase/admin/interface/IGetAllDestinations";
+import { extractErrorMessage } from "../../utils/errorHelpers";
 
 
 
@@ -28,9 +29,10 @@ export default class UserController implements IUserInterface {
       const userDTO = UserProfileDTO.formDomain(user);
 
       res.status(HttpStatusCode.OK).json(userDTO);
-    } catch (error: any) {
-      console.error('Get Profile Error: ', error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message })
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
+      console.error('Get Profile Error: ', message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: message })
     }
   }
 
@@ -70,22 +72,13 @@ export default class UserController implements IUserInterface {
         return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Identity proof file is required' });
       }
 
-      const application = {
-        fullName,
-        dob,
-        phone,
-        email,
-        address,
-        experience,
-        expertise,
-        idFileUrl,
-        userId
-      };
+      const application = { fullName, dob, phone, email, address, experience, expertise, idFileUrl, userId };
       await this._applyForGuideUseCase.execute(application)
       return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'Application submited SuccessFully' })
-    } catch (error: any) {
-      console.log('Error', error.message);
-      res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: error.message })
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
+      console.log('Error', message);
+      res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: message })
     }
   }
 
@@ -93,9 +86,10 @@ export default class UserController implements IUserInterface {
     try {
       const data = await this.getAllDestinationsUseCase.findAll();
       res.status(HttpStatusCode.OK).json({ data })
-    } catch (error: any) {
-      console.log(error.message)
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "Unexpected error on fetching data" })
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
+      console.log(message)
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Unexpected error on fetching data" })
     }
   }
 
@@ -104,10 +98,11 @@ export default class UserController implements IUserInterface {
       const { id } = req.params;
       const data = await this.getSingleDestinationUseCase.findById(id);
       res.status(HttpStatusCode.OK).json({ data })
-    } catch (error: any) {
-      console.log(error.message);
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
+      console.log(message);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-        message: error.message || "Cannot get destination"
+        message: message || "Cannot get destination"
       })
     }
   }
@@ -131,7 +126,8 @@ export default class UserController implements IUserInterface {
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
       console.error("GetAllDestinations Error:", error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
     }
@@ -143,9 +139,10 @@ export default class UserController implements IUserInterface {
       
       const data = await this.getAllDestinationsUseCase.findNew(limit);
       res.status(HttpStatusCode.OK).json({data})
-    } catch (error: any) {
-      console.log(error.message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "Something went wrong" });
+    } catch (error: unknown) {
+      const message = extractErrorMessage(error)
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Something went wrong" });
     }
   }
 

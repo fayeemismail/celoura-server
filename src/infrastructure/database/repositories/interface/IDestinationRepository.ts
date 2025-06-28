@@ -7,4 +7,5 @@ export interface IDestinationRepository {
     findAll(): Promise<Destination[]>;
     findAllPgainated(page: number, limit: number, search: string, attraction: string): Promise<any>;
     findNewDest(limit: number): Promise<Destination[]>;
+    findById(_id: string): Promise<Destination | null>
 }
