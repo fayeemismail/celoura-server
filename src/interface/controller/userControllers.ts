@@ -124,7 +124,7 @@ export default class UserController implements IUserInterface {
           page,
           limit,
           totalPages: Math.ceil(total / limit),
-        },
+        }, 
       });
     } catch (error: unknown) {
       const message = extractErrorMessage(error)

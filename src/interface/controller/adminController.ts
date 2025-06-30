@@ -266,7 +266,6 @@ export default class AdminController {
             console.log(message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
         }
-    }
-
+    };
 
 }
