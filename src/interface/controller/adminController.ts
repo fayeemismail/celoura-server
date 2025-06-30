@@ -13,6 +13,7 @@ import { IGetAllDestinations } from "../../application/usecase/admin/interface/I
 import { IApproveAsGuide } from "../../application/usecase/admin/interface/IApproveAsGuide";
 import { IGetCountUseCase } from "../../application/usecase/admin/interface/IGetCountUseCase";
 import { IGetDestinationUseCase } from "../../application/usecase/admin/interface/IGetDestinationUseCase";
+import { IEditDestinationUseCase } from "../../application/usecase/admin/interface/IEditDestinationUseCase";
 
 export default class AdminController {
     constructor(
@@ -25,7 +26,8 @@ export default class AdminController {
         private readonly createDestinationUseCase: ICreateDestintaion,
         private readonly getAllDestinationsUseCase: IGetAllDestinations,
         private readonly getCountUseCase: IGetCountUseCase,
-        private readonly getDestinationUseCase: IGetDestinationUseCase
+        private readonly getDestinationUseCase: IGetDestinationUseCase,
+        private readonly editDestinationUseCase: IEditDestinationUseCase
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
@@ -236,16 +238,19 @@ export default class AdminController {
     };
 
 
-    public editDestination = async(req: Request, res: Response) => {
-        const { destinationId } = req.params;
-        // const data = req.body;
-        console.log(req.body)
+    public editDestination = async (req: Request, res: Response): Promise<any> => {
+        const {destinationId} = req.params;
+        const editedData = req.body;
+        const files = req.files as Express.Multer.File[]
         try {
-            console.log(destinationId);
-            // console.log(data)
-        } catch (error) {
-            console.log(error, 'thei si sdfhsdf');
+            const updatedData = {...editedData, files};
+            const update = await this.editDestinationUseCase.execute(destinationId, updatedData);
+            res.status(HttpStatusCode.OK).json({ message: update.message, data: update.data })
+        } catch (error: any) {
+            console.error("Update error:", error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
         }
-    }
+    };
+
 
 }

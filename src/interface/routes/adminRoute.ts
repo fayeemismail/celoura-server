@@ -15,6 +15,7 @@ import { GetCountUseCase } from '../../application/usecase/admin/GetCountUseCase
 import { GuideApplicationRepository } from '../../infrastructure/database/repositories/GuideApplicationRepository';
 import { DestinationRepository } from '../../infrastructure/database/repositories/DestinationRepository';
 import { GetDestinationUseCase } from '../../application/usecase/admin/GetDestinationSingleUseCase';
+import { EditDestinationUseCase } from '../../application/usecase/admin/EditDestinationUseCase';
 
 
 const router = express.Router();
@@ -33,6 +34,7 @@ const createDestiantionUseCase = new CreateDestinationUseCase(destinationRepo)
 const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
 const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);
 const getDestination = new GetDestinationUseCase(destinationRepo);
+const editDestination = new EditDestinationUseCase(destinationRepo)
 
 
 
@@ -48,7 +50,8 @@ const adminController = new AdminContrller(
     createDestiantionUseCase,
     getAllDestinationsUseCase,
     getCountUsecase,
-    getDestination
+    getDestination,
+    editDestination
 );
 
 
