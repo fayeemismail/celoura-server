@@ -16,6 +16,7 @@ import { GuideApplicationRepository } from '../../infrastructure/database/reposi
 import { DestinationRepository } from '../../infrastructure/database/repositories/DestinationRepository';
 import { GetDestinationUseCase } from '../../application/usecase/admin/GetDestinationSingleUseCase';
 import { EditDestinationUseCase } from '../../application/usecase/admin/EditDestinationUseCase';
+import { DeleteDestinationUseCase } from '../../application/usecase/admin/DeleteDestinationUseCase';
 
 
 const router = express.Router();
@@ -34,7 +35,8 @@ const createDestiantionUseCase = new CreateDestinationUseCase(destinationRepo)
 const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
 const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);
 const getDestination = new GetDestinationUseCase(destinationRepo);
-const editDestination = new EditDestinationUseCase(destinationRepo)
+const editDestination = new EditDestinationUseCase(destinationRepo);
+const deleteDestination = new DeleteDestinationUseCase(destinationRepo)
 
 
 
@@ -51,7 +53,8 @@ const adminController = new AdminContrller(
     getAllDestinationsUseCase,
     getCountUsecase,
     getDestination,
-    editDestination
+    editDestination,
+    deleteDestination
 );
 
 
@@ -73,7 +76,7 @@ router.get('/destination', adminAuthenticate, adminController.getPaginatedDestin
 router.get('/destinations/get-destinations/:destinationId', adminAuthenticate, adminController.getDestination); //check with postman api
 router.put('/destination/edit-destination/:destinationId', upload.array('photos', 5), adminAuthenticate, adminController.editDestination)
 router.post('/destination/create-destination', upload.array('photos', 5), adminController.createDestination);
-router.delete('/destinations/:destinationId/delete', adminAuthenticate, );
+router.delete('/destinations/:destinationId/delete', adminAuthenticate, adminController.deleteDestination);
 
 
 export default router;

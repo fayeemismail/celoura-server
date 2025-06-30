@@ -14,6 +14,8 @@ import { IApproveAsGuide } from "../../application/usecase/admin/interface/IAppr
 import { IGetCountUseCase } from "../../application/usecase/admin/interface/IGetCountUseCase";
 import { IGetDestinationUseCase } from "../../application/usecase/admin/interface/IGetDestinationUseCase";
 import { IEditDestinationUseCase } from "../../application/usecase/admin/interface/IEditDestinationUseCase";
+import { extractErrorMessage } from "../../utils/errorHelpers";
+import { IDeleteDestinationUseCase } from "../../application/usecase/admin/interface/IDeleteDestinationUseCase";
 
 export default class AdminController {
     constructor(
@@ -27,7 +29,8 @@ export default class AdminController {
         private readonly getAllDestinationsUseCase: IGetAllDestinations,
         private readonly getCountUseCase: IGetCountUseCase,
         private readonly getDestinationUseCase: IGetDestinationUseCase,
-        private readonly editDestinationUseCase: IEditDestinationUseCase
+        private readonly editDestinationUseCase: IEditDestinationUseCase,
+        private readonly deleteDestinationUseCase: IDeleteDestinationUseCase
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
@@ -246,11 +249,24 @@ export default class AdminController {
             const updatedData = {...editedData, files};
             const update = await this.editDestinationUseCase.execute(destinationId, updatedData);
             res.status(HttpStatusCode.OK).json({ message: update.message, data: update.data })
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const message = extractErrorMessage(error)
             console.error("Update error:", error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || 'Internal Server Error' });
         }
     };
+
+    public deleteDestination = async(req: Request, res: Response) => {
+        const { destinationId } = req.params;
+        try {
+            const result = await this.deleteDestinationUseCase.execute(destinationId);
+            res.status(HttpStatusCode.NO_CONTENT).json(result.message);
+        } catch (error) {
+            const message = extractErrorMessage(error)
+            console.log(message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
+        }
+    }
 
 
 }

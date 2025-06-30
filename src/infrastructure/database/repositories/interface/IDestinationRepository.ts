@@ -9,4 +9,5 @@ export interface IDestinationRepository {
     findNewDest(limit: number): Promise<Destination[]>;
     findById(_id: string): Promise<Destination | null>;
     update(id: string, updatedData: Destination): Promise<Destination>;
+    deleteById(id: string): Promise<void>;
 }
