@@ -52,4 +52,19 @@ export class DestinationRepository implements IDestinationRepository {
         return destinationModel.findById(_id);
 
     }
+
+    async update(id: string, updatedData: Partial<Destination>): Promise<Destination> {
+        const updated = await destinationModel.findByIdAndUpdate(
+            id,
+            { $set:  updatedData},
+            { new: true, lean: true }
+        );
+
+        if(!updated)throw new Error('Destination not gound');
+        return updated
+    };
+
+    async deleteById(id: string): Promise<void> {
+        await destinationModel.findByIdAndDelete(id);
+    }
 }
