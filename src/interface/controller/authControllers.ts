@@ -9,7 +9,7 @@ import { IRegisterGoogleUseCase } from "../../application/usecase/auth/interface
 import { IRefreshAccessTokenUseCase } from "../../application/usecase/auth/interface/IRefreshAccessTokenUseCase";
 import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUserProfileUseCase";
 import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
-import { GuideProfileDto } from "../../application/dto/guide/guideProfileDto";
+import { GuideDataDto } from "../../application/dto/guide/guideDataDto";
 import { verifyOtp } from "../../application/usecase/auth/VerifyOtp";
 import { resendOtp } from "../../application/usecase/auth/ResendOtp";
 import { extractErrorMessage } from "../../utils/errorHelpers";
@@ -326,7 +326,7 @@ export default class AuthController implements IAuthController {
                 maxAge: env.REFRESH_TOKEN_EXPIRE
             });
 
-            const guideData = GuideProfileDto.formDomain(guide)
+            const guideData = GuideDataDto.formDomain(guide)
 
             res.status(HttpStatusCode.OK).json({
                 message: 'login successfull',

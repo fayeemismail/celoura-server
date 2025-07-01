@@ -30,8 +30,8 @@ export const verifyOtp = async({ email, otp }: OtpInput) => {
             return { status: HttpStatusCode.BAD_REQUEST, data:{ error: 'Session Expired please signUp again' } };
         };
 
-        const  { name, email: userEmail, confirmPassword, role,  } = userData;
-        const hashed = await passwordService.hashPassword(confirmPassword);
+        const  { name, email: userEmail, password, role,  } = userData;
+        const hashed = await passwordService.hashPassword(password);
 
         const user = {
             name: name,
