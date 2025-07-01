@@ -1,12 +1,11 @@
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
-import { AuthService } from "../../../infrastructure/service/AuthService";
 import { OtpRepository } from "../../../infrastructure/database/repositories/OtpService";
 import { HttpStatusCode } from "../../constants/httpStatus";
 import { PasswordService } from "../../../infrastructure/service/PasswordService";
+import { extractErrorMessage } from "../../../utils/errorHelpers";
 
 
 const otpRepo = new OtpRepository();
-const authService = new AuthService();
 const userRepo = new UserRepository();
 const passwordService = new PasswordService()
 
@@ -49,12 +48,13 @@ export const verifyOtp = async({ email, otp }: OtpInput) => {
         const savedUser = await userRepo.createUser(user);
 
         return { status: HttpStatusCode.CREATED, data: { savedUser, message: "User created successfully"  } }
-    } catch (error: any) {
-        console.error(error.message);
+    } catch (error: unknown) {
+        const message = extractErrorMessage(error)
+        console.error(message);
         return {
             status: HttpStatusCode.INTERNAL_SERVER_ERROR,
             data: {
-                error: error.message || "Something went wrong"
+                error: message || "Something went wrong"
             }
         };
     }

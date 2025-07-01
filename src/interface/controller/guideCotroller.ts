@@ -61,7 +61,9 @@ export default class GuideController {
 
             res.status(HttpStatusCode.OK).json({ data: userDTO });
         } catch (error) {
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: "Internal server error" });
+            const message = extractErrorMessage(error);
+            console.log(message)
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: message || "Internal server error" });
         }
     };
 

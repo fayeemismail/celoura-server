@@ -18,7 +18,7 @@ export class AuthService implements IAuthService {
         return jwt.sign( payload, REFRESH_SECRET, { expiresIn: '7d' } );
     }
 
-    verifyRefreshToken(token: string) {
+    verifyRefreshToken(token: string): JwtPayload | string {
         try {
 
             if(!REFRESH_SECRET) throw new Error('Refresh secret is not defined');

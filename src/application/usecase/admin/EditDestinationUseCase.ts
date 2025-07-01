@@ -1,6 +1,5 @@
 import { env } from "../../../config/authConfig";
 import { s3 } from "../../../config/s3Config";
-import { Destination } from "../../../domain/entities/Destination";
 import { IDestinationRepository } from "../../../infrastructure/database/repositories/interface/IDestinationRepository";
 import { EditDestinationInput } from "../../dto/admin/EditDestinationInput";
 import { editSuccessOuput, IEditDestinationUseCase } from "./interface/IEditDestinationUseCase";

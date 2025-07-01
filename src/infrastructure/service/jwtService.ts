@@ -1,10 +1,10 @@
-import jwt from 'jsonwebtoken'
+import jwt, { JwtPayload } from 'jsonwebtoken'
 import { env } from '../../config/authConfig';
 
 const accessTokenSecret = env.JWT_ACCESS_SECRET;
 
 
-export const jwtVerify = (token: string) => {
+export const jwtVerify = (token: string): JwtPayload | string => {
     if(accessTokenSecret){
         const response = jwt.verify(token, accessTokenSecret);
         return response;
