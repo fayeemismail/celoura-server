@@ -2,6 +2,7 @@ import { IUserRepository } from "../../../infrastructure/database/repositories/i
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { AuthService } from "../../../infrastructure/service/AuthService";
 import { PasswordService } from "../../../infrastructure/service/PasswordService";
+import { extractErrorMessage } from "../../../utils/errorHelpers";
 import { HttpStatusCode } from "../../constants/httpStatus";
 import { ILoginUserUseCase, LoginInput, LoginOutput } from "./interface/ILoginUserUseCase";
 
@@ -101,8 +102,9 @@ export const login = async ({ email, password, role }: LoginInput) => {
             token,
             refreshToken,
         }
-    } catch (error: any) {
-        console.log(error.message)
-        return { status: HttpStatusCode.INTERNAL_SERVER_ERROR, data: { error: error.message } };
+    } catch (error: unknown) {
+        const message = extractErrorMessage(error);
+        console.log(message, 'on Login User.ts')
+        return { status: HttpStatusCode.INTERNAL_SERVER_ERROR, data: { error: message || "Something went wrong on login" } };
     }
 }

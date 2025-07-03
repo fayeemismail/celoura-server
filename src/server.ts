@@ -2,7 +2,6 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import path, { format } from 'path';
 import authRoutes from './interface/routes/authRoute';
 import userRoute from './interface/routes/userRoute';
 import adminRouter from './interface/routes/adminRoute';

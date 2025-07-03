@@ -8,7 +8,7 @@ import { EditProfileInput } from "../../dto/user/EditProfileInput";
 
 
 
-export class EditProfile implements IEditUserProfileUseCase {
+export class EditProfile implements IEditUserProfileUseCase { 
   constructor(
     private readonly userRepo : IUserRepository,
     private readonly passwordService: PasswordService

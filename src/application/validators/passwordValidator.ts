@@ -1,5 +1,3 @@
-import bcrypt from "bcrypt";
-import { AuthService } from "../../infrastructure/service/AuthService";
 import { ValidationError } from "../../utils/ValidationError";
 import { PasswordService } from "../../infrastructure/service/PasswordService";
 

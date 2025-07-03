@@ -1,8 +1,6 @@
 import { GuideApplication } from "../../../domain/entities/GuideApplication";
 import { GuideApplicationRepository } from "../../../infrastructure/database/repositories/GuideApplicationRepository";
 import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
-import { IGuideApplicationRepository } from "../../../infrastructure/database/repositories/interface/IGuideApplicationRepository";
-import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 import { IApplyForGuideUseCase } from "./interface/IApplyForGuideUseCase";
 
 

@@ -1,0 +1,17 @@
+import { Schema, model } from 'mongoose';
+import { Guide } from '../../../domain/entities/Guide';
+
+const guideSchema = new Schema<Guide>({
+  user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  destinations: [{ type: Schema.Types.ObjectId, ref: 'Destination' }],
+  happyCustomers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
+  bio: {type: String},
+  profilePic: { type: String },
+}, {
+  timestamps: true
+});
+
+const guideModel = model<Guide>('Guide', guideSchema);
+export default guideModel;

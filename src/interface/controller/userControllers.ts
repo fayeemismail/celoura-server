@@ -129,7 +129,7 @@ export default class UserController implements IUserInterface {
     } catch (error: unknown) {
       const message = extractErrorMessage(error)
       console.error("GetAllDestinations Error:", error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: message || "Internal Server Error" });
     }
   }
 

@@ -1,6 +1,5 @@
 import { User } from "../../../domain/entities/User";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
-import { UserRepository } from "../../../infrastructure/database/repositories/UserRepository";
 import { IAuthService } from "../../interfaces/services/IAuthService";
 import { ILoginGuideGoogleUseCase } from "./interface/ILoginGuideGoogleUseCase";
 

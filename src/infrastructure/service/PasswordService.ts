@@ -6,6 +6,7 @@ const SALT_ROUNDS = 10
 
 export class PasswordService implements IPasswordService {
     async hashPassword(password: string): Promise<string> {
+        console.log(password, 'this i password')
         return bcrypt.hash(password, SALT_ROUNDS);
     }
 

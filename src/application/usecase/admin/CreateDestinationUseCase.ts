@@ -1,5 +1,6 @@
 import { env } from "../../../config/authConfig";
 import { s3 } from "../../../config/s3Config";
+import { Destination } from "../../../domain/entities/Destination";
 import { IDestinationRepository } from "../../../infrastructure/database/repositories/interface/IDestinationRepository";
 import { ICreateDestintaion } from "./interface/ICreateDestination";
 import { v4 as uuidv4 } from 'uuid';
@@ -11,7 +12,7 @@ export class CreateDestinationUseCase implements ICreateDestintaion {
     constructor(
         private readonly _destinationRepo: IDestinationRepository
     ) {}
-    async execute(name: string, location: string, country: string, description: string, photos: Express.Multer.File[], features: string[]): Promise<any> {
+    async execute(name: string, location: string, country: string, description: string, photos: Express.Multer.File[], features: string[]): Promise<Destination> {
         // 1. Trim inputs
         name = name.trim();
         location = location.trim();
