@@ -11,7 +11,7 @@ export class DestinationRepository implements IDestinationRepository {
     }
 
     async findByName(name: string): Promise<Destination | null> {
-        return destinationModel.findOne({ name })
+        return destinationModel.findOne({ name: name })
     }
 
     async findAll(): Promise<Destination[]> {

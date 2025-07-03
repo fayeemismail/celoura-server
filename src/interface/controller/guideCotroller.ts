@@ -19,7 +19,7 @@ export default class GuideController {
         private readonly editGuideProfileUseCase: IEditGuideProfileUseCase
     ) { }
 
-    public guideRefreshAccessToken = (req: Request, res: Response): any => {
+    public guideRefreshAccessToken = (req: Request, res: Response) => {
         const token = req.cookies?.guideRefreshToken;
         if (!token) {
             return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: "Refresh token is missing" });
@@ -29,7 +29,8 @@ export default class GuideController {
             const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
 
             if (!payload || typeof payload == 'string' || !payload.id) {
-                return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid token payload' });
+                 res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid token payload' });
+                 return;
             }
 
             const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
@@ -43,10 +44,10 @@ export default class GuideController {
                 maxAge: env.ACCESS_TOKEN_EXPIRE,
             });
 
-            return res.status(HttpStatusCode.OK).json({ success: true });
+             res.status(HttpStatusCode.OK).json({ success: true });
         } catch (error) {
             console.error("Guide refresh Error: ", error);
-            return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid admin refresh token' });
+             res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid admin refresh token' });
         }
     }
     public getCurrentUser = async (req: Request, res: Response): Promise<any> => {

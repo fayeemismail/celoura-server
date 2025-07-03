@@ -247,11 +247,18 @@ export default class AdminController {
         const files = req.files as Express.Multer.File[]
         try {
             const updatedData = {...editedData, files};
+            console.log(updatedData, 'this is updated data');
             const update = await this.editDestinationUseCase.execute(destinationId, updatedData);
+
+            if(!update){
+                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong" });
+                return;
+            }
+
             res.status(HttpStatusCode.OK).json({ message: update.message, data: update.data })
         } catch (error: unknown) {
             const message = extractErrorMessage(error)
-            console.error("Update error:", error);
+            console.error("Update error:", message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || 'Internal Server Error' });
         }
     };
