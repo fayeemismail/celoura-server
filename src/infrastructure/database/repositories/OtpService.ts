@@ -22,6 +22,7 @@ export class OtpRepository implements IOtpRepository {
 
     async getTempUser(email: string): Promise<any | null> {
         const data = await redis.get(`tempuser:${email}`);
+        console.log(data, 'this is getTempUser')
         return data ? JSON.parse(data): null;
     }
 

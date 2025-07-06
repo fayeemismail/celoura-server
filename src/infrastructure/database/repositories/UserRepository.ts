@@ -121,7 +121,7 @@ export class UserRepository implements IUserRepository {
         return await guideModel.findOne({ user: id });
     };
 
-    async updateGuideProfilePic(userId: string, profilePicUrl: string): Promise<void> {
+    async updateGuideProfilePic(userId: string, profilePicUrl: string): Promise<any> {
         await guideModel.updateOne({ user: userId }, { profilePic: profilePicUrl });
     };
 

@@ -41,6 +41,6 @@ router.get('/destinations/new-spots/:limit', guideAuthenticate, guideController.
 
 //profile
 router.get('/profile/:id', guideAuthenticate, guideController.guideProfile);
-router.put('/profile/edit-profile-update', guideAuthenticate, guideProfileUpload.single('profilePic'), guideController.guideProfileUpdate)
+router.put('/profile/edit-profile-update', guideAuthenticate, guideProfileUpload.single('profilePic'), guideController.guideProfileUpdate);
 
 export default router;

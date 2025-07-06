@@ -1,6 +1,4 @@
-import { Guide } from "../../../domain/entities/Guide";
 import { User } from "../../../domain/entities/User";
-import guideModel from "../../../infrastructure/database/models/guideModel";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 import { GuideWithUserData } from "../../dto/guide/guideProfileDto";
 import { IGetGuideProfile } from "./Interface/IGetGuideProfileUseCase";

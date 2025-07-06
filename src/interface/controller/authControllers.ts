@@ -243,7 +243,7 @@ export default class AuthController implements IAuthController {
 
     public getCurrentUser = async (req: Request, res: Response) => {
         try {
-            const userId = (req as any).user?.id;
+            const userId = (req as any).user?._id;
             if (!userId)res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'UnAuthorized' });
 
             const user = await this.getUserUseCase.execute(userId);
