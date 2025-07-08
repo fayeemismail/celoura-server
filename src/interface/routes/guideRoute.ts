@@ -9,23 +9,41 @@ import { GetAllPaginatedDestinationUseCase } from '../../application/usecase/gui
 import { PasswordService } from '../../infrastructure/service/PasswordService';
 import { EditGuideProfileUseCase } from '../../application/usecase/guide/EditGuideProfileUseCase';
 import guideProfileUpload from '../../infrastructure/middleware/cloudinaryGuideProfilePicMiddleware';
+import { upload } from '../../infrastructure/middleware/multer';
+import { CreatenewPostUseCase } from '../../application/usecase/guide/CreateNewPostUseCase';
+import { PostRepository } from '../../infrastructure/database/repositories/PostRepository';
+import { GetAllPostsGuideUseCase } from '../../application/usecase/guide/GetAllPostGuideUseCase';
+import { CommentsRepository } from '../../infrastructure/database/repositories/CommentsRepository';
+import { LikeRepository } from '../../infrastructure/database/repositories/LikeRepository';
+import { GetSinglePostUseCase } from '../../application/usecase/guide/GetSinglePostUseCase';
 
 const router = express.Router();
 
 const userRepo = new UserRepository();
 const destinationRepo = new DestinationRepository();
 const passwordService = new PasswordService();
+const postRepo = new PostRepository()
+const commentsRepo = new CommentsRepository();
+const likeRepo = new LikeRepository();
+
 
 const getGuideProfileUseCase = new GetGuideProfileUseCase(userRepo);
 const getCurrentGuideUseCase = new GetUserProfile(userRepo);
 const getAllDestinations = new GetAllPaginatedDestinationUseCase(destinationRepo);
 const editGuideProfle = new EditGuideProfileUseCase(userRepo, passwordService);
+const createNewPost = new CreatenewPostUseCase(postRepo);
+const getAllPostGuide = new GetAllPostsGuideUseCase(postRepo, commentsRepo, likeRepo);
+const getSinglePost = new GetSinglePostUseCase(postRepo, commentsRepo, likeRepo)
 
 const guideController = new GuideController(
     getGuideProfileUseCase,
     getCurrentGuideUseCase,
     getAllDestinations,
     editGuideProfle,
+    createNewPost,
+    getAllPostGuide,
+    getSinglePost,
+
 );
 
 
@@ -42,5 +60,11 @@ router.get('/destinations/new-spots/:limit', guideAuthenticate, guideController.
 //profile
 router.get('/profile/:id', guideAuthenticate, guideController.guideProfile);
 router.put('/profile/edit-profile-update', guideAuthenticate, guideProfileUpload.single('profilePic'), guideController.guideProfileUpdate);
+
+
+//posts
+router.post('/posts/new-post', guideAuthenticate, upload.array('photos') ,guideController.createNewPost);
+router.get('/posts/allposts/:guideId', guideAuthenticate, guideController.getGuideAllPosts);
+router.get('/posts/:postId/single', guideAuthenticate, guideController.getSinglePost);
 
 export default router;

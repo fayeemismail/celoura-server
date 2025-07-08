@@ -15,33 +15,33 @@ export class GetGuideProfileUseCase implements IGetGuideProfile {
         return guide
     }
     async findById(id: string): Promise<GuideWithUserData | null> {
-    const guideUser = await this.userRepo.getUserById(id);
-    const guide = await this.userRepo.getGuideById(id);
+        const guideUser = await this.userRepo.getUserById(id);
+        const guide = await this.userRepo.getGuideById(id);
 
-    if (!guideUser || !guide){ 
-        throw new Error('Guide not found');
-    } 
+        if (!guideUser || !guide) {
+            throw new Error('Guide not found');
+        }
 
-    const combined: GuideWithUserData = {
-        _id: guide.user.toString(),
-        name: guideUser.name,
-        email: guideUser.email,
-        role: guideUser.role, // must be "guide" | "admin" | "user"
-        is_verified: guideUser.is_verified,
-        googleUser: guideUser.googleUser,
-        userCreatedAt: guideUser.createdAt,
-        userUpdatedAt: guideUser.updatedAt,
+        const combined: GuideWithUserData = {
+            _id: guide.user.toString(),
+            name: guideUser.name,
+            email: guideUser.email,
+            role: guideUser.role, // must be "guide" | "admin" | "user"
+            is_verified: guideUser.is_verified,
+            googleUser: guideUser.googleUser,
+            userCreatedAt: guideUser.createdAt,
+            userUpdatedAt: guideUser.updatedAt,
 
-        destinations: guide.destinations,
-        happyCustomers: guide.happyCustomers,
-        followers: guide.followers,
-        posts: guide.posts,
-        bio: guide.bio,
-        profilePic: guide.profilePic,
-    };
+            destinations: guide.destinations,
+            happyCustomers: guide.happyCustomers,
+            followers: guide.followers,
+            posts: guide.posts,
+            bio: guide.bio,
+            profilePic: guide.profilePic,
+        };
 
-    return combined;
-}
+        return combined;
+    }
     async getMe(id: string): Promise<User> {
         const user = await this.userRepo.getUserById(id);
         if (!user) throw new Error('Cannot find user');

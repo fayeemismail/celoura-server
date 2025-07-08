@@ -8,6 +8,9 @@ import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUs
 import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IGetAllPaginatedDestinationUseCase } from "../../application/usecase/guide/Interface/IGetPaginatedDestinationUseCase";
 import { IEditGuideProfileUseCase } from "../../application/usecase/guide/Interface/IEditGuideProfileUseCase";
+import { ICreateNewPostUseCase } from "../../application/usecase/guide/Interface/ICreateNewPostUseCase";
+import { IGetAllPostGuide } from "../../application/usecase/guide/Interface/IGetAllPostGuide";
+import { IGetSinglePostUseCase } from "../../application/usecase/guide/Interface/IGetSinglePostUseCase";
 
 
 
@@ -16,7 +19,10 @@ export default class GuideController {
         private readonly getGuideProfileUseCase: IGetGuideProfile,
         private readonly getCurrentGuideUseCase: IGetUserProfile,
         private readonly getDestinationUseCase: IGetAllPaginatedDestinationUseCase,
-        private readonly editGuideProfileUseCase: IEditGuideProfileUseCase
+        private readonly editGuideProfileUseCase: IEditGuideProfileUseCase,
+        private readonly createnewPostUseCase: ICreateNewPostUseCase,
+        private readonly getAllPostGuideUseCase: IGetAllPostGuide,
+        private readonly getSinglePostUseCase: IGetSinglePostUseCase,
     ) { }
 
     public guideRefreshAccessToken = (req: Request, res: Response) => {
@@ -148,6 +154,44 @@ export default class GuideController {
                 return;
             }
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "something went wrong" })
+        }
+    };
+
+    public createNewPost = async(req: Request, res: Response) => {
+        try {
+            const data = req.body;
+            const files = req.files;
+            const fullData = { ...data, photos: files? files : undefined };
+            const response = await this.createnewPostUseCase.execute(fullData);
+
+            res.status(HttpStatusCode.CREATED).json(response);
+        } catch (error) {
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong" })
+        }
+    };
+
+
+    public getGuideAllPosts = async(req: Request, res: Response) => {
+        const guideId = req.params.guideId;
+        try {
+            const response = await this.getAllPostGuideUseCase.execute(guideId);
+            res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            console.log(error, 'this is error');
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot find any posts" });
+        }
+    };
+
+    public getSinglePost = async(req: Request, res: Response) => {
+        const postId = req.params.postId;
+        try {
+            const response = await this.getSinglePostUseCase.execute(postId);
+            res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message, 'this is error')
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "something went wrong.." })
         }
     }
 }
