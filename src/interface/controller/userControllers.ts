@@ -39,9 +39,11 @@ export default class UserController implements IUserInterface {
   public editProfile = async (req: Request, res: Response): Promise<void> => {
     try {
       const updateData = req.body;
-      await this.editProfileUseCase.execute(updateData);
+      const user = await this.editProfileUseCase.execute(updateData);
 
-      res.status(HttpStatusCode.OK).json({ message: 'Profile pdated successfully' });
+      const userData =  UserProfileDTO.formDomain(user);
+
+      res.status(HttpStatusCode.OK).json({ data: userData,  message: 'Profile pdated successfully' });
     } catch (error: unknown) {
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({
