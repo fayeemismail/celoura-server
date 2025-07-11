@@ -11,6 +11,10 @@ import { IEditGuideProfileUseCase } from "../../application/usecase/guide/Interf
 import { ICreateNewPostUseCase } from "../../application/usecase/guide/Interface/ICreateNewPostUseCase";
 import { IGetAllPostGuide } from "../../application/usecase/guide/Interface/IGetAllPostGuide";
 import { IGetSinglePostUseCase } from "../../application/usecase/guide/Interface/IGetSinglePostUseCase";
+import { ILikePostUseCase } from "../../application/usecase/guide/Interface/ILikePostUseCase";
+import { IUnlikePostUseCase } from "../../application/usecase/guide/Interface/IUnlikePostUseCase";
+import { ICommentPostUseCase } from "../../application/usecase/guide/Interface/ICommentPostUseCase";
+import { newCommentDTO } from "../../application/dto/guide/newCommentDto";
 
 
 
@@ -23,6 +27,10 @@ export default class GuideController {
         private readonly createnewPostUseCase: ICreateNewPostUseCase,
         private readonly getAllPostGuideUseCase: IGetAllPostGuide,
         private readonly getSinglePostUseCase: IGetSinglePostUseCase,
+        private readonly likePostUseCase: ILikePostUseCase,
+        private readonly unlikePostUseCase: IUnlikePostUseCase,
+        private readonly commentPostUseCase: ICommentPostUseCase,
+
     ) { }
 
     public guideRefreshAccessToken = (req: Request, res: Response) => {
@@ -192,6 +200,44 @@ export default class GuideController {
             const message = extractErrorMessage(error);
             console.log(message, 'this is error')
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "something went wrong.." })
+        }
+    };
+
+    public likePost = async(req: Request, res: Response) => {
+        const postId = req.params.postId;
+        const userId = req.params.userId;
+        try {
+            await this.likePostUseCase.execute(postId, userId);
+            res.status(HttpStatusCode.CREATED).json({ success: true })
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message, 'this is the error on liking post');
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Uncaught error on liking post" })
+        }
+    };
+
+    public unlikePost = async(req: Request, res: Response) => {
+        const postId = req.params.postId;
+        const userId = req.params.userId;
+        try {
+            await this.unlikePostUseCase.execute(postId, userId);
+            res.status(HttpStatusCode.NO_CONTENT).json({ success: true });
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message, 'uncaugt error on unlike the post');
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Uncaught error on unliking the post" });
+        }
+    };
+
+    public addComment = async(req: Request, res: Response) => {
+        const data = req.body
+        try {
+            const newComment = await this.commentPostUseCase.execute(data);
+            res.status(HttpStatusCode.CREATED).json(newComment);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message, 'this is the error on addComment');
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Uncaught error on Addcomment" })
         }
     }
 }
