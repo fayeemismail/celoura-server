@@ -9,9 +9,10 @@ export interface newCommentToSent {
     createdAt: Date;
     postId: string;
     userId: string;
+    parentId: string | null;
     user: {
         _id: string;
-        name: string;
+        username: string;
         profilePic: string | null;
     };
 }
@@ -53,9 +54,10 @@ export class CommentPostUseCase implements ICommentPostUseCase {
         createdAt: newComment.createdAt,
         postId: newComment.postId,
         userId: newComment.userId,
+        parentId: null,
         user: {
             _id: user._id!,
-            name: user.name,
+            username: user.name,
             profilePic: profilePic!
         }
     };

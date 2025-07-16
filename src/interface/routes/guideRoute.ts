@@ -19,6 +19,7 @@ import { GetSinglePostUseCase } from '../../application/usecase/guide/GetSingleP
 import { LikePostUseCase } from '../../application/usecase/guide/LikePostUserCase';
 import { UnlikePostUseCas } from '../../application/usecase/guide/UnlikePostUseCase';
 import { CommentPostUseCase } from '../../application/usecase/guide/CommentPostUseCase';
+import { ReplyCommentUseCase } from '../../application/usecase/guide/ReplyCommentUseCase';
 
 const router = express.Router();
 
@@ -41,6 +42,7 @@ const getSinglePost = new GetSinglePostUseCase(postRepo, commentsRepo, likeRepo)
 const likePost = new LikePostUseCase(likeRepo, userRepo, postRepo);
 const unlikePost = new UnlikePostUseCas(likeRepo, userRepo, postRepo);
 const commentPost = new CommentPostUseCase(postRepo, commentsRepo, userRepo);
+const replyComment = new ReplyCommentUseCase(postRepo, commentsRepo, userRepo);
 
 
 
@@ -55,7 +57,8 @@ const guideController = new GuideController(
     likePost,
     unlikePost,
     commentPost,
-    
+    replyComment,
+
 );
 
 
@@ -81,5 +84,7 @@ router.get('/posts/:postId/single', guideAuthenticate, guideController.getSingle
 router.put('/like/:postId/:userId', guideAuthenticate, guideController.likePost);
 router.delete('/like/:postId/:userId', guideAuthenticate, guideController.unlikePost);
 router.post('/comment', guideAuthenticate, guideController.addComment);
+router.post('/reply-comment', guideAuthenticate, guideController.replyComment);
+
 
 export default router;

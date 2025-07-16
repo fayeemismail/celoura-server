@@ -25,3 +25,18 @@ export class newCommentDTO {
     );
   }
 }
+
+
+
+
+
+
+
+
+
+export interface AddReplyComment {
+    postId: string;
+    content: string;
+    userId: string;
+    parentId: string;
+}
