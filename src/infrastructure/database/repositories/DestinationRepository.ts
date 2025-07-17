@@ -41,7 +41,7 @@ export class DestinationRepository implements IDestinationRepository {
         ]);
 
         return { data, total };
-    }
+    };
 
     async findNewDest(limit: number) {
         const data = await destinationModel.find().limit(limit).sort({ createdAt: -1 });

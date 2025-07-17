@@ -3,7 +3,7 @@ import { Guide } from '../../../domain/entities/Guide';
 
 const guideSchema = new Schema<Guide>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-  destinations: [{ type: Schema.Types.ObjectId, ref: 'Destination' }],
+  destinations: [{ type: String }],
   happyCustomers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],

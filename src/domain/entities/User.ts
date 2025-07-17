@@ -9,4 +9,4 @@ export interface User {
     createdAt: Date;
     updatedAt: Date;
     googleUser?: boolean;
-}
+};
