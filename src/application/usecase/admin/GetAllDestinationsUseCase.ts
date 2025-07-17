@@ -17,4 +17,4 @@ export class GetAllDestinationsUseCase implements IGetAllDestinations {
     async findNew(limit: number) {
         return await this._destinationRepo.findNewDest(limit)
     }
-}   
+};

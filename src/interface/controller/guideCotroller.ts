@@ -15,6 +15,7 @@ import { ILikePostUseCase } from "../../application/usecase/guide/Interface/ILik
 import { IUnlikePostUseCase } from "../../application/usecase/guide/Interface/IUnlikePostUseCase";
 import { ICommentPostUseCase } from "../../application/usecase/guide/Interface/ICommentPostUseCase";
 import { newCommentDTO } from "../../application/dto/guide/newCommentDto";
+import { IReplyCommentUseCase } from "../../application/usecase/guide/Interface/IReplyCommentUseCase";
 
 
 
@@ -30,6 +31,7 @@ export default class GuideController {
         private readonly likePostUseCase: ILikePostUseCase,
         private readonly unlikePostUseCase: IUnlikePostUseCase,
         private readonly commentPostUseCase: ICommentPostUseCase,
+        private readonly replyCommentUseCase: IReplyCommentUseCase
 
     ) { }
 
@@ -239,5 +241,17 @@ export default class GuideController {
             console.log(message, 'this is the error on addComment');
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Uncaught error on Addcomment" })
         }
-    }
+    };
+
+    public replyComment = async(req: Request, res: Response) => {
+        const data = req.body
+        try {
+            const response = await this.replyCommentUseCase.execute(data);
+            res.status(HttpStatusCode.CREATED).json(response);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message || 'Something happend while reply');
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || 'something went wrong while reply' });
+        }
+    };
 }

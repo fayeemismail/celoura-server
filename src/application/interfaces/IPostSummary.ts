@@ -22,12 +22,30 @@ export interface IComment {
   user: IUserMinimal;
 }
 
+export interface CommentWithReplies {
+  _id: string;
+  text: string;
+  createdAt: Date;
+  parentId: string | null;
+  user: {
+    _id: string;
+    username: string;
+    profilePic: string | null;
+  };
+  replies: CommentWithReplies[];
+}
+
 export interface ISinglePostDetails {
   _id: string;
   caption: string;
   photo: string[];
   createdAt: Date;
-  likes?: IUserMinimal[] | [];    // populated likes
-  comments?: IComment[] | [];     // populated comments
+  comments: CommentWithReplies[];
+  likes: {
+    _id: string;
+    username: string;
+    profilePic: string;
+  }[];
 }
+
 

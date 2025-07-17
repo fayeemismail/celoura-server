@@ -6,4 +6,4 @@ export interface IGetAllDestinations {
     findAll(): Promise<Destination[]>;
     execute(page: number, limit: number, search: string, attraction: string): Promise<PaginatedDestinations>;
     findNew(limit: number): Promise<Destination[]>
-}
+};

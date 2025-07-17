@@ -9,6 +9,7 @@ import { IEditUserProfileUseCase } from "../../application/usecase/user/interfac
 import { IGetDestinationsUseCase } from "../../application/usecase/user/interface/IGetDestinationsUseCase";
 import { IGetAllDestinations } from "../../application/usecase/admin/interface/IGetAllDestinations";
 import { extractErrorMessage } from "../../utils/errorHelpers";
+import { IGetGuidePaginatedUseCase } from "../../application/usecase/user/interface/IGetGuidesPaginatedusecase";
 
 
 
@@ -19,7 +20,8 @@ export default class UserController implements IUserInterface {
     private readonly guideProfileUseCase : IGetUserProfile,
     private readonly editProfileUseCase : IEditUserProfileUseCase,
     private readonly getSingleDestinationUseCase : IGetDestinationsUseCase,
-    private readonly getAllDestinationsUseCase : IGetAllDestinations
+    private readonly getAllDestinationsUseCase : IGetAllDestinations,
+    private readonly getGuidespaginatedUseCasse: IGetGuidePaginatedUseCase
   ) {}
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
@@ -145,6 +147,29 @@ export default class UserController implements IUserInterface {
       const message = extractErrorMessage(error)
       console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Something went wrong" });
+    }
+  };
+
+  public getAllGuidesOnUser = async(req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 9;
+    const search = req.query.search?.toString() || "";
+    const category = req.query.category?.toString() || "";
+    try {
+      const { data, total } = await this.getGuidespaginatedUseCasse.execute(page, limit, search, category);
+      res.status(HttpStatusCode.OK).json({
+        data, 
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit)
+        }
+      })
+    } catch (error) {
+      const message = extractErrorMessage(error);
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Cannot Fetch Guides" });
     }
   }
 
