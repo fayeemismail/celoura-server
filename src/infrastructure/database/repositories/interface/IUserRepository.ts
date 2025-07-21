@@ -1,4 +1,6 @@
+import { Comments } from "../../../../domain/entities/CommentEntity";
 import { Guide } from "../../../../domain/entities/Guide";
+import { Likes } from "../../../../domain/entities/LikeEntitiy";
 import { User } from "../../../../domain/entities/User";
 
 export interface IUserRepository {
@@ -17,4 +19,6 @@ export interface IUserRepository {
   getGuideById(id: string): Promise<Guide | null>;
   updateGuideProfilePic(userId: string, profilePicUrl: string): Promise<void>;
   updateGuideBio(userId: string, bio: string): Promise<void>;
+  getLikesByPostId(postId: string): Promise<Likes[]>;
+  getCommentsByPostId(postId: string): Promise<Comments[]>;
 }

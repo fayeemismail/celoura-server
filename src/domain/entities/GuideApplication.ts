@@ -9,6 +9,7 @@ export interface GuideApplication {
   address: string;
   status: string;
   userId: string;
+  basedOn: string;
   createdAt: Date;
   updatedAt: Date;
 }

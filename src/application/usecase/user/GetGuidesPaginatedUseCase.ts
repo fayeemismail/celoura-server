@@ -17,14 +17,15 @@ export class GetGuidesPaginatedUseCase implements IGetGuidePaginatedUseCase {
         const { data, total } = await this.guideRepo.findPaginatedGuides(page, limit, search, category);
 
         const result = data.map((guide: any) => ({
-            _id: guide._id,
+            _id: guide.user._id,
             name: guide.user.name,
             email: guide.user.email,
             profilePic: guide.profilePic,
             bio: guide.bio,
             destinations: guide.destinations,
             followers: guide.followers.length,
-            happyCustomers: guide.happyCustomers.length
+            happyCustomers: guide.happyCustomers.length,
+            basedOn: guide.basedOn
         }));
 
         return { data: result, total };

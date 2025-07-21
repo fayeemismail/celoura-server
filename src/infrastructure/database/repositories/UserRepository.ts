@@ -3,6 +3,8 @@ import { IUserRepository } from "./interface/IUserRepository";
 import userModel from "../models/userModel";
 import { Guide } from "../../../domain/entities/Guide";
 import guideModel from "../models/guideModel";
+import CommentsModel from "../models/CommentsModel";
+import LikesModel from "../models/LikesModel";
 
 
 export class UserRepository implements IUserRepository {
@@ -127,6 +129,16 @@ export class UserRepository implements IUserRepository {
 
     async updateGuideBio(userId: string, bio: string): Promise<void> {
         await guideModel.updateOne({ user: userId }, { bio });
+    };
+
+    async getLikesByPostId(postId: string) {
+        return LikesModel.find({ postId });
+    }
+
+    async getCommentsByPostId(postId: string) {
+        return CommentsModel.find({ postId })
+            .populate("userId", "name profilePic")
+            .lean(); // important for mapping
     };
 
 }
