@@ -12,7 +12,8 @@ const guideApplicationModel: Schema <GuideApplication> = new Schema({
     idFileUrl: { type: String },
     expertise: { type: String, required: true },
     status: { type: String, enum: [ 'pending', 'approved', 'rejected' ], default: 'pending' },
-    userId: { type: String, ref: 'User' }
+    userId: { type: String, ref: 'User' },
+    basedOn: { type: String }
 },{
     timestamps: true
 });

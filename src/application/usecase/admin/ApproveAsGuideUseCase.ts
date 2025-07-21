@@ -34,6 +34,7 @@ export class ApproveAsGuideUseCase implements IApproveAsGuide {
             posts: [],
             bio: "",
             profilePic: "",
+            basedOn: approveApplication.basedOn,
             createdAt: new Date(),
             updatedAt: new Date()
         });

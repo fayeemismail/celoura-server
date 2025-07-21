@@ -16,6 +16,7 @@ interface Input {
   expertise: string;
   idFileUrl: string;
   userId: string;
+  basedOn: string;
 }
 
 
@@ -27,7 +28,7 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
     ) {}
 
     async execute(input: Input): Promise<GuideApplication>  {
-        const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, userId } = input;
+        const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, userId, basedOn } = input;
 
         const user = await this.userRepo.getUserById(userId);
         if(!user) throw new Error('User not found');
@@ -50,6 +51,7 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
             idFileUrl,
             status: 'pending',
             userId,
+            basedOn,
             createdAt: new Date(),
             updatedAt: new Date()
         })
