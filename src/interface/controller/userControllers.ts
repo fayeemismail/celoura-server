@@ -16,6 +16,9 @@ import { ILikeGuidePostUseCase } from "../../application/usecase/user/interface/
 import { IUnLikeGuidePostUseCase } from "../../application/usecase/user/interface/IUnLikeGuidePostUseCase";
 import { ICommentGuidePostUseCase } from "../../application/usecase/user/interface/ICommentGuidePostUseCase";
 import { IReplyCommentGuidePostUseCase } from "../../application/usecase/user/interface/IReplyCommentGuidePostUseCase";
+import { IFollowGuideUseCase } from "../../application/usecase/user/interface/IFollowGuideUseCase";
+import { IUnfollowGuideUseCase } from "../../application/usecase/user/interface/IUnfollowGuideUseCase";
+import { IGetGuideSinglePostUseCase } from "../../application/usecase/user/interface/IGetGuideSinglePostUseCase";
 
 
 
@@ -33,7 +36,10 @@ export default class UserController implements IUserInterface {
     private readonly likeGUidePostUseCase: ILikeGuidePostUseCase,
     private readonly unLikeGuidePostUseCase: IUnLikeGuidePostUseCase,
     private readonly commentGuidePostUseCase: ICommentGuidePostUseCase,
-    private readonly replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase
+    private readonly replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase,
+    private readonly followGuideUseCase: IFollowGuideUseCase,
+    private readonly unfollowGuideUseCase: IUnfollowGuideUseCase,
+    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase
 
   ) { }
 
@@ -209,6 +215,18 @@ export default class UserController implements IUserInterface {
     }
   };
 
+  public getGuideSinglePost = async(req: Request, res: Response) => {
+    const postId = req.params.postId;
+    try {
+      const response = await this.getGuideSinglePostUseCase.execute(postId);
+      res.status(HttpStatusCode.OK).json(response) 
+    } catch (error) {
+      const message = extractErrorMessage(error);
+      console.log(message ?? error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on fetching post" });
+    }
+  }
+
   public likeGuidePost = async (req: Request, res: Response) => {
     const { postId, userId } = req.params
     try {
@@ -253,6 +271,32 @@ export default class UserController implements IUserInterface {
       const message = extractErrorMessage(error);
       console.log(message ?? error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on Reply" })
+    }
+  };
+
+  public followGuide = async(req: Request, res: Response) => {
+    const guideId = req.params.guideId;
+    const userId = req.params.userId;
+    try {
+      await this.followGuideUseCase.execute({guideId, userId});
+      res.status(HttpStatusCode.CREATED).json({ success: true });
+    } catch (error) {
+      const message = extractErrorMessage(error);
+      console.log(message ?? error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on follow" });
+    }
+  };
+
+  public unfollowGuid = async(req: Request, res: Response) => {
+    const guideId = req.params.guideId;
+    const userId = req.params.userId;
+    try {
+      await this.unfollowGuideUseCase.execute({ guideId, userId });
+      res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
+    } catch (error) {
+      const message = extractErrorMessage(error);
+      console.log(message ?? error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on unfollow" });
     }
   }
 };

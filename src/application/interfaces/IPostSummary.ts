@@ -1,3 +1,5 @@
+import { Comments } from "../../domain/entities/CommentEntity";
+import { Likes } from "../../domain/entities/LikeEntitiy";
 
 export interface IPostSummary {
   _id: string;
@@ -48,4 +50,21 @@ export interface ISinglePostDetails {
   }[];
 }
 
+
+export type PopulatedComment = Comments & {
+  parentId?: string | null;
+  user: {
+    _id: string;
+    name: string;
+    profilePic: string | null;
+  };
+};
+
+export type PopulatedLike = Likes & {
+  userId: {
+    _id: string;
+    name: string;
+    profilePic?: string;
+  };
+};
 
