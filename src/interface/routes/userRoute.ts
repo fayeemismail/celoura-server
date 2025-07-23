@@ -23,6 +23,10 @@ import { LikeGuidePostUseCase } from '../../application/usecase/user/LikeGuidePo
 import { UnLikeGuidePostUseCase } from '../../application/usecase/user/UnLikeGuidePostUseCase';
 import { CommentGuidePostUseCase } from '../../application/usecase/user/CommentGuidePostUseCase';
 import { ReplyCommentGuidePostuseCase } from '../../application/usecase/user/ReplyCommentGuidePostUseCase';
+import { FollowGuideUseCase } from '../../application/usecase/user/FollowGuideUseCase';
+import { FollowGuideRepository } from '../../infrastructure/database/repositories/FollowGuideRepository';
+import { UnfollowGuideUseCase } from '../../application/usecase/user/UnfollowGuideUseCase';
+import { GetGuideSinglePostUseCase } from '../../application/usecase/user/GetGuideSinglePostUseCase';
 
 const router = express.Router();
 
@@ -34,6 +38,7 @@ const guideRepo = new GuideRepository()
 const postRepo = new PostRepository();
 const commentRepo = new CommentsRepository();
 const likeRepo = new LikeRepository();
+const followRepo = new FollowGuideRepository();
 
 
 const applyForGuideUseCase = new ApplyForGuideUseCase(guideApplicationRepo, userRepo);
@@ -48,6 +53,9 @@ const likeGUidePostUseCase = new LikeGuidePostUseCase(likeRepo, userRepo, postRe
 const unLikeGuidePostUseCase = new UnLikeGuidePostUseCase(likeRepo, userRepo, postRepo);
 const commentGuidePostUseCase = new CommentGuidePostUseCase(postRepo, commentRepo, userRepo);
 const replyCommentGuidePostUseCase = new ReplyCommentGuidePostuseCase(postRepo, commentRepo, userRepo);
+const followGuideUseCase = new FollowGuideUseCase(userRepo, followRepo);
+const unfollowGuideUseCase = new UnfollowGuideUseCase(userRepo, followRepo);
+const getGuideSinglePostUseCase = new GetGuideSinglePostUseCase(postRepo, commentRepo, likeRepo);
 
 
 const userController = new UserController(
@@ -62,7 +70,10 @@ const userController = new UserController(
     likeGUidePostUseCase,
     unLikeGuidePostUseCase,
     commentGuidePostUseCase,
-    replyCommentGuidePostUseCase
+    replyCommentGuidePostUseCase,
+    followGuideUseCase,
+    unfollowGuideUseCase,
+    getGuideSinglePostUseCase
 );
 
 //profile side
@@ -84,9 +95,14 @@ router.get('/destinations/new-spots/:limit', authenticate, userController.getNew
 router.get('/get-guides', authenticate, checkUserStatus, userController.getAllGuidesOnUser);
 router.get('/guide/:id', authenticate, checkUserStatus, userController.getGuideSingleData);
 router.get('/guide/posts/:id', authenticate, checkUserStatus, userController.getallPostGuideData);
+router.get('/guide/singlePost/:postId', authenticate, checkUserStatus, userController.getGuideSinglePost)
 router.put('/like/:postId/:userId', authenticate, checkUserStatus, userController.likeGuidePost);
-router.delete('/like/:postId/:userId', authenticate, checkUserStatus, userController.unLikeGuidePost);
 router.post('/comment', authenticate, checkUserStatus, userController.commentOnGuidePost);
 router.post('/reply-comment', authenticate, checkUserStatus, userController.replyCommentOnGuidePost);
+router.post('/follow/:guideId/:userId', authenticate, checkUserStatus, userController.followGuide);
+router.delete('/unfollow/:guideId/:userId', authenticate, checkUserStatus, userController.unfollowGuid);
+router.delete('/like/:postId/:userId', authenticate, checkUserStatus, userController.unLikeGuidePost);
+
+
 
 export default router;
