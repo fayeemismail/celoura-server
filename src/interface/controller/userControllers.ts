@@ -19,6 +19,7 @@ import { IReplyCommentGuidePostUseCase } from "../../application/usecase/user/in
 import { IFollowGuideUseCase } from "../../application/usecase/user/interface/IFollowGuideUseCase";
 import { IUnfollowGuideUseCase } from "../../application/usecase/user/interface/IUnfollowGuideUseCase";
 import { IGetGuideSinglePostUseCase } from "../../application/usecase/user/interface/IGetGuideSinglePostUseCase";
+import { IHasAlreadyApplied } from "../../application/usecase/user/interface/IHasAlreadyApplied";
 
 
 
@@ -39,8 +40,8 @@ export default class UserController implements IUserInterface {
     private readonly replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase,
     private readonly followGuideUseCase: IFollowGuideUseCase,
     private readonly unfollowGuideUseCase: IUnfollowGuideUseCase,
-    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase
-
+    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
+    private readonly hasAlreadyAppliedUseCase: IHasAlreadyApplied
   ) { }
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
@@ -54,6 +55,17 @@ export default class UserController implements IUserInterface {
       const message = extractErrorMessage(error)
       console.error('Get Profile Error: ', message);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: message })
+    }
+  };
+
+  public hasRegistered = async(req: Request, res: Response) => {
+    const userId = req.params.userId
+    try {
+      const response = await this.hasAlreadyAppliedUseCase.execute(userId);
+      res.status(HttpStatusCode.OK).json(response)
+    } catch (error) {
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Some thing went wrong on fetch application" });
     }
   }
 

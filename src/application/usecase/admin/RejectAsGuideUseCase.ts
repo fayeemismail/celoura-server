@@ -9,12 +9,13 @@ export class RejectAsGuideUseCase implements IRejectAsGuide {
         private readonly _userRepo: IUserRepository,
         private readonly _guideRepo: IGuideApplicationRepository
     ) {}
-    async execute(applicationId: string, userId: string): Promise<void> {
+    async execute(applicationId: string, userId: string, reason: string): Promise<void> {
         const application = await this._guideRepo.findApplication(applicationId);
         if(!application) throw new Error('Application Not found');
+        
         const updatedUser = await this._userRepo.rejectAsGuide(userId);
         if(!updatedUser) throw new Error('User not found');
-        const rejectApplication = await this._guideRepo.rejectGuideApplication(application._id);
-        if(!rejectApplication) throw new Error('Application Rejection failed');
+
+        await this._guideRepo.rejectGuideApplication(application._id, reason);
     }
 }

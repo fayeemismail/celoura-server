@@ -37,13 +37,14 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
         return application ?? null;
     }
 
-    async rejectGuideApplication(applicationId: string): Promise<any> {
-        const application = await guideApplicationModel.findByIdAndUpdate(
+    async rejectGuideApplication(applicationId: string, reason: string): Promise<void> {
+        await guideApplicationModel.findByIdAndUpdate(
             applicationId,
-            { status: 'rejected' },
+            { status: 'rejected',
+                rejectReason: reason
+             },
             { new: true }
         );
-        return application ?? null;
     }
 
     async findPaginated(page: number, limit: number): Promise<{ data: GuideApplication[], total: number, totalPages: number }> {

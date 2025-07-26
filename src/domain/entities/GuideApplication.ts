@@ -10,6 +10,7 @@ export interface GuideApplication {
   status: string;
   userId: string;
   basedOn: string;
+  rejectReason: string;
   createdAt: Date;
   updatedAt: Date;
 }

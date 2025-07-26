@@ -27,6 +27,7 @@ import { FollowGuideUseCase } from '../../application/usecase/user/FollowGuideUs
 import { FollowGuideRepository } from '../../infrastructure/database/repositories/FollowGuideRepository';
 import { UnfollowGuideUseCase } from '../../application/usecase/user/UnfollowGuideUseCase';
 import { GetGuideSinglePostUseCase } from '../../application/usecase/user/GetGuideSinglePostUseCase';
+import { HasAlreadyApplied } from '../../application/usecase/user/HasAlreadyAppliedUseCase';
 
 const router = express.Router();
 
@@ -56,6 +57,7 @@ const replyCommentGuidePostUseCase = new ReplyCommentGuidePostuseCase(postRepo, 
 const followGuideUseCase = new FollowGuideUseCase(userRepo, followRepo);
 const unfollowGuideUseCase = new UnfollowGuideUseCase(userRepo, followRepo);
 const getGuideSinglePostUseCase = new GetGuideSinglePostUseCase(postRepo, commentRepo, likeRepo);
+const hasAlreadyAppliedUseCase = new HasAlreadyApplied(userRepo, guideApplicationRepo);
 
 
 const userController = new UserController(
@@ -73,7 +75,8 @@ const userController = new UserController(
     replyCommentGuidePostUseCase,
     followGuideUseCase,
     unfollowGuideUseCase,
-    getGuideSinglePostUseCase
+    getGuideSinglePostUseCase,
+    hasAlreadyAppliedUseCase
 );
 
 //profile side
@@ -81,6 +84,7 @@ router.get('/get-UserProfile/:id', authenticate, checkUserStatus, userController
 router.put('/editProfile', authenticate, checkUserStatus, userController.editProfile);
 
 //aplication for guide
+router.get('/registerGuide/:userId', authenticate, checkUserStatus, userController.hasRegistered)
 router.post('/apply-for-guide', upload.single('idFile'), checkUserStatus, userController.applyForGuide);
 
 

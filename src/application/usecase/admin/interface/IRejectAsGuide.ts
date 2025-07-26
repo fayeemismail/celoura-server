@@ -1,5 +1,5 @@
 
 
 export interface IRejectAsGuide {
-    execute(applicationId: string, userId: string): Promise<void>;
+    execute(applicationId: string, userId: string, reason: string): Promise<void>;
 }

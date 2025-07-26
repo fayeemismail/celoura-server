@@ -52,6 +52,7 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
             status: 'pending',
             userId,
             basedOn,
+            rejectReason: "",
             createdAt: new Date(),
             updatedAt: new Date()
         })

@@ -8,6 +8,6 @@ export interface IGuideApplicationRepository {
     findAll(): Promise<GuideApplication[]>;
     findApplication(id: string): Promise<any>;
     approveGuideApplication(applicationId:string): Promise<any>;
-    rejectGuideApplication(applicationId: string): Promise<any>;
+    rejectGuideApplication(applicationId: string, reason: string): Promise<void>;
     findPaginated(page: number, limit: number): Promise<any>;
 }
