@@ -69,7 +69,7 @@ router.get('/getme',   guideAuthenticate, guideController.getCurrentUser);
 
 //destination
 router.get('/destination', guideAuthenticate, guideController.getPaginatedDestination);
-router.get('/destinations/new-spots/:limit', guideAuthenticate, guideController.getNewDestinations);
+// router.get('/destinations/new-spots/:limit', guideAuthenticate, guideController.getNewDestinations);
 
 
 //profile

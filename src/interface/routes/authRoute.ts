@@ -12,21 +12,28 @@ import { RefreshAccessTokenUseCase } from '../../application/usecase/auth/Refres
 import { LoginGuideGoogleUseCase } from '../../application/usecase/auth/LoginGuideGoogleUseCase';
 import { RegisterUseCase } from '../../application/usecase/user/RegisterUserUseCase';
 import { LoginUserUseCase } from '../../application/usecase/user/LoginUser';
+import { ResendOtpUseCase } from '../../application/usecase/auth/ResendOtp';
+import { VerifyOtpUseCase } from '../../application/usecase/auth/VerifyOtp';
 
 
 const router = express.Router();
+
+
 const userRepo = new UserRepository();// after cleaning the code remove the user ropo from the controller and here
 const authService = new AuthService(); // after cleaning remove this from controller and here
-const passwordService = new PasswordService()
-
-const loginOrRegisterUseCase = new RegisterGoogleUserUseCase(userRepo, authService);
-const loginGuideGoogleUseCase = new LoginGuideGoogleUseCase(userRepo, authService);
+const passwordService = new PasswordService();
 const otpRepo = new OtpRepository();
 const emailService = new EmailService();
+
+// usecase
+const loginOrRegisterUseCase = new RegisterGoogleUserUseCase(userRepo, authService);
+const loginGuideGoogleUseCase = new LoginGuideGoogleUseCase(userRepo, authService);
 const registerUserUseCase = new RegisterUseCase(userRepo, otpRepo, emailService);
 const loginUsersUseCase = new LoginUserUseCase(userRepo, authService, passwordService);
 const refreshAccessTokenUseCase = new RefreshAccessTokenUseCase(authService, userRepo)
 const getUserUseCasse = new GetUserProfile(userRepo);
+const resendOtpUseCase = new ResendOtpUseCase(otpRepo, emailService);
+const verifyOtpUseCase = new VerifyOtpUseCase(otpRepo, userRepo, passwordService);
 
 
 const authController = new AuthController(
@@ -35,7 +42,9 @@ const authController = new AuthController(
     registerUserUseCase,
     loginUsersUseCase,
     refreshAccessTokenUseCase,
-    getUserUseCasse
+    getUserUseCasse,
+    resendOtpUseCase,
+    verifyOtpUseCase
 );
 
 //sugnup routes.

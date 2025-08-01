@@ -97,7 +97,7 @@ router.get('/destinations/new-spots/:limit', authenticate, userController.getNew
 
 //guide side on user
 router.get('/get-guides', authenticate, checkUserStatus, userController.getAllGuidesOnUser);
-router.get('/guide/:id', authenticate, checkUserStatus, userController.getGuideSingleData);
+router.get('/guide-data/:userId', authenticate, checkUserStatus, userController.getGuideSingleData);
 router.get('/guide/posts/:id', authenticate, checkUserStatus, userController.getallPostGuideData);
 router.get('/guide/singlePost/:postId', authenticate, checkUserStatus, userController.getGuideSinglePost)
 router.put('/like/:postId/:userId', authenticate, checkUserStatus, userController.likeGuidePost);

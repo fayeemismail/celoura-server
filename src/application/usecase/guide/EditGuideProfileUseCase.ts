@@ -1,19 +1,15 @@
 import cloudinary from "../../../config/cloudinaryConfig";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
-import { PasswordService } from "../../../infrastructure/service/PasswordService";
 import { GuideEditProfileDTO } from "../../dto/guide/guideEditProfileData";
-import { GuideWithUserData } from "../../dto/guide/guideProfileDto";
+import { IPasswordService } from "../../interfaces/services/IPasswordService";
 import { validateNameUpdate } from "../../validators/nameValidators";
 import { validatePasswordUpdate } from "../../validators/passwordValidator";
-import {
-  IEditGuideProfileUseCase,
-  successEditProfile,
-} from "./Interface/IEditGuideProfileUseCase";
+import { IEditGuideProfileUseCase } from "./Interface/IEditGuideProfileUseCase";
 
 export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
   constructor(
     private readonly userRepo: IUserRepository,
-    private readonly passwordService: PasswordService
+    private readonly passwordService: IPasswordService
   ) { }
 
   async execute(data: GuideEditProfileDTO): Promise<any> { 

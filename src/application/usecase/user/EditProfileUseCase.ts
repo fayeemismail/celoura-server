@@ -2,19 +2,20 @@ import { User } from "../../../domain/entities/User";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 import { validateNameUpdate } from "../../validators/nameValidators";
 import { validatePasswordUpdate } from "../../validators/passwordValidator";
-import { PasswordService } from "../../../infrastructure/service/PasswordService";
 import { IEditUserProfileUseCase } from "./interface/IEditUserProfileUseCase";
 import { EditProfileInput } from "../../dto/user/EditProfileInput";
+import { IPasswordService } from "../../interfaces/services/IPasswordService";
 
 
 
 export class EditProfile implements IEditUserProfileUseCase { 
   constructor(
     private readonly userRepo : IUserRepository,
-    private readonly passwordService: PasswordService
+    private readonly passwordService: IPasswordService
   ) {}
   async execute(data: EditProfileInput): Promise<User> {
     const { id, name, newPassword, confirmPassword, currentPassword } = data;
+    console.log(data, 'this is data')
     const user = await this.userRepo.getUserById(id);
     if(!user) throw new Error( "User not found" );
 

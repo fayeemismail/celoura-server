@@ -10,4 +10,5 @@ export interface IGuideApplicationRepository {
     approveGuideApplication(applicationId:string): Promise<any>;
     rejectGuideApplication(applicationId: string, reason: string): Promise<void>;
     findPaginated(page: number, limit: number): Promise<any>;
+    deleteApplicationById(applicationId: string): Promise<void>
 }

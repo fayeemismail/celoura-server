@@ -10,9 +10,9 @@ import { IRefreshAccessTokenUseCase } from "../../application/usecase/auth/inter
 import { IGetUserProfile } from "../../application/usecase/user/interface/IGetUserProfileUseCase";
 import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
 import { GuideDataDto } from "../../application/dto/guide/guideDataDto";
-import { verifyOtp } from "../../application/usecase/auth/VerifyOtp";
-import { resendOtp } from "../../application/usecase/auth/ResendOtp";
 import { extractErrorMessage } from "../../utils/errorHelpers";
+import { IResendOtpUseCase } from "../../application/interfaces/services/IResendOtpService";
+import { IVerifyOtpUseCase } from "../../application/usecase/auth/interface/IVerifyOtpUseCase";
 
 
 
@@ -23,7 +23,9 @@ export default class AuthController implements IAuthController {
         private registerUseCase: IRegisterUserUseCase,
         private loginUserUseCase: ILoginUserUseCase,
         private readonly refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
-        private readonly getUserUseCase : IGetUserProfile
+        private readonly getUserUseCase : IGetUserProfile,
+        private readonly resendOtpUseCase : IResendOtpUseCase,
+        private readonly verifyOtpUseCase : IVerifyOtpUseCase
     ) { }
 
     public signup = async (req: Request, res: Response, next: NextFunction) => {
@@ -213,7 +215,7 @@ export default class AuthController implements IAuthController {
     public verifyOtp = async (req: Request, res: Response) => {
         try {
             const { email, otp } = req.body;
-            const result = await verifyOtp({ email, otp });
+            const result = await this.verifyOtpUseCase.execute({ email, otp });
             if (result.status !== HttpStatusCode.CREATED) {
                 res.status(result.status).json(result.data);
                 return;
@@ -228,7 +230,7 @@ export default class AuthController implements IAuthController {
         try {
             const { email } = req.body;
 
-            const result = await resendOtp(email);
+            const result = await this.resendOtpUseCase.execute(email);
             if (result.status !== HttpStatusCode.OK) {
                 res.status(result.status).json(result.data);
                 return;

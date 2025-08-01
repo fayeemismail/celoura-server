@@ -1,13 +1,13 @@
+import { ILikeRepository } from "../../../infrastructure/database/repositories/interface/ILikeRepository";
 import { IPostRepository } from "../../../infrastructure/database/repositories/interface/IPostsRepository";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
-import { LikeRepository } from "../../../infrastructure/database/repositories/LikeRepository";
 import { IUnLikeGuidePostUseCase } from "./interface/IUnLikeGuidePostUseCase";
 
 
 
 export class UnLikeGuidePostUseCase implements IUnLikeGuidePostUseCase{
     constructor(
-        private likeRepo: LikeRepository,
+        private likeRepo: ILikeRepository,
         private userRepo: IUserRepository,
         private postRepo: IPostRepository
     ) {};

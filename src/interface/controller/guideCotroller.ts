@@ -117,8 +117,9 @@ export default class GuideController {
         const limit = parseInt(req.params.limit as string) || 4;
         try {
             const data = await this.getDestinationUseCase.getNew(limit)
-            if (!data) res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Something went wrong" });
-            res.status(HttpStatusCode.OK).json(data);
+            if (!data) res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Something went wrong" }); console.log('eroor happend');
+            console.log(data, 'this is data---------------')
+            res.status(HttpStatusCode.OK).json(data); console.log("seding data")
         } catch (error) {
             const message = extractErrorMessage(error);
             console.log(message);

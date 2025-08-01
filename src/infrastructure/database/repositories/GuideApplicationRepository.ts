@@ -40,9 +40,10 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
     async rejectGuideApplication(applicationId: string, reason: string): Promise<void> {
         await guideApplicationModel.findByIdAndUpdate(
             applicationId,
-            { status: 'rejected',
+            {
+                status: 'rejected',
                 rejectReason: reason
-             },
+            },
             { new: true }
         );
     }
@@ -52,14 +53,21 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
 
         const [data, total] = await Promise.all([
             guideApplicationModel.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit),
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
             guideApplicationModel.countDocuments()
         ]);
 
         const totalPages = Math.ceil(total / limit);
         return { data, total, totalPages };
-    }
+    };
 
+    async deleteApplicationById(applicationId: string): Promise<void> {
+        const result = await guideApplicationModel.findByIdAndDelete(applicationId);
+
+        if (!result) {
+            throw new Error(`Guide application with ID ${applicationId} not found.`);
+        }
+    };
 }

@@ -14,10 +14,10 @@ export class HasAlreadyApplied implements IHasAlreadyApplied {
         if(!userId) throw new Error("User Id is missing");
 
         const user = await this.userRepo.getUserById(userId);
-        if(!userId) throw new Error("User not found");
+        if(!user) throw new Error("User not found");
 
         const guideApplication = await this.guideRepo.findUser(userId);
-        if(!guideApplication) return null
+        if(!guideApplication) return null;
 
         return guideApplication
     }

@@ -1,9 +1,9 @@
-import { EmailService } from "../../../infrastructure/service/EmailService";
 import { HttpStatusCode } from "../../constants/httpStatus";
 import { IRegisterUserUseCase, UseCaseErrorResponse, UseCaseSuccessResponse } from "./interface/IRegisterUserUseCase";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
 import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 import { sendSignupOtp } from "./sendSignupOtp";
+import { IEmailService } from "../../interfaces/services/IEmailService";
 
 
 interface RegisterInput {
@@ -19,7 +19,7 @@ export class RegisterUseCase implements IRegisterUserUseCase{
     constructor(
         private readonly userRepo : IUserRepository,
         private readonly otpRepo : IOtpRepository,
-        private readonly emailService: EmailService
+        private readonly emailService: IEmailService
     ){}
     async execute(input: RegisterInput): Promise<UseCaseErrorResponse | UseCaseSuccessResponse<{ message: string; }>> {
         const { name, email, password, confirmPassword, role } = input;
