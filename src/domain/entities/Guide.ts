@@ -11,7 +11,9 @@ export interface Guide {
   followers: string[];
   bio: string;
   profilePic: string;
+  expertise: string[];
   posts: string[];
+  blocked: boolean;
   createdAt?: Date; 
   updatedAt?: Date;
 }

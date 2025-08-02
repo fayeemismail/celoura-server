@@ -25,7 +25,8 @@ export class GetGuidesPaginatedUseCase implements IGetGuidePaginatedUseCase {
             destinations: guide.destinations,
             followers: guide.followers.length,
             happyCustomers: guide.happyCustomers.length,
-            basedOn: guide.basedOn
+            basedOn: guide.basedOn,
+            expertise: guide.expertise
         }));
 
         return { data: result, total };

@@ -1,6 +1,7 @@
 import { IGuideApplicationRepository } from "./interface/IGuideApplicationRepository";
 import { GuideApplication } from "../../../domain/entities/GuideApplication";
 import guideApplicationModel from "../models/guideApplicationModel";
+import guideModel from "../models/guideModel";
 
 
 
@@ -31,18 +32,25 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
     async approveGuideApplication(applicationId: string): Promise<any> {
         const application = await guideApplicationModel.findByIdAndUpdate(
             applicationId,
-            { status: 'approved' },
+            { status: 'approved', rejectReason: "" },
             { new: true }
         );
         return application ?? null;
     }
 
-    async rejectGuideApplication(applicationId: string, reason: string): Promise<void> {
+    async rejectGuideApplication(applicationId: string, reason: string, userId: string): Promise<void> {
         await guideApplicationModel.findByIdAndUpdate(
             applicationId,
             {
                 status: 'rejected',
                 rejectReason: reason
+            },
+            { new: true }
+        );
+        await guideModel.findOneAndUpdate(
+            {user: userId},
+            {
+                blocked: true,
             },
             { new: true }
         );
