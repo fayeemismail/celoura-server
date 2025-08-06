@@ -1,6 +1,7 @@
 import { IGuideApplicationRepository } from "./interface/IGuideApplicationRepository";
 import { GuideApplication } from "../../../domain/entities/GuideApplication";
 import guideApplicationModel from "../models/guideApplicationModel";
+import guideModel from "../models/guideModel";
 
 
 
@@ -31,19 +32,28 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
     async approveGuideApplication(applicationId: string): Promise<any> {
         const application = await guideApplicationModel.findByIdAndUpdate(
             applicationId,
-            { status: 'approved' },
+            { status: 'approved', rejectReason: "" },
             { new: true }
         );
         return application ?? null;
     }
 
-    async rejectGuideApplication(applicationId: string): Promise<any> {
-        const application = await guideApplicationModel.findByIdAndUpdate(
+    async rejectGuideApplication(applicationId: string, reason: string, userId: string): Promise<void> {
+        await guideApplicationModel.findByIdAndUpdate(
             applicationId,
-            { status: 'rejected' },
+            {
+                status: 'rejected',
+                rejectReason: reason
+            },
             { new: true }
         );
-        return application ?? null;
+        await guideModel.findOneAndUpdate(
+            {user: userId},
+            {
+                blocked: true,
+            },
+            { new: true }
+        );
     }
 
     async findPaginated(page: number, limit: number): Promise<{ data: GuideApplication[], total: number, totalPages: number }> {
@@ -51,14 +61,21 @@ export class GuideApplicationRepository implements IGuideApplicationRepository {
 
         const [data, total] = await Promise.all([
             guideApplicationModel.find()
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit),
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit),
             guideApplicationModel.countDocuments()
         ]);
 
         const totalPages = Math.ceil(total / limit);
         return { data, total, totalPages };
-    }
+    };
 
+    async deleteApplicationById(applicationId: string): Promise<void> {
+        const result = await guideApplicationModel.findByIdAndDelete(applicationId);
+
+        if (!result) {
+            throw new Error(`Guide application with ID ${applicationId} not found.`);
+        }
+    };
 }

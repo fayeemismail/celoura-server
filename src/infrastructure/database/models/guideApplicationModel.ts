@@ -13,7 +13,9 @@ const guideApplicationModel: Schema <GuideApplication> = new Schema({
     expertise: { type: String, required: true },
     status: { type: String, enum: [ 'pending', 'approved', 'rejected' ], default: 'pending' },
     userId: { type: String, ref: 'User' },
-    basedOn: { type: String }
+    basedOn: { type: String },
+    rejectReason: { type: String, default: "" },
+    re_apply: { type: Number, default: 0 }
 },{
     timestamps: true
 });

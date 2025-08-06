@@ -140,13 +140,14 @@ export default class AdminController {
     };
 
     public rejectGuide = async (req: Request, res: Response): Promise<any> => {
-        const { applicationId, userId } = req.body;
+        const { applicationId, userId, reason } = req.body;
+        console.log(reason)
         try {
             if (!applicationId || !userId) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
                 return;
             }
-            await this.rejectAsGuideUseCase.execute(applicationId, userId);
+            await this.rejectAsGuideUseCase.execute(applicationId, userId, reason);
             res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
         } catch (error: any) {
             console.log(error.message);

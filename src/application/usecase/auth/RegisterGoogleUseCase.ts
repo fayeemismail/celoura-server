@@ -9,31 +9,31 @@ export class RegisterGoogleUserUseCase implements IRegisterGoogleUseCase {
         private authService : IAuthService
     ) {}
 
-    async executee(email: string, name: string): Promise<User> {
-        if(!email) throw new Error ("Invalid Email");
+    // async executee(email: string, name: string): Promise<User> {
+    //     if(!email) throw new Error ("Invalid Email");
 
-        let user = await this.userRepo.findByEmail(email);
-        if(user?.blocked){
-            return user;
-        }
+    //     let user = await this.userRepo.findByEmail(email);
+    //     if(user?.blocked){
+    //         return user;
+    //     }
 
-        if(user?.role == 'guide') throw new Error('Access denied');
-        if(user?.role == 'admin') throw new Error('Access denied');
+    //     if(user?.role == 'guide') throw new Error('Access denied');
+    //     if(user?.role == 'admin') throw new Error('Access denied');
 
-        if(!user){
-            user = await this.userRepo.createUser({
-                name,
-                email,
-                password: '',
-                blocked: false,
-                role: 'user',
-                googleUser: true,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            });
-        }
-        return user;
-    }
+    //     if(!user){
+    //         user = await this.userRepo.createUser({
+    //             name,
+    //             email,
+    //             password: '',
+    //             blocked: false,
+    //             role: 'user',
+    //             googleUser: true,
+    //             createdAt: new Date(),
+    //             updatedAt: new Date()
+    //         });
+    //     };
+    //     return user;
+    // }
     async execute(email: string, name: string): Promise<{ user: User; accessToken: string; refreshToken: string; }> {
         if(!email) throw new Error('Invalid Email');
 
@@ -67,7 +67,7 @@ export class RegisterGoogleUserUseCase implements IRegisterGoogleUseCase {
             id: user._id,
             role: user.role
         });
-
+        
         return { user, accessToken, refreshToken };
     }
 }

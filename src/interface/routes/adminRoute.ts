@@ -17,20 +17,22 @@ import { DestinationRepository } from '../../infrastructure/database/repositorie
 import { GetDestinationUseCase } from '../../application/usecase/admin/GetDestinationSingleUseCase';
 import { EditDestinationUseCase } from '../../application/usecase/admin/EditDestinationUseCase';
 import { DeleteDestinationUseCase } from '../../application/usecase/admin/DeleteDestinationUseCase';
+import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
 
 
 const router = express.Router();
 
 const userRepository = new UserRepository();
-const guideRepo = new GuideApplicationRepository();
-const destinationRepo = new DestinationRepository()
+const guideApplicationRepo = new GuideApplicationRepository();
+const destinationRepo = new DestinationRepository();
+const guideRepo = new GuideRepository()
 
 const getAllUserUseCase = new GetAllUserUseCase(userRepository);
 const blockUserUseCase = new BlockUserUseCase(userRepository);
 const unblockUserUseCase = new UnBlockUserUseCase(userRepository);
-const getAllGuideAppliesUseCase = new GetAllGuideAppliesUseCase(guideRepo);
-const approveAsGuide = new ApproveAsGuideUseCase(userRepository, guideRepo);
-const rejectAsGuide = new RejectAsGuideUseCase(userRepository, guideRepo);
+const getAllGuideAppliesUseCase = new GetAllGuideAppliesUseCase(guideApplicationRepo);
+const approveAsGuide = new ApproveAsGuideUseCase(userRepository, guideApplicationRepo, guideRepo);
+const rejectAsGuide = new RejectAsGuideUseCase(userRepository, guideApplicationRepo);
 const createDestiantionUseCase = new CreateDestinationUseCase(destinationRepo)
 const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
 const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);

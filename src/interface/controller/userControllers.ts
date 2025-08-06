@@ -19,6 +19,7 @@ import { IReplyCommentGuidePostUseCase } from "../../application/usecase/user/in
 import { IFollowGuideUseCase } from "../../application/usecase/user/interface/IFollowGuideUseCase";
 import { IUnfollowGuideUseCase } from "../../application/usecase/user/interface/IUnfollowGuideUseCase";
 import { IGetGuideSinglePostUseCase } from "../../application/usecase/user/interface/IGetGuideSinglePostUseCase";
+import { IHasAlreadyApplied } from "../../application/usecase/user/interface/IHasAlreadyApplied";
 
 
 
@@ -39,8 +40,8 @@ export default class UserController implements IUserInterface {
     private readonly replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase,
     private readonly followGuideUseCase: IFollowGuideUseCase,
     private readonly unfollowGuideUseCase: IUnfollowGuideUseCase,
-    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase
-
+    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
+    private readonly hasAlreadyAppliedUseCase: IHasAlreadyApplied
   ) { }
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
@@ -54,6 +55,17 @@ export default class UserController implements IUserInterface {
       const message = extractErrorMessage(error)
       console.error('Get Profile Error: ', message);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: message })
+    }
+  };
+
+  public hasRegistered = async(req: Request, res: Response) => {
+    const userId = req.params.userId
+    try {
+      const response = await this.hasAlreadyAppliedUseCase.execute(userId);
+      res.status(HttpStatusCode.OK).json(response)
+    } catch (error) {
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Some thing went wrong on fetch application" });
     }
   }
 
@@ -193,13 +205,13 @@ export default class UserController implements IUserInterface {
   };
 
   public getGuideSingleData = async (req: Request, res: Response) => {
-    const id = req.params.id
+    const id = req.params.userId
     try {
       const response = await this.getSingleGuideUseCase.execute(id);
       res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
-      console.log("Error On Getting Single Guide", error);
       const message = extractErrorMessage(error)
+      console.log("this is message ", message ?? "Error On Getting Single Guide", error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? 'Some thing went Wrong on Getting Data' });
     }
   };
@@ -222,7 +234,7 @@ export default class UserController implements IUserInterface {
       res.status(HttpStatusCode.OK).json(response) 
     } catch (error) {
       const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on fetching post" });
     }
   }
@@ -234,7 +246,7 @@ export default class UserController implements IUserInterface {
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
       const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on liking" })
     }
   };
@@ -246,7 +258,7 @@ export default class UserController implements IUserInterface {
       res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
     } catch (error) {
       const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on unLiking" })
     }
   };
@@ -258,7 +270,7 @@ export default class UserController implements IUserInterface {
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
       const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on Commenting" })
     }
   }
@@ -269,8 +281,8 @@ export default class UserController implements IUserInterface {
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
       const message = extractErrorMessage(error);
-      console.log(message ?? error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on Reply" })
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message:"Something went wrong on Reply" })
     }
   };
 
@@ -281,8 +293,7 @@ export default class UserController implements IUserInterface {
       await this.followGuideUseCase.execute({guideId, userId});
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on follow" });
     }
   };
@@ -294,8 +305,7 @@ export default class UserController implements IUserInterface {
       await this.unfollowGuideUseCase.execute({ guideId, userId });
       res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(message ?? error);
+      console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on unfollow" });
     }
   }

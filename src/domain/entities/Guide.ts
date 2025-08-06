@@ -11,7 +11,10 @@ export interface Guide {
   followers: string[];
   bio: string;
   profilePic: string;
+  expertise: string[];
   posts: string[];
+  availableDestinations: string[] //new 
+  blocked: boolean;
   createdAt?: Date; 
   updatedAt?: Date;
 }

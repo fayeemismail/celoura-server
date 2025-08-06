@@ -11,6 +11,6 @@ export class GetDestinationsUseCase implements IGetDestinationsUseCase {
     }
 
     async findById(id: string): Promise<Destination | null> {
-        return await destinationModel.findById(id)
+        return await destinationModel.findById(id);
     }
 }

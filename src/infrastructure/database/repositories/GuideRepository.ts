@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { Guide } from "../../../domain/entities/Guide";
 import guideModel from "../models/guideModel";
 import userModel from "../models/userModel";
@@ -9,45 +10,79 @@ export class GuideRepository implements IGetGuideRepository {
     async getGuideById(id: string): Promise<Guide | null> {
         return await guideModel.findById(id);
     }
-    async findPaginatedGuides(page: number, limit: number, search: string, category: string): Promise<{ data: any[]; total: number }> {
+
+    async findPaginatedGuides( page: number, limit: number, search: string, category: string ): Promise<{ data: any[]; total: number }> {
         const skip = (page - 1) * limit;
 
-        let userIds: string[] = [];
+        const guideFilter: any = {
+            blocked: false,
+        };
 
-        // Step 1: Search users if search exists
+        let userSearchMatchedIds: Types.ObjectId[] = [];
+
+        // If search is provided, look up user matches first
         if (search) {
-            const users = await userModel.find({
+            const userSearchFilter = {
+                role: "guide",
+                blocked: false,
                 $or: [
                     { name: { $regex: search, $options: "i" } },
                     { email: { $regex: search, $options: "i" } },
                 ],
-                role: "guide",
-                blocked: false,
-            }).select("_id");
+            };
 
-            userIds = users.map(user => user._id.toString());
+            const matchedUsers = await userModel.find(userSearchFilter).select("_id");
+            userSearchMatchedIds = matchedUsers.map((u) => new Types.ObjectId(u._id));
         }
 
-        // Step 2: Build guide filter
-        const guideFilter: any = {};
-
-        // If search exists, allow matching either `basedOn` OR matched user IDs
+        // Merge guide-based search and user-based search into a single `$or`
         if (search) {
-            guideFilter.$or = [
-                { basedOn: { $regex: search, $options: "i" } },
-                { user: { $in: userIds } }
-            ];
+            guideFilter.$or = [];
+
+            if (userSearchMatchedIds.length > 0) {
+                guideFilter.$or.push({ user: { $in: userSearchMatchedIds } });
+            }
+
+            guideFilter.$or.push({ basedOn: { $regex: search, $options: "i" } });
+        }
+
+        // Category filter
+        if (category) {
+            guideFilter.expertise = { $in: [category] };
         }
 
         const total = await guideModel.countDocuments(guideFilter);
 
-        const guides = await guideModel.find(guideFilter)
+        const guides = await guideModel
+            .find(guideFilter)
             .skip(skip)
             .limit(limit)
-            .populate("user", "name email")
-            .select("bio profilePic destinations followers happyCustomers user basedOn");
+            .populate({
+                path: "user",
+                select: "name email",
+                match: { blocked: false },
+            })
+            .select("bio profilePic destinations expertise followers happyCustomers user basedOn");
 
-        return { data: guides, total };
+        const filteredGuides = guides.filter((g) => g.user !== null);
+
+        return {
+            data: filteredGuides,
+            total,
+        };
+    };
+
+
+    async createGuide(guide: Partial<Guide>): Promise<Guide> {
+        return await guideModel.create(guide);
+    };
+
+    async unBlockGuide(userId: string): Promise<void> {
+        await guideModel.updateOne({ user: userId }, { blocked: false })
+    };
+
+    async addAvailableDestination(guideId: string, update: Partial<Guide>): Promise<void> {
+        await guideModel.findByIdAndUpdate(guideId, update, { new: true });
     }
 
 }

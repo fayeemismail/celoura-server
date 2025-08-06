@@ -9,7 +9,10 @@ const guideSchema = new Schema<Guide>({
   posts: [{ type: Schema.Types.ObjectId, ref: 'Post' }],
   bio: {type: String},
   profilePic: { type: String },
-  basedOn: { type: String }
+  basedOn: { type: String },
+  expertise: [{ type: String }],
+  blocked: { type: Boolean, default: false },
+  availableDestinations: [{ type: String }]
 }, {
   timestamps: true
 });

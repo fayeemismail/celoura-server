@@ -82,7 +82,9 @@ export class UserRepository implements IUserRepository {
     async approveAsGuide(userId: string): Promise<any> {
         const user = await userModel.findByIdAndUpdate(
             userId,
-            { role: 'guide' },
+            { 
+                role: 'guide'
+            },
             { new: true }
         );
         return user ?? null;
@@ -91,7 +93,9 @@ export class UserRepository implements IUserRepository {
     async rejectAsGuide(userId: string): Promise<any> {
         const user = await userModel.findByIdAndUpdate(
             userId,
-            { role: 'user' },
+            { 
+                role: 'user'
+            },
             { new: true }
         );
         return user ?? null;
@@ -140,5 +144,16 @@ export class UserRepository implements IUserRepository {
             .populate("userId", "name profilePic")
             .lean(); // important for mapping
     };
+
+    async reApproveAsGuide(userId: string): Promise<User | null> {
+        const user = await userModel.findByIdAndUpdate(
+            userId,
+            {
+                role: 'guide'
+            },
+            { new: true }
+        )
+        return user ?? null
+    }
 
 }

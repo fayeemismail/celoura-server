@@ -21,4 +21,5 @@ export interface IUserRepository {
   updateGuideBio(userId: string, bio: string): Promise<void>;
   getLikesByPostId(postId: string): Promise<Likes[]>;
   getCommentsByPostId(postId: string): Promise<Comments[]>;
+  reApproveAsGuide(userId: string): Promise<User | null>;
 }
