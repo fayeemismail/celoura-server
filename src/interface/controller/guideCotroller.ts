@@ -16,6 +16,8 @@ import { IUnlikePostUseCase } from "../../application/usecase/guide/Interface/IU
 import { ICommentPostUseCase } from "../../application/usecase/guide/Interface/ICommentPostUseCase";
 import { newCommentDTO } from "../../application/dto/guide/newCommentDto";
 import { IReplyCommentUseCase } from "../../application/usecase/guide/Interface/IReplyCommentUseCase";
+import { IGetDetailedDestination } from "../../application/usecase/guide/Interface/IGetDetailedDestination";
+import { IAddToAvailableDestinationUseCase } from "../../application/usecase/guide/Interface/IAddToAvailableDestinationUseCase";
 
 
 
@@ -31,7 +33,9 @@ export default class GuideController {
         private readonly likePostUseCase: ILikePostUseCase,
         private readonly unlikePostUseCase: IUnlikePostUseCase,
         private readonly commentPostUseCase: ICommentPostUseCase,
-        private readonly replyCommentUseCase: IReplyCommentUseCase
+        private readonly replyCommentUseCase: IReplyCommentUseCase,
+        private readonly getDestinationDetailed : IGetDetailedDestination,
+        private readonly addToMyDestinationUseCase : IAddToAvailableDestinationUseCase
 
     ) { }
 
@@ -255,4 +259,27 @@ export default class GuideController {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || 'something went wrong while reply' });
         }
     };
+
+    public detailedDestination = async(req: Request, res: Response) => {
+        const destinationId = req.params.destinationId;
+        try {
+            const data = await this.getDestinationDetailed.execute(destinationId);
+            res.status(HttpStatusCode.OK).json(data)
+        } catch (error) {
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot fetch the destination" })
+        }
+    };
+
+    public addToMyDestination = async(req: Request, res: Response) => {
+        const destinationId = req.params.destinationId;
+        const guideId = req.params.guideId;
+        try {
+            await this.addToMyDestinationUseCase.execute(destinationId, guideId);
+            res.status(HttpStatusCode.OK).json({ success: true })
+        } catch (error) {
+            console.log(error, "Cannot Add The destination");
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot Add The destination" })
+        }
+    }
 }

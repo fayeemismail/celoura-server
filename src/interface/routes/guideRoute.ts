@@ -20,6 +20,9 @@ import { LikePostUseCase } from '../../application/usecase/guide/LikePostUserCas
 import { UnlikePostUseCas } from '../../application/usecase/guide/UnlikePostUseCase';
 import { CommentPostUseCase } from '../../application/usecase/guide/CommentPostUseCase';
 import { ReplyCommentUseCase } from '../../application/usecase/guide/ReplyCommentUseCase';
+import { GetDetailedDestination } from '../../application/usecase/guide/GetDetailedDestination';
+import { AddToAvailableDestinationUseCase } from '../../application/usecase/guide/AddToAvailableDestinationUseCase';
+import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
 
 const router = express.Router();
 
@@ -29,6 +32,7 @@ const passwordService = new PasswordService();
 const postRepo = new PostRepository()
 const commentsRepo = new CommentsRepository();
 const likeRepo = new LikeRepository();
+const guideRepo = new GuideRepository()
 
 
 
@@ -43,6 +47,8 @@ const likePost = new LikePostUseCase(likeRepo, userRepo, postRepo);
 const unlikePost = new UnlikePostUseCas(likeRepo, userRepo, postRepo);
 const commentPost = new CommentPostUseCase(postRepo, commentsRepo, userRepo);
 const replyComment = new ReplyCommentUseCase(postRepo, commentsRepo, userRepo);
+const getDetailedDestination = new GetDetailedDestination(destinationRepo);
+const addToAvailableDestination = new AddToAvailableDestinationUseCase(destinationRepo, userRepo, guideRepo)
 
 
 
@@ -58,7 +64,8 @@ const guideController = new GuideController(
     unlikePost,
     commentPost,
     replyComment,
-
+    getDetailedDestination,
+    addToAvailableDestination
 );
 
 
@@ -69,7 +76,9 @@ router.get('/getme',   guideAuthenticate, guideController.getCurrentUser);
 
 //destination
 router.get('/destination', guideAuthenticate, guideController.getPaginatedDestination);
+router.get('/get-destination/:destinationId', guideAuthenticate, guideController.detailedDestination)
 // router.get('/destinations/new-spots/:limit', guideAuthenticate, guideController.getNewDestinations);
+router.put('/add-availableDestination/:destinationId/:guideId', guideAuthenticate, guideController.addToMyDestination);
 
 
 //profile

@@ -11,7 +11,8 @@ const guideSchema = new Schema<Guide>({
   profilePic: { type: String },
   basedOn: { type: String },
   expertise: [{ type: String }],
-  blocked: { type: Boolean, default: false }
+  blocked: { type: Boolean, default: false },
+  availableDestinations: [{ type: String }]
 }, {
   timestamps: true
 });

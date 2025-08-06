@@ -186,8 +186,6 @@ export default class UserController implements IUserInterface {
     const limit = parseInt(req.query.limit as string) || 9;
     const search = req.query.search?.toString() || "";
     const category = req.query.category?.toString() || "";
-    console.log(category, 'this is category>>>>>>>>>>>>>>>>')
-    console.log(search, 'this is search')
     try {
       const { data, total } = await this.getGuidespaginatedUseCase.execute(page, limit, search, category);
       res.status(HttpStatusCode.OK).json({

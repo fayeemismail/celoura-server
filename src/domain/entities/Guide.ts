@@ -13,6 +13,7 @@ export interface Guide {
   profilePic: string;
   expertise: string[];
   posts: string[];
+  availableDestinations: string[] //new 
   blocked: boolean;
   createdAt?: Date; 
   updatedAt?: Date;
