@@ -22,6 +22,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
       confirmPassword,
       profilePic,
       removeProfilePic,
+      availableDestinations
     } = data;
 
     if (!_id) throw new Error("_id is missing");
@@ -58,6 +59,32 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
       await this.userRepo.updateGuideBio(_id, bio.trim());
     }
 
+    // Handle available destinations update
+    if (availableDestinations !== undefined) {
+      let destinationsArray: string[] = [];
+      
+      // Parse if it's a string (coming from form data)
+      if (typeof availableDestinations === 'string') {
+        try {
+          destinationsArray = JSON.parse(availableDestinations);
+        } catch (error) {
+          console.error("Failed to parse availableDestinations:", error);
+          throw new Error("Invalid destinations format");
+        }
+      } else if (Array.isArray(availableDestinations)) {
+        destinationsArray = availableDestinations;
+      }
+      
+      // Validate each destination is a non-empty string
+      if (destinationsArray.some(dest => typeof dest !== 'string' || !dest.trim())) {
+        throw new Error("Destinations must be non-empty strings");
+      }
+
+      // Remove duplicates
+      const uniqueDestinations = [...new Set(destinationsArray.map(d => d.trim()))];
+      
+      await this.userRepo.updateGuideAvailableDestinations(_id, uniqueDestinations);
+    }
 
     // Handle profile picture removal
     if (removeProfilePic && guide.profilePic) {

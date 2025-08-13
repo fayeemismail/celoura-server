@@ -308,5 +308,41 @@ export default class UserController implements IUserInterface {
       console.log(error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on unfollow" });
     }
+  };
+
+  public getGuideWDestinationController = async(req: Request, res: Response) => {
+    const destinationId = req.params.destinationId;
+    try {
+      const data = await this.getSingleDestinationUseCase.getGuideWDestination(destinationId);
+      res.status(HttpStatusCode.OK).json(data);
+    } catch (error) {
+      console.log(error, "Cannot find the destination or guide");
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot find the destination or guide" })
+    }
+  };
+
+  public guideDataOnBooking = async(req: Request, res: Response) => {
+    const guideId = req.params.guideId;
+    try {
+      const data = await this.getSingleGuideUseCase.execute(guideId);
+      res.status(HttpStatusCode.OK).json(data)
+    } catch (error) {
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot get Guide Data" })
+    }
   }
+
+  public bookTheGuide = async(req: Request, res: Response) => {
+    const data = req.body
+    const guideId = req.params.guideId;
+    const userId = req.params.userId
+    try {
+      console.log(data, guideId, userId)
+    } catch (error) {
+      console.log(error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot book the guide" })
+    }
+  }
+
+
 };

@@ -45,7 +45,7 @@ const followRepo = new FollowGuideRepository();
 const applyForGuideUseCase = new ApplyForGuideUseCase(guideApplicationRepo, userRepo);
 const getUserProfile = new GetUserProfile(userRepo);
 const editProfileUseCase = new EditProfile(userRepo, passwordService);
-const getSingleDestinationUseCase = new GetDestinationsUseCase();
+const getSingleDestinationUseCase = new GetDestinationsUseCase(destinationRepo, guideRepo);
 const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
 const getGuidesPaginatedUseCase = new GetGuidesPaginatedUseCase(guideRepo, userRepo);
 const getSingleGuideUseCase = new GetSingleGuideUseCase(userRepo);
@@ -93,6 +93,7 @@ router.get('/destinations', authenticate, checkUserStatus, userController.getDes
 router.get('/destinations/:id', authenticate, checkUserStatus, userController.getSingleDestination);
 router.get('/destination', authenticate, checkUserStatus, userController.getPaginatedDestinations);
 router.get('/destinations/new-spots/:limit', authenticate, userController.getNewDestinations);
+router.get('/guideWDestination/:destinationId', authenticate, userController.getGuideWDestinationController)
 
 
 //guide side on user
@@ -107,6 +108,10 @@ router.post('/follow/:guideId/:userId', authenticate, checkUserStatus, userContr
 router.delete('/unfollow/:guideId/:userId', authenticate, checkUserStatus, userController.unfollowGuid);
 router.delete('/like/:postId/:userId', authenticate, checkUserStatus, userController.unLikeGuidePost);
 
+
+//book guide
+router.get('/book-guide/:guideId', authenticate, checkUserStatus, userController.guideDataOnBooking);
+router.post('/guide/book/:guideId/:userId', authenticate, upload.none(), checkUserStatus, userController.bookTheGuide);
 
 
 export default router;

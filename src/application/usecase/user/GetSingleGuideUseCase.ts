@@ -1,4 +1,5 @@
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
+import { GuideBookingDataPage } from "../../dto/user/GuideOnBooking";
 import { IGetSingleGuideUseCase } from "./interface/IGetSingleGuideUseCase";
 
 export class GetSingleGuideUseCase implements IGetSingleGuideUseCase {
@@ -6,7 +7,7 @@ export class GetSingleGuideUseCase implements IGetSingleGuideUseCase {
         private userRepo: IUserRepository
     ) { }
 
-    async execute(id: string): Promise<any> {
+    async execute(id: string): Promise<GuideBookingDataPage> {
         if (!id) throw new Error("Id not found");
 
         const user = await this.userRepo.getUserById(id);
@@ -25,6 +26,7 @@ export class GetSingleGuideUseCase implements IGetSingleGuideUseCase {
             destinations: guide.destinations,
             followers: guide.followers.map((f: any) => f._id.toString()),
             happyCustomers: guide.happyCustomers.map((h: any) => h._id.toString()),
+            availableDestinations: guide.availableDestinations,
         };
-    }
+    };
 };

@@ -11,7 +11,7 @@ export class GuideRepository implements IGetGuideRepository {
         return await guideModel.findById(id);
     }
 
-    async findPaginatedGuides( page: number, limit: number, search: string, category: string ): Promise<{ data: any[]; total: number }> {
+    async findPaginatedGuides(page: number, limit: number, search: string, category: string): Promise<{ data: any[]; total: number }> {
         const skip = (page - 1) * limit;
 
         const guideFilter: any = {
@@ -83,6 +83,41 @@ export class GuideRepository implements IGetGuideRepository {
 
     async addAvailableDestination(guideId: string, update: Partial<Guide>): Promise<void> {
         await guideModel.findByIdAndUpdate(guideId, update, { new: true });
+    };
+
+    async getGuideByDestinationName(destinationName: string, destinationLocation: string): Promise<Guide[]> {
+        const escapeRegex = (text: string) =>
+            text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        const nameRegex = new RegExp(escapeRegex(destinationName), "i");
+
+        const locationParts = destinationLocation
+            .split(",")
+            .map((part) => part.trim())
+            .filter(Boolean);
+
+        const locationRegexes = locationParts.map(
+            (part) => new RegExp(escapeRegex(part), "i")
+        );
+
+        const orConditions: any[] = [
+            { basedOn: { $regex: nameRegex } },
+            { availableDestinations: { $elemMatch: { $regex: nameRegex } } },
+        ];
+
+        for (const regex of locationRegexes) {
+            orConditions.push({ basedOn: { $regex: regex } });
+            orConditions.push({ availableDestinations: { $elemMatch: { $regex: regex } } });
+        }
+
+        return await guideModel
+            .find({ $or: orConditions })
+            .populate({
+                path: 'user', 
+                select: "name email",
+                match: { role: 'guide' }
+            })
+            .lean();
     }
 
 }

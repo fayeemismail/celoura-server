@@ -16,6 +16,11 @@ import { IGetDestinationUseCase } from "../../application/usecase/admin/interfac
 import { IEditDestinationUseCase } from "../../application/usecase/admin/interface/IEditDestinationUseCase";
 import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IDeleteDestinationUseCase } from "../../application/usecase/admin/interface/IDeleteDestinationUseCase";
+import { v4 as uuidv4 } from 'uuid';
+import { s3Client } from "../../config/s3Config";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { IGenerateSignedUrlUseCase } from "../../application/usecase/admin/interface/IGenarateSignedUrlUseCase";
 
 export default class AdminController {
     constructor(
@@ -30,7 +35,8 @@ export default class AdminController {
         private readonly getCountUseCase: IGetCountUseCase,
         private readonly getDestinationUseCase: IGetDestinationUseCase,
         private readonly editDestinationUseCase: IEditDestinationUseCase,
-        private readonly deleteDestinationUseCase: IDeleteDestinationUseCase
+        private readonly deleteDestinationUseCase: IDeleteDestinationUseCase,
+        private readonly _generateSignedUrlsUseCase : IGenerateSignedUrlUseCase
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
@@ -168,17 +174,43 @@ export default class AdminController {
     };
 
     public createDestination = async (req: Request, res: Response): Promise<any> => {
-        try {
-            const { name, description, location, country, features } = req.body;
-            const files = req.files as Express.Multer.File[];
-            const parsedFeatures = typeof features === 'string' ? JSON.parse(features) : [];
-            const destination = await this.createDestinationUseCase.execute(name, location, country, description, files, parsedFeatures);
-            return res.status(HttpStatusCode.CREATED).json({ message: 'Destination created successfully', data: destination });
-        } catch (error: any) {
-            console.error("Error on uploading: ", error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
-        }
-    };
+    try {
+      const { name, description, location, country, features, photos } = req.body;
+      const parsedFeatures = typeof features === 'string' ? JSON.parse(features) : features;
+      const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+
+      if (!Array.isArray(parsedPhotos) || parsedPhotos.length === 0) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({ message: "At least one photo URL is required" });
+      }
+
+      const destination = await this.createDestinationUseCase.execute(
+        name,
+        location,
+        country,
+        description,
+        parsedPhotos,
+        parsedFeatures
+      );
+        res.status(HttpStatusCode.CREATED).json({ message: 'Destination created successfully', data: destination });
+    } catch (error: any) {
+      console.error("Error on creating destination: ", error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
+    }
+  };
+
+  public generateSignedUrls = async (req: Request, res: Response): Promise<any> => {
+    try {
+      const { count } = req.query; 
+      const photoCount = parseInt(count as string, 10);
+
+      const signedUrls = await this._generateSignedUrlsUseCase.execute(photoCount);
+
+        res.status(HttpStatusCode.OK).json({ signedUrls });
+    } catch (error) {
+      console.error("Error generating signed URLs: ", error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to generate signed URLs" });
+    }
+  };
 
     public getAllDestinations = async (req: Request, res: Response) => {
         try {

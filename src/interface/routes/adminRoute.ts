@@ -18,6 +18,7 @@ import { GetDestinationUseCase } from '../../application/usecase/admin/GetDestin
 import { EditDestinationUseCase } from '../../application/usecase/admin/EditDestinationUseCase';
 import { DeleteDestinationUseCase } from '../../application/usecase/admin/DeleteDestinationUseCase';
 import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
+import { GenerateSignedUrlUseCase } from '../../application/usecase/admin/GenerateSignedUrlUseCase';
 
 
 const router = express.Router();
@@ -38,7 +39,8 @@ const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo)
 const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);
 const getDestination = new GetDestinationUseCase(destinationRepo);
 const editDestination = new EditDestinationUseCase(destinationRepo);
-const deleteDestination = new DeleteDestinationUseCase(destinationRepo)
+const deleteDestination = new DeleteDestinationUseCase(destinationRepo);
+const _generateSignedURLUseCase = new GenerateSignedUrlUseCase();
 
 
 
@@ -56,7 +58,9 @@ const adminController = new AdminContrller(
     getCountUsecase,
     getDestination,
     editDestination,
-    deleteDestination
+    deleteDestination,
+    _generateSignedURLUseCase,
+    
 );
 
 
@@ -77,7 +81,8 @@ router.get('/destinations', adminAuthenticate, adminController.getAllDestination
 router.get('/destination', adminAuthenticate, adminController.getPaginatedDestinations);
 router.get('/destinations/get-destinations/:destinationId', adminAuthenticate, adminController.getDestination); //check with postman api
 router.put('/destination/edit-destination/:destinationId', upload.array('photos', 5), adminAuthenticate, adminController.editDestination)
-router.post('/destination/create-destination', upload.array('photos', 5), adminController.createDestination);
+router.post('/destination/create-destination', adminController.createDestination);
+router.get('/destination/generate-signed-urls', adminController.generateSignedUrls); // New endpoint
 router.delete('/destinations/:destinationId/delete', adminAuthenticate, adminController.deleteDestination);
 
 

@@ -18,4 +18,5 @@ export interface GuideWithUserData {
   posts?: string[];
   bio?: string;
   profilePic?: string;
+  availableDestinations?: string[]
 }
