@@ -15,7 +15,6 @@ export class EditProfile implements IEditUserProfileUseCase {
   ) {}
   async execute(data: EditProfileInput): Promise<User> {
     const { id, name, newPassword, confirmPassword, currentPassword } = data;
-    console.log(data, 'this is data')
     const user = await this.userRepo.getUserById(id);
     if(!user) throw new Error( "User not found" );
 

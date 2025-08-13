@@ -11,4 +11,5 @@ export interface GuideEditProfileDTO {
     confirmPassword?: string;
     profilePic?: Express.Multer.File;
     removeProfilePic?: boolean;
+    availableDestinations?: string[] 
 }

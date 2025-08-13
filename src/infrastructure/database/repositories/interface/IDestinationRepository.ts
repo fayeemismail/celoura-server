@@ -1,4 +1,5 @@
 import { Destination } from "../../../../domain/entities/Destination";
+import { Guide } from "../../../../domain/entities/Guide";
 import { PaginatedDestinations } from "./PaginatedDestination";
 
 

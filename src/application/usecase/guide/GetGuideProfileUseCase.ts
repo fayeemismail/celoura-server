@@ -38,6 +38,7 @@ export class GetGuideProfileUseCase implements IGetGuideProfile {
             posts: guide.posts,
             bio: guide.bio,
             profilePic: guide.profilePic,
+            availableDestinations: guide.availableDestinations
         };
 
         return combined;

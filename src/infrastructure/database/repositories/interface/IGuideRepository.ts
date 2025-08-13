@@ -8,4 +8,5 @@ export interface IGetGuideRepository {
     createGuide(guide: Partial<Guide>): Promise<Guide>;
     unBlockGuide(userId: string): Promise<void>;
     addAvailableDestination(guideId: string, update: Partial<Guide>): Promise<void>;
+    getGuideByDestinationName(destinationName: string, destinationLocation: string): Promise<Guide[]>
 }
