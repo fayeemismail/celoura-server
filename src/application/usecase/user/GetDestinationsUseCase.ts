@@ -9,27 +9,27 @@ import { GuideWithDestinationInfo, IGetDestinationsUseCase } from "./interface/I
 
 export class GetDestinationsUseCase implements IGetDestinationsUseCase {
     constructor(
-        private destinationRepo : IDestinationRepository,
-        private guideRepo : IGetGuideRepository
+        private _destinationRepo : IDestinationRepository,
+        private _guideRepo : IGetGuideRepository
     ) {}
     async findAll(): Promise<Destination[] | null> {
         return await destinationModel.find();
     }
 
     async findById(id: string): Promise<Destination | null> {
-        return await this.destinationRepo.findById(id)
+        return await this._destinationRepo.findById(id)
     };
 
     async getGuideWDestination(destinationId: string): Promise<{ destination: Destination; guide:Guide[]; }> {
         if(!destinationId) throw new Error("Cannot find The ID");
 
-        const destination = await this.destinationRepo.findById(destinationId);
+        const destination = await this._destinationRepo.findById(destinationId);
         if(!destination) throw new Error("Destination not found");
 
         const destinationName = destination.name;
         const destinationLocation = destination.location;
 
-        let guides = await this.guideRepo.getGuideByDestinationName(destinationName, destinationLocation);
+        let guides = await this._guideRepo.getGuideByDestinationName(destinationName, destinationLocation);
 
         guides = guides.filter((g) => g.user);
 

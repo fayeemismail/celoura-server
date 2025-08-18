@@ -9,9 +9,9 @@ import { ICommentGuidePostUseCase } from "./interface/ICommentGuidePostUseCase";
 
 export class CommentGuidePostUseCase implements ICommentGuidePostUseCase {
     constructor(
-        private postRepo: IPostRepository,
-        private commentRepo: ICommentRepository,
-        private userRepo: IUserRepository
+        private _postRepo: IPostRepository,
+        private _commentRepo: ICommentRepository,
+        private _userRepo: IUserRepository
     ) { };
     async execute(data: CommentPostContent): Promise<newCommentToSent> {
         const { postId, content, userId } = data;
@@ -20,13 +20,13 @@ export class CommentGuidePostUseCase implements ICommentGuidePostUseCase {
         if (!content) throw new Error("Content missing");
         if (!userId) throw new Error('UserId not found');
 
-        const post = await this.postRepo.findById(postId);
+        const post = await this._postRepo.findById(postId);
         if (!post) throw new Error('Post not found');
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if (!user) throw new Error('User not found');
 
-        const newComment = await this.commentRepo.newComment(postId, userId, content);
+        const newComment = await this._commentRepo.newComment(postId, userId, content);
         if (!newComment) throw new Error('Failed to create comment');
 
         const populatedComment: newCommentToSent = {

@@ -21,6 +21,7 @@ import { s3Client } from "../../config/s3Config";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { IGenerateSignedUrlUseCase } from "../../application/usecase/admin/interface/IGenarateSignedUrlUseCase";
+import { UserMapper } from "../../application/mappers/admin/userMapper";
 
 export default class AdminController {
     constructor(
@@ -47,9 +48,10 @@ export default class AdminController {
             const search = (req.query.search as string) || '';
 
             const { data, total } = await this.getAllUserUseCase.execute(page, limit, role, search);
+            const userguides = UserMapper.toDTOList(data)
             res.status(HttpStatusCode.OK).json({
                 status: true,
-                data,
+                data: userguides,
                 pagination: {
                     total,
                     page,
@@ -163,13 +165,15 @@ export default class AdminController {
 
     public getCount = async (req: Request, res: Response) => {
         try {
-            const user = await this.getCountUseCase.findUser();
-            const guide = await this.getCountUseCase.findGuide();
+            const userData = await this.getCountUseCase.findUser();
+            const guideData = await this.getCountUseCase.findGuide();
             const destination = await this.getCountUseCase.findDestination();
+            const user = UserMapper.toDTOList(userData);
+            const guide = UserMapper.toDTOList(guideData)
             res.status(HttpStatusCode.OK).json({ user, guide, destination });
-        } catch (error: any) {
+        } catch (error) {
             console.log('Error On getting count: ', error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error.message || 'Failed to Fetch users' });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error || 'Failed to Fetch users' });
         }
     };
 
@@ -298,6 +302,7 @@ export default class AdminController {
 
     public deleteDestination = async(req: Request, res: Response) => {
         const { destinationId } = req.params;
+        console.log(destinationId, 'this is dstination Id')
         try {
             const result = await this.deleteDestinationUseCase.execute(destinationId);
             res.status(HttpStatusCode.NO_CONTENT).json(result.message);

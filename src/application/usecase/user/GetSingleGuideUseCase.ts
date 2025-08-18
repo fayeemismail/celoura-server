@@ -4,16 +4,16 @@ import { IGetSingleGuideUseCase } from "./interface/IGetSingleGuideUseCase";
 
 export class GetSingleGuideUseCase implements IGetSingleGuideUseCase {
     constructor(
-        private userRepo: IUserRepository
+        private _userRepo: IUserRepository
     ) { }
 
     async execute(id: string): Promise<GuideBookingDataPage> {
         if (!id) throw new Error("Id not found");
 
-        const user = await this.userRepo.getUserById(id);
+        const user = await this._userRepo.getUserById(id);
         if (!user) throw new Error("User not found");
 
-        const guide = await this.userRepo.getGuideById(id); // Must populate user, followers, happyCustomers, posts
+        const guide = await this._userRepo.getGuideById(id); // Must populate user, followers, happyCustomers, posts
         if (!guide) throw new Error("Guide not found");
 
         return {

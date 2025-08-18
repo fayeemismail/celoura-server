@@ -23,7 +23,7 @@ interface Input {
 export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
 
     constructor(
-        private guideRepo: IGuideApplicationRepository,
+        private _guideRepo: IGuideApplicationRepository,
         private userRepo: IUserRepository
     ) { }
 
@@ -34,7 +34,7 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
         if (!user) throw new Error('User not found');
         if (user.email !== email) throw new Error('Email mismatch');
 
-        const existingApplication = await this.guideRepo.findUser(userId);
+        const existingApplication = await this._guideRepo.findUser(userId);
         const now = new Date();
 
         if (existingApplication) {
@@ -46,9 +46,9 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
                 const reApplyCount = (existingApplication.re_apply ?? 0) + 1;
                 const previousRejectReason = existingApplication.rejectReason;
 
-                await this.guideRepo.deleteApplicationById(existingApplication._id); // you’ll need _id in GuideApplication
+                await this._guideRepo.deleteApplicationById(existingApplication._id); // you’ll need _id in GuideApplication
 
-                const newApplication = await this.guideRepo.createApplication({
+                const newApplication = await this._guideRepo.createApplication({
                     fullName,
                     phone,
                     email,
@@ -72,10 +72,10 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
             throw new Error('You have already applied and cannot re-apply yet.');
         }
 
-        const existingEmail = await this.guideRepo.findUserByEmail(email);
+        const existingEmail = await this._guideRepo.findUserByEmail(email);
         if (existingEmail) throw new Error('The email is already used');
 
-        const newApplication = await this.guideRepo.createApplication({
+        const newApplication = await this._guideRepo.createApplication({
             fullName,
             phone,
             email,

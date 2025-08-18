@@ -8,18 +8,18 @@ import { IGetGuideSinglePostUseCase } from "./interface/IGetGuideSinglePostUseCa
 
 export class GetGuideSinglePostUseCase implements IGetGuideSinglePostUseCase {
     constructor(
-        private postRepo: IPostRepository,
-        private commentRepo: ICommentRepository,
-        private likeRepo: ILikeRepository
+        private _postRepo: IPostRepository,
+        private _commentRepo: ICommentRepository,
+        private _likeRepo: ILikeRepository
     ) { };
     async execute(postId: string): Promise<ISinglePostDetails | null> {
         if (!postId) throw new Error("Post Id missing");
 
-        const post = await this.postRepo.findById(postId);
+        const post = await this._postRepo.findById(postId);
         if (!post) throw new Error("Post not found");
 
-        const commentsData = await this.commentRepo.findByPostId(postId);
-        const likesData = await this.likeRepo.findByPostId(postId);
+        const commentsData = await this._commentRepo.findByPostId(postId);
+        const likesData = await this._likeRepo.findByPostId(postId);
 
         const allComments: CommentWithReplies[] = (commentsData ?? []).map((comment) => {
             const populatedComment = comment as PopulatedComment;

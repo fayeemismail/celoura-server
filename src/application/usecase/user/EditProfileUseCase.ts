@@ -10,12 +10,12 @@ import { IPasswordService } from "../../interfaces/services/IPasswordService";
 
 export class EditProfile implements IEditUserProfileUseCase { 
   constructor(
-    private readonly userRepo : IUserRepository,
-    private readonly passwordService: IPasswordService
+    private readonly _userRepo : IUserRepository,
+    private readonly _passwordService: IPasswordService
   ) {}
   async execute(data: EditProfileInput): Promise<User> {
     const { id, name, newPassword, confirmPassword, currentPassword } = data;
-    const user = await this.userRepo.getUserById(id);
+    const user = await this._userRepo.getUserById(id);
     if(!user) throw new Error( "User not found" );
 
     if( newPassword || confirmPassword || currentPassword ){
@@ -29,16 +29,16 @@ export class EditProfile implements IEditUserProfileUseCase {
         hashedPasswordInDb: user.password
       });
 
-      const hashed = await this.passwordService.hashPassword(newPassword);
-      await this.userRepo.updatePassword(id, hashed)
+      const hashed = await this._passwordService.hashPassword(newPassword);
+      await this._userRepo.updatePassword(id, hashed)
     };
 
     if(name && name !== user.name){
       validateNameUpdate(name);
-      await this.userRepo.updateName(id, name)
+      await this._userRepo.updateName(id, name)
     }
 
-    const upadatedUser = await this.userRepo.getUserById(id);
+    const upadatedUser = await this._userRepo.getUserById(id);
     return upadatedUser!;
   }
 }
