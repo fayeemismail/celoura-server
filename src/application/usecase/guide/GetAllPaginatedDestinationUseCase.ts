@@ -7,13 +7,13 @@ import { IGetAllPaginatedDestinationUseCase } from "./Interface/IGetPaginatedDes
 
 export class GetAllPaginatedDestinationUseCase implements IGetAllPaginatedDestinationUseCase {
     constructor(
-        private readonly destinationRepo: IDestinationRepository
+        private readonly _destinationRepo: IDestinationRepository
     ) {};
     async execute(page: number, limit: number, search: string, attraction: string): Promise<PaginatedDestinations> {
-        return await this.destinationRepo.findAllPgainated(page, limit, search, attraction);
+        return await this._destinationRepo.findAllPgainated(page, limit, search, attraction);
     }
 
     async getNew(limit: number): Promise<Destination[]> {
-        return await this.destinationRepo.findNewDest(limit);
+        return await this._destinationRepo.findNewDest(limit);
     }
 }

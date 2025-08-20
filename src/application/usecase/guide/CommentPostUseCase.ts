@@ -21,9 +21,9 @@ export interface newCommentToSent {
 
 export class CommentPostUseCase implements ICommentPostUseCase {
     constructor(
-        private postRepo: IPostRepository,
-        private commentRepo: ICommentRepository,
-        private userRepo: IUserRepository
+        private _postRepo: IPostRepository,
+        private _commentRepo: ICommentRepository,
+        private _userRepo: IUserRepository
     ) {}
 
     async execute(data: CommentPostContent): Promise<newCommentToSent> {
@@ -33,18 +33,18 @@ export class CommentPostUseCase implements ICommentPostUseCase {
     if (!content) throw new Error("Content missing");
     if (!userId) throw new Error('UserId not found');
 
-    const post = await this.postRepo.findById(postId);
+    const post = await this._postRepo.findById(postId);
     if (!post) throw new Error('Post not found');
 
-    const user = await this.userRepo.getUserById(userId);
+    const user = await this._userRepo.getUserById(userId);
     if (!user) throw new Error('User not found');
 
-    const newComment = await this.commentRepo.newComment(postId, userId, content);
+    const newComment = await this._commentRepo.newComment(postId, userId, content);
     if (!newComment) throw new Error('Failed to create comment');
 
     let profilePic: string | null = null;
     if (user.role === 'guide') {
-        const guide = await this.userRepo.getGuideById(userId);
+        const guide = await this._userRepo.getGuideById(userId);
         profilePic = guide?.profilePic || null;
     }
 

@@ -7,20 +7,20 @@ import { IUnLikeGuidePostUseCase } from "./interface/IUnLikeGuidePostUseCase";
 
 export class UnLikeGuidePostUseCase implements IUnLikeGuidePostUseCase{
     constructor(
-        private likeRepo: ILikeRepository,
-        private userRepo: IUserRepository,
-        private postRepo: IPostRepository
+        private _likeRepo: ILikeRepository,
+        private _userRepo: IUserRepository,
+        private _postRepo: IPostRepository
     ) {};
     async execute(postId: string, userId: string): Promise<void> {
         if(!postId) throw new Error('PostId not found');
         if(!userId) throw new Error('PostId not found');
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if(!user) throw new Error('User not found');
 
-        const post = await this.postRepo.findById(postId);
+        const post = await this._postRepo.findById(postId);
         if(!post) throw new Error('Post not found');
 
-        await this.likeRepo.unlikePost(postId, userId);
+        await this._likeRepo.unlikePost(postId, userId);
     }
 }

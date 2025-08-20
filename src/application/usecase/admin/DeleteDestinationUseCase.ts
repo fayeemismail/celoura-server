@@ -1,20 +1,19 @@
-// application/usecase/admin/DeleteDestinationUseCase.ts
-
+import { DeleteObjectsCommand } from "@aws-sdk/client-s3";
 import { IDeleteDestinationUseCase } from "./interface/IDeleteDestinationUseCase";
 import { IDestinationRepository } from "../../../infrastructure/database/repositories/interface/IDestinationRepository";
-import { s3 } from "../../../config/s3Config";
+import { s3Client } from "../../../config/s3Config";
 import { env } from "../../../config/authConfig";
 
 export class DeleteDestinationUseCase implements IDeleteDestinationUseCase {
-  constructor(private readonly destinationRepo: IDestinationRepository) {}
+  constructor(private readonly _destinationRepo: IDestinationRepository) {}
 
   async execute(destinationId: string): Promise<{ message: string }> {
     if (!destinationId) throw new Error("Destination ID is required");
 
-    const destination = await this.destinationRepo.findById(destinationId);
+    const destination = await this._destinationRepo.findById(destinationId);
     if (!destination) throw new Error("Destination not found");
 
-    // Delete all photos from S3
+    
     if (destination.photos && destination.photos.length > 0) {
       const deleteParams = {
         Bucket: env.S3_BUCKET!,
@@ -26,11 +25,11 @@ export class DeleteDestinationUseCase implements IDeleteDestinationUseCase {
         },
       };
 
-      await s3.deleteObjects(deleteParams).promise();
+      await s3Client.send(new DeleteObjectsCommand(deleteParams));
     }
 
-    // Delete from DB
-    await this.destinationRepo.deleteById(destinationId);
+    
+    await this._destinationRepo.deleteById(destinationId);
 
     return { message: "Destination deleted successfully" };
   }

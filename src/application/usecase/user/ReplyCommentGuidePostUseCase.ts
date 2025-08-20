@@ -8,9 +8,9 @@ import { IReplyCommentGuidePostUseCase } from "./interface/IReplyCommentGuidePos
 
 export class ReplyCommentGuidePostuseCase implements IReplyCommentGuidePostUseCase {
     constructor(
-        private postRepo: IPostRepository,
-        private commentRepo: ICommentRepository,
-        private userRepo: IUserRepository
+        private _postRepo: IPostRepository,
+        private _commentRepo: ICommentRepository,
+        private _userRepo: IUserRepository
     ) { };
     async execute(data: AddReplyCommentOnGuidePost): Promise<newCommentToSent> {
         const { postId, content, userId, parentId } = data;
@@ -18,16 +18,16 @@ export class ReplyCommentGuidePostuseCase implements IReplyCommentGuidePostUseCa
         if (!postId || !content || !userId || !parentId) {
             throw new Error('Fields are missing');
         };
-        const post = await this.postRepo.findById(postId);
+        const post = await this._postRepo.findById(postId);
         if (!post) throw new Error("Post not found");
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if (!user) throw new Error('User not found');
 
-        const comment = await this.commentRepo.findById(parentId);
+        const comment = await this._commentRepo.findById(parentId);
         if (!comment) throw new Error("Comment not found");
 
-        const newComment = await this.commentRepo.replyComment(postId, userId, content, parentId);
+        const newComment = await this._commentRepo.replyComment(postId, userId, content, parentId);
         if (!newComment) throw new Error("Failed to Post Reply Comment");
 
         const populatedComment: newCommentToSent = {

@@ -16,26 +16,23 @@ import { IGetDestinationUseCase } from "../../application/usecase/admin/interfac
 import { IEditDestinationUseCase } from "../../application/usecase/admin/interface/IEditDestinationUseCase";
 import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IDeleteDestinationUseCase } from "../../application/usecase/admin/interface/IDeleteDestinationUseCase";
-import { v4 as uuidv4 } from 'uuid';
-import { s3Client } from "../../config/s3Config";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { IGenerateSignedUrlUseCase } from "../../application/usecase/admin/interface/IGenarateSignedUrlUseCase";
+import { UserMapper } from "../../application/mappers/admin/userMapper";
 
 export default class AdminController {
     constructor(
-        private readonly getAllUserUseCase: IGetAllUserUseCase,
-        private readonly blockUserUseCase: IBlockUserUseCase,
-        private readonly unBlockUserUseCase: IUnBlockUserUseCase,
-        private readonly getAllGuideAppliesUseCase: IGetAllGuideApplies,
-        private readonly approveAsGuideUseCase: IApproveAsGuide,
-        private readonly rejectAsGuideUseCase: IRejectAsGuide,
-        private readonly createDestinationUseCase: ICreateDestintaion,
-        private readonly getAllDestinationsUseCase: IGetAllDestinations,
-        private readonly getCountUseCase: IGetCountUseCase,
-        private readonly getDestinationUseCase: IGetDestinationUseCase,
-        private readonly editDestinationUseCase: IEditDestinationUseCase,
-        private readonly deleteDestinationUseCase: IDeleteDestinationUseCase,
+        private readonly _getAllUserUseCase: IGetAllUserUseCase,
+        private readonly _blockUserUseCase: IBlockUserUseCase,
+        private readonly _unBlockUserUseCase: IUnBlockUserUseCase,
+        private readonly _getAllGuideAppliesUseCase: IGetAllGuideApplies,
+        private readonly _approveAsGuideUseCase: IApproveAsGuide,
+        private readonly _rejectAsGuideUseCase: IRejectAsGuide,
+        private readonly _createDestinationUseCase: ICreateDestintaion,
+        private readonly _getAllDestinationsUseCase: IGetAllDestinations,
+        private readonly _getCountUseCase: IGetCountUseCase,
+        private readonly _getDestinationUseCase: IGetDestinationUseCase,
+        private readonly _editDestinationUseCase: IEditDestinationUseCase,
+        private readonly _deleteDestinationUseCase: IDeleteDestinationUseCase,
         private readonly _generateSignedUrlsUseCase : IGenerateSignedUrlUseCase
     ) { }
 
@@ -46,10 +43,11 @@ export default class AdminController {
             const role = req.query.role as 'user' | 'guide' || 'user';
             const search = (req.query.search as string) || '';
 
-            const { data, total } = await this.getAllUserUseCase.execute(page, limit, role, search);
+            const { data, total } = await this._getAllUserUseCase.execute(page, limit, role, search);
+            const userguides = UserMapper.toDTOList(data)
             res.status(HttpStatusCode.OK).json({
                 status: true,
-                data,
+                data: userguides,
                 pagination: {
                     total,
                     page,
@@ -98,7 +96,7 @@ export default class AdminController {
         const { userId } = req.params;
         try {
             if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
-            await this.blockUserUseCase.execute(userId);
+            await this._blockUserUseCase.execute(userId);
             return res.status(HttpStatusCode.OK).json({ message: 'User Has been Blocked successfully' });
         } catch (error: any) {
             console.log(error);
@@ -110,7 +108,7 @@ export default class AdminController {
         const { userId } = req.params;
         try {
             if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
-            await this.unBlockUserUseCase.execute(userId);
+            await this._unBlockUserUseCase.execute(userId);
             res.status(HttpStatusCode.OK).json({ message: 'UnBlocked User' });
         } catch (error: any) {
             console.log(error);
@@ -122,7 +120,7 @@ export default class AdminController {
         try {
             const page = parseInt(req.query.page as string) || 1;
             const limit = parseInt(req.query.limit as string) || 10;
-            const { data, total, totalPages } = await this.getAllGuideAppliesUseCase.execute(page, limit);
+            const { data, total, totalPages } = await this._getAllGuideAppliesUseCase.execute(page, limit);
             return res.status(HttpStatusCode.OK).json({ data, total, page, totalPages });
         } catch (error: any) {
             console.log(error.message);
@@ -137,7 +135,7 @@ export default class AdminController {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
                 return;
             }
-            await this.approveAsGuideUseCase.execute(applicationId, userId);
+            await this._approveAsGuideUseCase.execute(applicationId, userId);
             res.status(HttpStatusCode.OK).json({ message: 'Approved as guide Successfully' });
         } catch (error: any) {
             console.log(error.message);
@@ -153,7 +151,7 @@ export default class AdminController {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
                 return;
             }
-            await this.rejectAsGuideUseCase.execute(applicationId, userId, reason);
+            await this._rejectAsGuideUseCase.execute(applicationId, userId, reason);
             res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
         } catch (error: any) {
             console.log(error.message);
@@ -163,13 +161,15 @@ export default class AdminController {
 
     public getCount = async (req: Request, res: Response) => {
         try {
-            const user = await this.getCountUseCase.findUser();
-            const guide = await this.getCountUseCase.findGuide();
-            const destination = await this.getCountUseCase.findDestination();
+            const userData = await this._getCountUseCase.findUser();
+            const guideData = await this._getCountUseCase.findGuide();
+            const destination = await this._getCountUseCase.findDestination();
+            const user = UserMapper.toDTOList(userData);
+            const guide = UserMapper.toDTOList(guideData)
             res.status(HttpStatusCode.OK).json({ user, guide, destination });
-        } catch (error: any) {
+        } catch (error) {
             console.log('Error On getting count: ', error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error.message || 'Failed to Fetch users' });
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error || 'Failed to Fetch users' });
         }
     };
 
@@ -183,7 +183,7 @@ export default class AdminController {
         res.status(HttpStatusCode.BAD_REQUEST).json({ message: "At least one photo URL is required" });
       }
 
-      const destination = await this.createDestinationUseCase.execute(
+      const destination = await this._createDestinationUseCase.execute(
         name,
         location,
         country,
@@ -214,7 +214,7 @@ export default class AdminController {
 
     public getAllDestinations = async (req: Request, res: Response) => {
         try {
-            let response = await this.getAllDestinationsUseCase.findAll();
+            let response = await this._getAllDestinationsUseCase.findAll();
             res.status(HttpStatusCode.OK).json({ data: response });
         } catch (error: any) {
             console.log(error.message);
@@ -229,7 +229,7 @@ export default class AdminController {
             const search = req.query.search?.toString() || "";
             const attraction = req.query.attraction?.toString() || "";
 
-            const { data, total } = await this.getAllDestinationsUseCase.execute(page, limit, search, attraction);
+            const { data, total } = await this._getAllDestinationsUseCase.execute(page, limit, search, attraction);
 
             res.status(HttpStatusCode.OK).json({
                 status: true,
@@ -255,7 +255,7 @@ export default class AdminController {
         }
 
         try {
-            const data = await this.getDestinationUseCase.execute(destinationId);
+            const data = await this._getDestinationUseCase.execute(destinationId);
             res.status(HttpStatusCode.OK).json({ data });
         } catch (error: unknown) {
             console.error(error);
@@ -281,7 +281,7 @@ export default class AdminController {
         try {
             const updatedData = {...editedData, files};
             console.log(updatedData, 'this is updated data');
-            const update = await this.editDestinationUseCase.execute(destinationId, updatedData);
+            const update = await this._editDestinationUseCase.execute(destinationId, updatedData);
 
             if(!update){
                 res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong" });
@@ -298,8 +298,9 @@ export default class AdminController {
 
     public deleteDestination = async(req: Request, res: Response) => {
         const { destinationId } = req.params;
+        console.log(destinationId, 'this is dstination Id')
         try {
-            const result = await this.deleteDestinationUseCase.execute(destinationId);
+            const result = await this._deleteDestinationUseCase.execute(destinationId);
             res.status(HttpStatusCode.NO_CONTENT).json(result.message);
         } catch (error) {
             const message = extractErrorMessage(error)

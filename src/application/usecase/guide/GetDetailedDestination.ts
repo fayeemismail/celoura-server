@@ -6,12 +6,12 @@ import { IGetDetailedDestination } from "./Interface/IGetDetailedDestination";
 
 export class GetDetailedDestination implements IGetDetailedDestination {
     constructor(
-        private destRepo : IDestinationRepository
+        private _destRepo : IDestinationRepository
     ){}
     async execute(destinationId: string): Promise<Destination | null> {
         if(!destinationId) throw new Error("Id Not found");
 
-        const destination = await this.destRepo.findById(destinationId);
+        const destination = await this._destRepo.findById(destinationId);
         if(!destination) throw new Error("Destination not found");
         
         return destination

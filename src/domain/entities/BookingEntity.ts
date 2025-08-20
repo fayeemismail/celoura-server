@@ -22,8 +22,8 @@ export interface Booking {
 
   startDate: Date;
   endDate: Date;
-  durationInDays: number;
-  budget: number;
+  durationInDays: string;
+  budget: string;
   locations: string[];
 
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';

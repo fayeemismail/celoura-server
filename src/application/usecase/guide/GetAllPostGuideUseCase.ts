@@ -8,12 +8,12 @@ import { IGetAllPostGuide } from "./Interface/IGetAllPostGuide";
 
 export class GetAllPostsGuideUseCase implements IGetAllPostGuide {
     constructor(
-        private postRepo: IPostRepository,
-        private commentsRepo: ICommentRepository,
-        private likeRepo: ILikeRepository
+        private _postRepo: IPostRepository,
+        private _commentsRepo: ICommentRepository,
+        private _likeRepo: ILikeRepository
     ) { }
     async execute(id: string): Promise<IPostSummary[] | []> {
-        const posts = await this.postRepo.findByGuideId(id);
+        const posts = await this._postRepo.findByGuideId(id);
 
         
         if (!posts || posts.length === 0) {
@@ -22,8 +22,8 @@ export class GetAllPostsGuideUseCase implements IGetAllPostGuide {
 
         const result: IPostSummary[] = await Promise.all(
             posts.map(async (post) => {
-                const commentsCount = await this.commentsRepo.countByPostId(post._id!) ?? 0;
-                const likesCount = await this.likeRepo.countByPostId(post._id!) ?? 0;
+                const commentsCount = await this._commentsRepo.countByPostId(post._id!) ?? 0;
+                const likesCount = await this._likeRepo.countByPostId(post._id!) ?? 0;
 
                 return {
                     _id: post._id!,

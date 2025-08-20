@@ -7,16 +7,16 @@ import { IGetGuideProfile } from "./Interface/IGetGuideProfileUseCase";
 
 export class GetGuideProfileUseCase implements IGetGuideProfile {
     constructor(
-        private readonly userRepo: IUserRepository
+        private readonly _userRepo: IUserRepository
     ) { }
     async findAll(): Promise<User[]> {
-        const allUsers = await this.userRepo.findAll()
+        const allUsers = await this._userRepo.findAll()
         const guide = allUsers.filter(user => user.role == 'guide');
         return guide
     }
     async findById(id: string): Promise<GuideWithUserData | null> {
-        const guideUser = await this.userRepo.getUserById(id);
-        const guide = await this.userRepo.getGuideById(id);
+        const guideUser = await this._userRepo.getUserById(id);
+        const guide = await this._userRepo.getGuideById(id);
 
         if (!guideUser || !guide) {
             throw new Error('Guide not found');
@@ -44,7 +44,7 @@ export class GetGuideProfileUseCase implements IGetGuideProfile {
         return combined;
     }
     async getMe(id: string): Promise<User> {
-        const user = await this.userRepo.getUserById(id);
+        const user = await this._userRepo.getUserById(id);
         if (!user) throw new Error('Cannot find user');
         return user;
     }

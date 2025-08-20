@@ -7,8 +7,8 @@ import { IFollowGuideUseCase } from "./interface/IFollowGuideUseCase";
 
 export class FollowGuideUseCase implements IFollowGuideUseCase {
     constructor(
-        private userRepo: IUserRepository,
-        private followRepo: IFollowRepository
+        private _userRepo: IUserRepository,
+        private _followRepo: IFollowRepository
     ) {};
     async execute(data: FollowRequest): Promise<void> {
         const { guideId, userId } = data;
@@ -17,12 +17,12 @@ export class FollowGuideUseCase implements IFollowGuideUseCase {
         if(!userId) throw new Error("User Id Missing");
         if(userId == guideId) throw new Error("Cannot follow them selves");
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if(!user) throw new Error("User not found");
 
-        const guide = await this.userRepo.getGuideById(guideId);
+        const guide = await this._userRepo.getGuideById(guideId);
         if(!guide) throw new Error('Guide not found');
 
-        await this.followRepo.followGuide(guideId, userId)
+        await this._followRepo.followGuide(guideId, userId)
     }
 }

@@ -18,20 +18,20 @@ import { IVerifyOtpUseCase } from "../../application/usecase/auth/interface/IVer
 
 export default class AuthController implements IAuthController {
     constructor(
-        private loginOrRegisterGoogleUseCase: IRegisterGoogleUseCase,
+        private _loginOrRegisterGoogleUseCase: IRegisterGoogleUseCase,
         private _loginGuideGoogleUseCase: ILoginGuideGoogleUseCase,
-        private registerUseCase: IRegisterUserUseCase,
-        private loginUserUseCase: ILoginUserUseCase,
-        private readonly refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
-        private readonly getUserUseCase : IGetUserProfile,
-        private readonly resendOtpUseCase : IResendOtpUseCase,
-        private readonly verifyOtpUseCase : IVerifyOtpUseCase
+        private _registerUseCase: IRegisterUserUseCase,
+        private _loginUserUseCase: ILoginUserUseCase,
+        private readonly _refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
+        private readonly _getUserUseCase : IGetUserProfile,
+        private readonly _resendOtpUseCase : IResendOtpUseCase,
+        private readonly _verifyOtpUseCase : IVerifyOtpUseCase
     ) { }
 
     public signup = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { name, email, password, confirmPassword, role } = req.body;
-            const result = await this.registerUseCase.execute({ name, email, password, confirmPassword, role });
+            const result = await this._registerUseCase.execute({ name, email, password, confirmPassword, role });
             res.status(result.status).json(result.data);
         } catch (error) {
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error || "Some thing went wrong" });
@@ -40,7 +40,7 @@ export default class AuthController implements IAuthController {
 
     public login = async (req: Request, res: Response) => {
         const { email, password } = req.body;
-        const result = await this.loginUserUseCase.execute({ email, password, role: ['user'] });
+        const result = await this._loginUserUseCase.execute({ email, password, role: ['user'] });
         if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
             res.status(result.status).json({
                 success: false,
@@ -84,7 +84,7 @@ export default class AuthController implements IAuthController {
 
     public adminLogin = async (req: Request, res: Response) => {
         const { email, password } = req.body;
-        const result = await this.loginUserUseCase.execute({ email, password, role: ['admin'] });
+        const result = await this._loginUserUseCase.execute({ email, password, role: ['admin'] });
 
         if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
             res.status(result.status).json({
@@ -135,7 +135,7 @@ export default class AuthController implements IAuthController {
 
     public guideLogin = async (req: Request, res: Response) => {
         const { email, password } = req.body;
-        const result = await this.loginUserUseCase.execute({ email, password, role: ['guide'] });
+        const result = await this._loginUserUseCase.execute({ email, password, role: ['guide'] });
 
         if (result.status !== HttpStatusCode.OK || !result.data?.user || !result.token || !result.refreshToken) {
             res.status(result.status).json({
@@ -188,7 +188,7 @@ export default class AuthController implements IAuthController {
             return;
         }
         try {
-            const { accessToken } = await this.refreshAccessTokenUseCase.execute(token);
+            const { accessToken } = await this._refreshAccessTokenUseCase.execute(token);
 
             res.cookie('accessToken', accessToken, {
                 httpOnly: true,
@@ -215,7 +215,7 @@ export default class AuthController implements IAuthController {
     public verifyOtp = async (req: Request, res: Response) => {
         try {
             const { email, otp } = req.body;
-            const result = await this.verifyOtpUseCase.execute({ email, otp });
+            const result = await this._verifyOtpUseCase.execute({ email, otp });
             if (result.status !== HttpStatusCode.CREATED) {
                 res.status(result.status).json(result.data);
                 return;
@@ -230,7 +230,7 @@ export default class AuthController implements IAuthController {
         try {
             const { email } = req.body;
 
-            const result = await this.resendOtpUseCase.execute(email);
+            const result = await this._resendOtpUseCase.execute(email);
             if (result.status !== HttpStatusCode.OK) {
                 res.status(result.status).json(result.data);
                 return;
@@ -248,7 +248,7 @@ export default class AuthController implements IAuthController {
             const userId = (req as any).user?._id;
             if (!userId)res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'UnAuthorized' });
 
-            const user = await this.getUserUseCase.execute(userId);
+            const user = await this._getUserUseCase.execute(userId);
             if (!user)res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' });
 
             const userData = UserProfileDTO.formDomain(user)
@@ -263,7 +263,7 @@ export default class AuthController implements IAuthController {
     public googleLoginVerify = async (req: Request, res: Response) => {
         try {
             const { email, name } = req.body;
-            const { user, accessToken, refreshToken } = await this.loginOrRegisterGoogleUseCase.execute(email, name);
+            const { user, accessToken, refreshToken } = await this._loginOrRegisterGoogleUseCase.execute(email, name);
             if (user.blocked) {
                 res.status(HttpStatusCode.UNAUTHORIZED).json({
                     message: "Your account is Blocked"

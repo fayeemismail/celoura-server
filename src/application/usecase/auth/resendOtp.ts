@@ -6,18 +6,18 @@ import { IEmailService } from "../../interfaces/services/IEmailService";
 
 export class ResendOtpUseCase implements IResendOtpUseCase {
   constructor(
-    private readonly otpRepo: IOtpRepository,
-    private readonly emailService: IEmailService
+    private readonly _otpRepo: IOtpRepository,
+    private readonly _emailService: IEmailService
   ) {}
 
   async execute(email: string): Promise<{status: number; data: { message?: string; error?: string }}> {
     
-    const existingOtp = await this.otpRepo.getOtp(email);
+    const existingOtp = await this._otpRepo.getOtp(email);
     if (existingOtp) {
-      await this.otpRepo.deleteOtp(email);
+      await this._otpRepo.deleteOtp(email);
     }
 
-    const tempUser = await this.otpRepo.getTempUser(email);
+    const tempUser = await this._otpRepo.getTempUser(email);
     if (!tempUser) {
       return {
         status: HttpStatusCode.BAD_REQUEST,
@@ -25,7 +25,7 @@ export class ResendOtpUseCase implements IResendOtpUseCase {
       };
     }
 
-    await sendSignupOtp(tempUser.email, this.otpRepo, this.emailService);
+    await sendSignupOtp(tempUser.email, this._otpRepo, this._emailService);
 
     return {
       status: HttpStatusCode.OK,

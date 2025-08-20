@@ -28,6 +28,8 @@ import { FollowGuideRepository } from '../../infrastructure/database/repositorie
 import { UnfollowGuideUseCase } from '../../application/usecase/user/UnfollowGuideUseCase';
 import { GetGuideSinglePostUseCase } from '../../application/usecase/user/GetGuideSinglePostUseCase';
 import { HasAlreadyApplied } from '../../application/usecase/user/HasAlreadyAppliedUseCase';
+import { BookGuideUseCase } from '../../application/usecase/user/BookGuideUseCase';
+import { BookingRepository } from '../../infrastructure/database/repositories/BookingRepository';
 
 const router = express.Router();
 
@@ -40,6 +42,7 @@ const postRepo = new PostRepository();
 const commentRepo = new CommentsRepository();
 const likeRepo = new LikeRepository();
 const followRepo = new FollowGuideRepository();
+const bookingRepo = new BookingRepository();
 
 
 const applyForGuideUseCase = new ApplyForGuideUseCase(guideApplicationRepo, userRepo);
@@ -58,6 +61,7 @@ const followGuideUseCase = new FollowGuideUseCase(userRepo, followRepo);
 const unfollowGuideUseCase = new UnfollowGuideUseCase(userRepo, followRepo);
 const getGuideSinglePostUseCase = new GetGuideSinglePostUseCase(postRepo, commentRepo, likeRepo);
 const hasAlreadyAppliedUseCase = new HasAlreadyApplied(userRepo, guideApplicationRepo);
+const bookGuideUseCase = new BookGuideUseCase(userRepo, guideRepo, bookingRepo);
 
 
 const userController = new UserController(
@@ -76,7 +80,8 @@ const userController = new UserController(
     followGuideUseCase,
     unfollowGuideUseCase,
     getGuideSinglePostUseCase,
-    hasAlreadyAppliedUseCase
+    hasAlreadyAppliedUseCase,
+    bookGuideUseCase,
 );
 
 //profile side
@@ -111,7 +116,7 @@ router.delete('/like/:postId/:userId', authenticate, checkUserStatus, userContro
 
 //book guide
 router.get('/book-guide/:guideId', authenticate, checkUserStatus, userController.guideDataOnBooking);
-router.post('/guide/book/:guideId/:userId', authenticate, upload.none(), checkUserStatus, userController.bookTheGuide);
+router.post('/guide/book/:guideId/:userId/:destinationId', authenticate, upload.none(), checkUserStatus, userController.bookTheGuide);
 
 
 export default router;

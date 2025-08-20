@@ -23,6 +23,8 @@ import { ReplyCommentUseCase } from '../../application/usecase/guide/ReplyCommen
 import { GetDetailedDestination } from '../../application/usecase/guide/GetDetailedDestination';
 import { AddToAvailableDestinationUseCase } from '../../application/usecase/guide/AddToAvailableDestinationUseCase';
 import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
+import { BookingRepository } from '../../infrastructure/database/repositories/BookingRepository';
+import { FetchBookingsUseCase } from '../../application/usecase/guide/FetchBookingsUseCase';
 
 const router = express.Router();
 
@@ -32,7 +34,8 @@ const passwordService = new PasswordService();
 const postRepo = new PostRepository()
 const commentsRepo = new CommentsRepository();
 const likeRepo = new LikeRepository();
-const guideRepo = new GuideRepository()
+const guideRepo = new GuideRepository();
+const bookingRepo = new BookingRepository();
 
 
 
@@ -48,7 +51,8 @@ const unlikePost = new UnlikePostUseCas(likeRepo, userRepo, postRepo);
 const commentPost = new CommentPostUseCase(postRepo, commentsRepo, userRepo);
 const replyComment = new ReplyCommentUseCase(postRepo, commentsRepo, userRepo);
 const getDetailedDestination = new GetDetailedDestination(destinationRepo);
-const addToAvailableDestination = new AddToAvailableDestinationUseCase(destinationRepo, userRepo, guideRepo)
+const addToAvailableDestination = new AddToAvailableDestinationUseCase(destinationRepo, userRepo, guideRepo);
+const fetchBookigsUseCase = new FetchBookingsUseCase(bookingRepo, userRepo);
 
 
 
@@ -65,7 +69,8 @@ const guideController = new GuideController(
     commentPost,
     replyComment,
     getDetailedDestination,
-    addToAvailableDestination
+    addToAvailableDestination,
+    fetchBookigsUseCase
 );
 
 
@@ -94,6 +99,9 @@ router.put('/like/:postId/:userId', guideAuthenticate, guideController.likePost)
 router.delete('/like/:postId/:userId', guideAuthenticate, guideController.unlikePost);
 router.post('/comment', guideAuthenticate, guideController.addComment);
 router.post('/reply-comment', guideAuthenticate, guideController.replyComment);
+
+//bookings
+router.get('/fetch-bookings/:guideId', guideAuthenticate, guideController.fetchBookigs);
 
 
 export default router;

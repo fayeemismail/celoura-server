@@ -7,16 +7,16 @@ import { IHasAlreadyApplied } from "./interface/IHasAlreadyApplied";
 
 export class HasAlreadyApplied implements IHasAlreadyApplied {
     constructor(
-        private userRepo: IUserRepository,
-        private guideRepo: IGuideApplicationRepository
+        private _userRepo: IUserRepository,
+        private _guideRepo: IGuideApplicationRepository
     ) {};
     async execute(userId: string): Promise<GuideApplication | null> {
         if(!userId) throw new Error("User Id is missing");
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if(!user) throw new Error("User not found");
 
-        const guideApplication = await this.guideRepo.findUser(userId);
+        const guideApplication = await this._guideRepo.findUser(userId);
         if(!guideApplication) return null;
 
         return guideApplication

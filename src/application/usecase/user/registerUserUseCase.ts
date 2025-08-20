@@ -17,13 +17,13 @@ interface RegisterInput {
 
 export class RegisterUseCase implements IRegisterUserUseCase{
     constructor(
-        private readonly userRepo : IUserRepository,
-        private readonly otpRepo : IOtpRepository,
-        private readonly emailService: IEmailService
+        private readonly _userRepo : IUserRepository,
+        private readonly _otpRepo : IOtpRepository,
+        private readonly _emailService: IEmailService
     ){}
     async execute(input: RegisterInput): Promise<UseCaseErrorResponse | UseCaseSuccessResponse<{ message: string; }>> {
         const { name, email, password, confirmPassword, role } = input;
-        const existingUser = await this.userRepo.findByEmail(email);
+        const existingUser = await this._userRepo.findByEmail(email);
         if(existingUser){
             return { status: HttpStatusCode.BAD_REQUEST, data: { error: "User already exists" } };
         };
@@ -32,8 +32,8 @@ export class RegisterUseCase implements IRegisterUserUseCase{
             return { status: HttpStatusCode.BAD_REQUEST, data: { error: "Password do not match" } };
         };
 
-        await this.otpRepo.setTempUser(email, { name, email, password, role });
-        await sendSignupOtp(email, this.otpRepo, this.emailService);
+        await this._otpRepo.setTempUser(email, { name, email, password, role });
+        await sendSignupOtp(email, this._otpRepo, this._emailService);
         
         return { status: HttpStatusCode.OK, data: { message: "OTP sent to email" } };
     }

@@ -20,7 +20,6 @@ export class GuideRepository implements IGetGuideRepository {
 
         let userSearchMatchedIds: Types.ObjectId[] = [];
 
-        // If search is provided, look up user matches first
         if (search) {
             const userSearchFilter = {
                 role: "guide",
@@ -35,7 +34,6 @@ export class GuideRepository implements IGetGuideRepository {
             userSearchMatchedIds = matchedUsers.map((u) => new Types.ObjectId(u._id));
         }
 
-        // Merge guide-based search and user-based search into a single `$or`
         if (search) {
             guideFilter.$or = [];
 
@@ -46,7 +44,6 @@ export class GuideRepository implements IGetGuideRepository {
             guideFilter.$or.push({ basedOn: { $regex: search, $options: "i" } });
         }
 
-        // Category filter
         if (category) {
             guideFilter.expertise = { $in: [category] };
         }
@@ -113,7 +110,7 @@ export class GuideRepository implements IGetGuideRepository {
         return await guideModel
             .find({ $or: orConditions })
             .populate({
-                path: 'user', 
+                path: 'user',
                 select: "name email",
                 match: { role: 'guide' }
             })

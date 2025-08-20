@@ -8,13 +8,13 @@ import { ILoginUserUseCase, LoginInput, LoginOutput } from "./interface/ILoginUs
 
 export class LoginUserUseCase implements ILoginUserUseCase{
     constructor(
-        private readonly userRepo : IUserRepository,
-        private readonly authService : IAuthService,
-        private readonly passwordService : IPasswordService
+        private readonly _userRepo : IUserRepository,
+        private readonly _authService : IAuthService,
+        private readonly _passwordService : IPasswordService
     ){}
     async execute({ email, password, role }: LoginInput): Promise<LoginOutput> {
         try {
-            const user = await this.userRepo.findByEmail(email);
+            const user = await this._userRepo.findByEmail(email);
             if(!user) {
                 return {
                     status: HttpStatusCode.NOT_FOUND,
@@ -22,7 +22,7 @@ export class LoginUserUseCase implements ILoginUserUseCase{
                 };
             }
 
-            const isValid = await this.passwordService.comparePassword(password, user.password);
+            const isValid = await this._passwordService.comparePassword(password, user.password);
             if(!isValid) {
                 return {
                     status: HttpStatusCode.BAD_REQUEST,
@@ -44,8 +44,8 @@ export class LoginUserUseCase implements ILoginUserUseCase{
                 };
             }
 
-            const token = this.authService.generateAccessToken({ id: user._id, role: user.role });
-            const refreshToken = this.authService.generateRefreshToken({ id: user._id, role: user.role });
+            const token = this._authService.generateAccessToken({ id: user._id, role: user.role });
+            const refreshToken = this._authService.generateRefreshToken({ id: user._id, role: user.role });
 
             return {
                 status: HttpStatusCode.OK,

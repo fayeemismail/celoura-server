@@ -26,17 +26,17 @@ type PopulatedLike = Likes & {
 
 export class GetSinglePostUseCase implements IGetSinglePostUseCase {
   constructor(
-    private postRepo: IPostRepository,
-    private commentsRepo: ICommentRepository,
-    private likeRepo: ILikeRepository
+    private _postRepo: IPostRepository,
+    private _commentsRepo: ICommentRepository,
+    private _likeRepo: ILikeRepository
   ) {}
 
   async execute(_id: string): Promise<ISinglePostDetails> {
-    const post = await this.postRepo.findByPostId(_id);
+    const post = await this._postRepo.findByPostId(_id);
     if (!post) throw new Error("Post not found");
 
-    const commentsData = await this.commentsRepo.findByPostId(_id);
-    const likesData = await this.likeRepo.findByPostId(_id);
+    const commentsData = await this._commentsRepo.findByPostId(_id);
+    const likesData = await this._likeRepo.findByPostId(_id);
 
     // Step 1: Transform comments to nested structure
     const allComments: CommentWithReplies[] = (commentsData ?? []).map((comment) => {

@@ -5,39 +5,13 @@ import {IRegisterGoogleUseCase } from "./interface/IRegisterGoogleUseCase";
 
 export class RegisterGoogleUserUseCase implements IRegisterGoogleUseCase {
     constructor(
-        private userRepo : IUserRepository,
-        private authService : IAuthService
+        private _userRepo : IUserRepository,
+        private _authService : IAuthService
     ) {}
-
-    // async executee(email: string, name: string): Promise<User> {
-    //     if(!email) throw new Error ("Invalid Email");
-
-    //     let user = await this.userRepo.findByEmail(email);
-    //     if(user?.blocked){
-    //         return user;
-    //     }
-
-    //     if(user?.role == 'guide') throw new Error('Access denied');
-    //     if(user?.role == 'admin') throw new Error('Access denied');
-
-    //     if(!user){
-    //         user = await this.userRepo.createUser({
-    //             name,
-    //             email,
-    //             password: '',
-    //             blocked: false,
-    //             role: 'user',
-    //             googleUser: true,
-    //             createdAt: new Date(),
-    //             updatedAt: new Date()
-    //         });
-    //     };
-    //     return user;
-    // }
     async execute(email: string, name: string): Promise<{ user: User; accessToken: string; refreshToken: string; }> {
         if(!email) throw new Error('Invalid Email');
 
-        let user = await this.userRepo.findByEmail(email);
+        let user = await this._userRepo.findByEmail(email);
 
         if(user?.blocked) return { user, accessToken: '', refreshToken: "" };
 
@@ -46,7 +20,7 @@ export class RegisterGoogleUserUseCase implements IRegisterGoogleUseCase {
         };
 
         if(!user) {
-            user = await this.userRepo.createUser({
+            user = await this._userRepo.createUser({
                 name,
                 email,
                 password: "",
@@ -58,12 +32,12 @@ export class RegisterGoogleUserUseCase implements IRegisterGoogleUseCase {
             });
         };
 
-        const accessToken = this.authService.generateAccessToken({
+        const accessToken = this._authService.generateAccessToken({
             id: user._id,
             role: user.role,
         });
 
-        const refreshToken = this.authService.generateRefreshToken({
+        const refreshToken = this._authService.generateRefreshToken({
             id: user._id,
             role: user.role
         });

@@ -18,24 +18,26 @@ import { newCommentDTO } from "../../application/dto/guide/newCommentDto";
 import { IReplyCommentUseCase } from "../../application/usecase/guide/Interface/IReplyCommentUseCase";
 import { IGetDetailedDestination } from "../../application/usecase/guide/Interface/IGetDetailedDestination";
 import { IAddToAvailableDestinationUseCase } from "../../application/usecase/guide/Interface/IAddToAvailableDestinationUseCase";
+import { IFetchBookingsUseCase } from "../../application/usecase/guide/Interface/IFetchBookingsUseCase";
 
 
 
 export default class GuideController {
     constructor(
-        private readonly getGuideProfileUseCase: IGetGuideProfile,
-        private readonly getCurrentGuideUseCase: IGetUserProfile,
-        private readonly getDestinationUseCase: IGetAllPaginatedDestinationUseCase,
-        private readonly editGuideProfileUseCase: IEditGuideProfileUseCase,
-        private readonly createnewPostUseCase: ICreateNewPostUseCase,
-        private readonly getAllPostGuideUseCase: IGetAllPostGuide,
-        private readonly getSinglePostUseCase: IGetSinglePostUseCase,
-        private readonly likePostUseCase: ILikePostUseCase,
-        private readonly unlikePostUseCase: IUnlikePostUseCase,
-        private readonly commentPostUseCase: ICommentPostUseCase,
-        private readonly replyCommentUseCase: IReplyCommentUseCase,
-        private readonly getDestinationDetailed : IGetDetailedDestination,
-        private readonly addToMyDestinationUseCase : IAddToAvailableDestinationUseCase
+        private readonly _getGuideProfileUseCase: IGetGuideProfile,
+        private readonly _getCurrentGuideUseCase: IGetUserProfile,
+        private readonly _getDestinationUseCase: IGetAllPaginatedDestinationUseCase,
+        private readonly _editGuideProfileUseCase: IEditGuideProfileUseCase,
+        private readonly _createnewPostUseCase: ICreateNewPostUseCase,
+        private readonly _getAllPostGuideUseCase: IGetAllPostGuide,
+        private readonly _getSinglePostUseCase: IGetSinglePostUseCase,
+        private readonly _likePostUseCase: ILikePostUseCase,
+        private readonly _unlikePostUseCase: IUnlikePostUseCase,
+        private readonly _commentPostUseCase: ICommentPostUseCase,
+        private readonly _replyCommentUseCase: IReplyCommentUseCase,
+        private readonly _getDestinationDetailed : IGetDetailedDestination,
+        private readonly _addToMyDestinationUseCase : IAddToAvailableDestinationUseCase,
+        private readonly _fetchBookingUseCase : IFetchBookingsUseCase
 
     ) { }
 
@@ -79,7 +81,7 @@ export default class GuideController {
                 return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Unauthorized' });
             }
 
-            const user = await this.getCurrentGuideUseCase.execute(userId);
+            const user = await this._getCurrentGuideUseCase.execute(userId);
             if (!user) res.status(HttpStatusCode.NOT_FOUND).json({ error: 'User not found' })
             const userDTO = GuideDataDto.formDomain(user);
 
@@ -98,7 +100,7 @@ export default class GuideController {
             const search = req.query.search?.toString() || "";
             const attraction = req.query.attraction?.toString() || "";
 
-            const { data, total } = await this.getDestinationUseCase.execute(page, limit, search, attraction);
+            const { data, total } = await this._getDestinationUseCase.execute(page, limit, search, attraction);
             // console.log(data, total);
             res.status(HttpStatusCode.OK).json({
                 status: true,
@@ -120,7 +122,7 @@ export default class GuideController {
     public getNewDestinations = async (req: Request, res: Response) => {
         const limit = parseInt(req.params.limit as string) || 4;
         try {
-            const data = await this.getDestinationUseCase.getNew(limit)
+            const data = await this._getDestinationUseCase.getNew(limit)
             if (!data) res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Something went wrong" }); console.log('eroor happend');
             console.log(data, 'this is data---------------')
             res.status(HttpStatusCode.OK).json(data); console.log("seding data")
@@ -134,7 +136,7 @@ export default class GuideController {
     public guideProfile = async (req: Request, res: Response) => {
         const { id } = req.params
         try {
-            const response = await this.getGuideProfileUseCase.findById(id);
+            const response = await this._getGuideProfileUseCase.findById(id);
             if (!response) {
                 res.status(HttpStatusCode.NOT_FOUND).json({ message: "User not found" });
                 return
@@ -159,7 +161,7 @@ export default class GuideController {
                 ...data,
                 profilePic: file ? file : undefined,
             };
-            const response = await this.editGuideProfileUseCase.execute(updatedData);
+            const response = await this._editGuideProfileUseCase.execute(updatedData);
             res.status(HttpStatusCode.OK).json(response);
         } catch (error: unknown) {
             console.log(error);
@@ -177,7 +179,7 @@ export default class GuideController {
             const data = req.body;
             const files = req.files;
             const fullData = { ...data, photos: files? files : undefined };
-            const response = await this.createnewPostUseCase.execute(fullData);
+            const response = await this._createnewPostUseCase.execute(fullData);
 
             res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
@@ -190,7 +192,7 @@ export default class GuideController {
     public getGuideAllPosts = async(req: Request, res: Response) => {
         const guideId = req.params.guideId;
         try {
-            const response = await this.getAllPostGuideUseCase.execute(guideId);
+            const response = await this._getAllPostGuideUseCase.execute(guideId);
             res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             console.log(error, 'this is error');
@@ -201,7 +203,7 @@ export default class GuideController {
     public getSinglePost = async(req: Request, res: Response) => {
         const postId = req.params.postId;
         try {
-            const response = await this.getSinglePostUseCase.execute(postId);
+            const response = await this._getSinglePostUseCase.execute(postId);
             res.status(HttpStatusCode.OK).json(response);
         } catch (error) {
             const message = extractErrorMessage(error);
@@ -214,7 +216,7 @@ export default class GuideController {
         const postId = req.params.postId;
         const userId = req.params.userId;
         try {
-            await this.likePostUseCase.execute(postId, userId);
+            await this._likePostUseCase.execute(postId, userId);
             res.status(HttpStatusCode.CREATED).json({ success: true })
         } catch (error) {
             const message = extractErrorMessage(error);
@@ -227,7 +229,7 @@ export default class GuideController {
         const postId = req.params.postId;
         const userId = req.params.userId;
         try {
-            await this.unlikePostUseCase.execute(postId, userId);
+            await this._unlikePostUseCase.execute(postId, userId);
             res.status(HttpStatusCode.NO_CONTENT).json({ success: true });
         } catch (error) {
             const message = extractErrorMessage(error);
@@ -239,7 +241,7 @@ export default class GuideController {
     public addComment = async(req: Request, res: Response) => {
         const data = req.body
         try {
-            const newComment = await this.commentPostUseCase.execute(data);
+            const newComment = await this._commentPostUseCase.execute(data);
             res.status(HttpStatusCode.CREATED).json(newComment);
         } catch (error) {
             const message = extractErrorMessage(error);
@@ -251,7 +253,7 @@ export default class GuideController {
     public replyComment = async(req: Request, res: Response) => {
         const data = req.body
         try {
-            const response = await this.replyCommentUseCase.execute(data);
+            const response = await this._replyCommentUseCase.execute(data);
             res.status(HttpStatusCode.CREATED).json(response);
         } catch (error) {
             const message = extractErrorMessage(error);
@@ -263,7 +265,7 @@ export default class GuideController {
     public detailedDestination = async(req: Request, res: Response) => {
         const destinationId = req.params.destinationId;
         try {
-            const data = await this.getDestinationDetailed.execute(destinationId);
+            const data = await this._getDestinationDetailed.execute(destinationId);
             res.status(HttpStatusCode.OK).json(data)
         } catch (error) {
             console.log(error);
@@ -275,11 +277,27 @@ export default class GuideController {
         const destinationId = req.params.destinationId;
         const guideId = req.params.guideId;
         try {
-            await this.addToMyDestinationUseCase.execute(destinationId, guideId);
+            await this._addToMyDestinationUseCase.execute(destinationId, guideId);
             res.status(HttpStatusCode.OK).json({ success: true })
         } catch (error) {
             console.log(error, "Cannot Add The destination");
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot Add The destination" })
+        }
+    };
+
+    public fetchBookigs = async(req: Request, res: Response) => {
+        const guideId = req.params.guideId;
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 1;
+        const search = (req.query.search as string) || "";
+        const status = (req.query.status as string) || "";
+        try {
+            const {data, total} = await this._fetchBookingUseCase.execute(guideId, page, limit, search, status);
+            res.status(HttpStatusCode.OK).json({data, total});
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: message ?? "Cannot fetch Bookings"})
         }
     }
 }

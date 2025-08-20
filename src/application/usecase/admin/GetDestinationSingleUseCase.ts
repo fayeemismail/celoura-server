@@ -6,11 +6,11 @@ import { IGetDestinationUseCase } from "./interface/IGetDestinationUseCase";
 
 export class GetDestinationUseCase implements IGetDestinationUseCase {
     constructor(
-        private destinationRepo: IDestinationRepository
+        private _destinationRepo: IDestinationRepository
     ){}
     async execute(destinationId: string): Promise<Destination> {
         if(!destinationId) throw new Error('Invalid DestinationId');
-        const destination = await this.destinationRepo.findById(destinationId);
+        const destination = await this._destinationRepo.findById(destinationId);
         if(!destination) throw new Error("Destination not found");
         return destination
     }
