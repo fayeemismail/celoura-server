@@ -24,13 +24,13 @@ export class ApplyForGuideUseCase implements IApplyForGuideUseCase {
 
     constructor(
         private _guideRepo: IGuideApplicationRepository,
-        private userRepo: IUserRepository
+        private _userRepo: IUserRepository
     ) { }
 
     async execute(input: Input): Promise<GuideApplication> {
         const { fullName, phone, email, dob, address, experience, expertise, idFileUrl, userId, basedOn } = input;
 
-        const user = await this.userRepo.getUserById(userId);
+        const user = await this._userRepo.getUserById(userId);
         if (!user) throw new Error('User not found');
         if (user.email !== email) throw new Error('Email mismatch');
 

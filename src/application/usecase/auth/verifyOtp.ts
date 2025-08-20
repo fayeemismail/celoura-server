@@ -8,14 +8,14 @@ import { User } from "../../../domain/entities/User";
 
 export class VerifyOtpUseCase implements IVerifyOtpUseCase {
   constructor(
-    private readonly otpRepo: IOtpRepository,
-    private readonly userRepo: IUserRepository,
-    private readonly passwordService: IPasswordService
+    private readonly _otpRepo: IOtpRepository,
+    private readonly _userRepo: IUserRepository,
+    private readonly _passwordService: IPasswordService
   ) {}
 
   async execute({email, otp}: OtpInput): Promise<{ status: number; data: { message?: string; error?: string; savedUser?: User; }; }> {
       try {
-      const savedOtp = await this.otpRepo.getOtp(email);
+      const savedOtp = await this._otpRepo.getOtp(email);
       if (!savedOtp) {
         return {
           status: HttpStatusCode.BAD_REQUEST,
@@ -30,7 +30,7 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase {
         };
       }
 
-      const userData = await this.otpRepo.getTempUser(email);
+      const userData = await this._otpRepo.getTempUser(email);
       if (!userData) {
         return {
           status: HttpStatusCode.BAD_REQUEST,
@@ -39,7 +39,7 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase {
       }
 
       const { name, email: userEmail, password, role } = userData;
-      const hashedPassword = await this.passwordService.hashPassword(password);
+      const hashedPassword = await this._passwordService.hashPassword(password);
 
       const user = {
         name,
@@ -50,10 +50,10 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase {
         is_verified: false,
       };
 
-      await this.otpRepo.deleteOtp(email);
-      await this.otpRepo.deleteTempUser(email);
+      await this._otpRepo.deleteOtp(email);
+      await this._otpRepo.deleteTempUser(email);
 
-      const savedUser = await this.userRepo.createUser(user);
+      const savedUser = await this._userRepo.createUser(user);
 
       return {
         status: HttpStatusCode.CREATED,

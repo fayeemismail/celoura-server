@@ -5,10 +5,10 @@ import { IUserRepository } from "../../../infrastructure/database/repositories/i
 
 
 export class GetAllGuidesUseCase {
-    constructor(private userRepository: IUserRepository) {}
+    constructor(private _userRepository: IUserRepository) {}
 
     async execute(): Promise<User[]> {
         console.log('hey it happend')
-        return await this.userRepository.findAll()
+        return await this._userRepository.findAll()
     }
 }

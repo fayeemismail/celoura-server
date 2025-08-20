@@ -8,21 +8,21 @@ import { ILikePostUseCase } from "./Interface/ILikePostUseCase";
 
 export class LikePostUseCase implements ILikePostUseCase {
     constructor(
-        private likeRepo: ILikeRepository,
-        private userRepo: IUserRepository,
-        private postRepo: IPostRepository
+        private _likeRepo: ILikeRepository,
+        private _userRepo: IUserRepository,
+        private _postRepo: IPostRepository
     ){};
     async execute(postId: string, userId: string): Promise<Likes> {
         if(!postId) throw new Error('PostId not found');
         if(!userId) throw new Error('UserId not found');
 
-        const user = await this.userRepo.getUserById(userId)
+        const user = await this._userRepo.getUserById(userId)
         if(!user) throw new Error("User not found");
 
-        const post = await this.postRepo.findById(postId);
+        const post = await this._postRepo.findById(postId);
         if(!post) throw new Error('Post not found');
 
-        const newLike = await this.likeRepo.likePost(postId, userId);
+        const newLike = await this._likeRepo.likePost(postId, userId);
         return newLike!;
     }
 }

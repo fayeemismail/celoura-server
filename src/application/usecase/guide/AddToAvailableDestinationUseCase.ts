@@ -7,21 +7,21 @@ import { IAddToAvailableDestinationUseCase } from "./Interface/IAddToAvailableDe
 
 export class AddToAvailableDestinationUseCase implements IAddToAvailableDestinationUseCase {
     constructor(
-        private destinationRepo : IDestinationRepository,
-        private userRepo : IUserRepository,
-        private guideRepo : IGetGuideRepository
+        private _destinationRepo : IDestinationRepository,
+        private _userRepo : IUserRepository,
+        private _guideRepo : IGetGuideRepository
     ) {}
     async execute(destinationId: string, guideId: string): Promise<void> {
         if(!destinationId) throw new Error("Destination Id not found");
         if(!guideId) throw new Error("guide Id not found");
 
-        const destination = await this.destinationRepo.findById(destinationId);
+        const destination = await this._destinationRepo.findById(destinationId);
         if(!destination) throw new Error("Destination Not found");
 
-        const guideUser = await this.userRepo.getUserById(guideId);
+        const guideUser = await this._userRepo.getUserById(guideId);
         if(!guideUser) throw new Error("User not found");
 
-        const guide = await this.userRepo.getGuideById(guideId);
+        const guide = await this._userRepo.getGuideById(guideId);
         if(!guide) throw new Error("Guide not found");
 
         if(!guide.availableDestinations){
@@ -36,6 +36,6 @@ export class AddToAvailableDestinationUseCase implements IAddToAvailableDestinat
             guide.availableDestinations.push(destination.location);
         }
         
-        await this.guideRepo.addAvailableDestination(guide._id!, { availableDestinations: guide.availableDestinations })
+        await this._guideRepo.addAvailableDestination(guide._id!, { availableDestinations: guide.availableDestinations })
     }
 }

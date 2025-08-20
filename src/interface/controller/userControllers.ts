@@ -20,6 +20,8 @@ import { IFollowGuideUseCase } from "../../application/usecase/user/interface/IF
 import { IUnfollowGuideUseCase } from "../../application/usecase/user/interface/IUnfollowGuideUseCase";
 import { IGetGuideSinglePostUseCase } from "../../application/usecase/user/interface/IGetGuideSinglePostUseCase";
 import { IHasAlreadyApplied } from "../../application/usecase/user/interface/IHasAlreadyApplied";
+import { IBookGuideUseCase } from "../../application/usecase/user/interface/IBookGuideUseCase";
+import { BookGuide } from "../../application/dto/user/IBookGuideData";
 
 
 
@@ -27,27 +29,28 @@ import { IHasAlreadyApplied } from "../../application/usecase/user/interface/IHa
 export default class UserController implements IUserInterface {
   constructor(
     private readonly _applyForGuideUseCase: ApplyForGuideUseCase,
-    private readonly guideProfileUseCase: IGetUserProfile,
-    private readonly editProfileUseCase: IEditUserProfileUseCase,
-    private readonly getSingleDestinationUseCase: IGetDestinationsUseCase,
-    private readonly getAllDestinationsUseCase: IGetAllDestinations,
-    private readonly getGuidespaginatedUseCase: IGetGuidePaginatedUseCase,
-    private readonly getSingleGuideUseCase: IGetSingleGuideUseCase,
-    private readonly getAllPostGuideUseCase: IGetAllPostGuideUseCase,
-    private readonly likeGUidePostUseCase: ILikeGuidePostUseCase,
-    private readonly unLikeGuidePostUseCase: IUnLikeGuidePostUseCase,
-    private readonly commentGuidePostUseCase: ICommentGuidePostUseCase,
-    private readonly replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase,
-    private readonly followGuideUseCase: IFollowGuideUseCase,
-    private readonly unfollowGuideUseCase: IUnfollowGuideUseCase,
-    private readonly getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
-    private readonly hasAlreadyAppliedUseCase: IHasAlreadyApplied
+    private readonly _guideProfileUseCase: IGetUserProfile,
+    private readonly _editProfileUseCase: IEditUserProfileUseCase,
+    private readonly _getSingleDestinationUseCase: IGetDestinationsUseCase,
+    private readonly _getAllDestinationsUseCase: IGetAllDestinations,
+    private readonly _getGuidespaginatedUseCase: IGetGuidePaginatedUseCase,
+    private readonly _getSingleGuideUseCase: IGetSingleGuideUseCase,
+    private readonly _getAllPostGuideUseCase: IGetAllPostGuideUseCase,
+    private readonly _likeGUidePostUseCase: ILikeGuidePostUseCase,
+    private readonly _unLikeGuidePostUseCase: IUnLikeGuidePostUseCase,
+    private readonly _commentGuidePostUseCase: ICommentGuidePostUseCase,
+    private readonly _replyCommentGuidePostUseCase: IReplyCommentGuidePostUseCase,
+    private readonly _followGuideUseCase: IFollowGuideUseCase,
+    private readonly _unfollowGuideUseCase: IUnfollowGuideUseCase,
+    private readonly _getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
+    private readonly _hasAlreadyAppliedUseCase: IHasAlreadyApplied,
+    private readonly _bookGuideUseCase: IBookGuideUseCase
   ) { }
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
     try {
       const userId = req.params.id;
-      const user = await this.guideProfileUseCase.execute(userId);
+      const user = await this._guideProfileUseCase.execute(userId);
       const userDTO = UserProfileDTO.formDomain(user);
 
       res.status(HttpStatusCode.OK).json(userDTO);
@@ -58,10 +61,10 @@ export default class UserController implements IUserInterface {
     }
   };
 
-  public hasRegistered = async(req: Request, res: Response) => {
+  public hasRegistered = async (req: Request, res: Response) => {
     const userId = req.params.userId
     try {
-      const response = await this.hasAlreadyAppliedUseCase.execute(userId);
+      const response = await this._hasAlreadyAppliedUseCase.execute(userId);
       res.status(HttpStatusCode.OK).json(response)
     } catch (error) {
       console.log(error);
@@ -72,7 +75,7 @@ export default class UserController implements IUserInterface {
   public editProfile = async (req: Request, res: Response): Promise<void> => {
     try {
       const updateData = req.body;
-      const user = await this.editProfileUseCase.execute(updateData);
+      const user = await this._editProfileUseCase.execute(updateData);
 
       const userData = UserProfileDTO.formDomain(user);
 
@@ -119,7 +122,7 @@ export default class UserController implements IUserInterface {
 
   public getDestinations = async (req: Request, res: Response) => {
     try {
-      const data = await this.getAllDestinationsUseCase.findAll();
+      const data = await this._getAllDestinationsUseCase.findAll();
       res.status(HttpStatusCode.OK).json({ data })
     } catch (error: unknown) {
       const message = extractErrorMessage(error)
@@ -131,7 +134,7 @@ export default class UserController implements IUserInterface {
   public getSingleDestination = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const data = await this.getSingleDestinationUseCase.findById(id);
+      const data = await this._getSingleDestinationUseCase.findById(id);
       res.status(HttpStatusCode.OK).json({ data })
     } catch (error: unknown) {
       const message = extractErrorMessage(error)
@@ -149,7 +152,7 @@ export default class UserController implements IUserInterface {
       const search = req.query.search?.toString() || "";
       const attraction = req.query.attraction?.toString() || "";
 
-      const { data, total } = await this.getAllDestinationsUseCase.execute(page, limit, search, attraction);
+      const { data, total } = await this._getAllDestinationsUseCase.execute(page, limit, search, attraction);
 
       res.status(HttpStatusCode.OK).json({
         status: true,
@@ -172,7 +175,7 @@ export default class UserController implements IUserInterface {
     try {
       const limit = parseInt(req.params.limit as string) || 3;
 
-      const data = await this.getAllDestinationsUseCase.findNew(limit);
+      const data = await this._getAllDestinationsUseCase.findNew(limit);
       res.status(HttpStatusCode.OK).json({ data })
     } catch (error: unknown) {
       const message = extractErrorMessage(error)
@@ -187,7 +190,7 @@ export default class UserController implements IUserInterface {
     const search = req.query.search?.toString() || "";
     const category = req.query.category?.toString() || "";
     try {
-      const { data, total } = await this.getGuidespaginatedUseCase.execute(page, limit, search, category);
+      const { data, total } = await this._getGuidespaginatedUseCase.execute(page, limit, search, category);
       res.status(HttpStatusCode.OK).json({
         data,
         pagination: {
@@ -207,7 +210,7 @@ export default class UserController implements IUserInterface {
   public getGuideSingleData = async (req: Request, res: Response) => {
     const id = req.params.userId
     try {
-      const response = await this.getSingleGuideUseCase.execute(id);
+      const response = await this._getSingleGuideUseCase.execute(id);
       res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
       const message = extractErrorMessage(error)
@@ -219,7 +222,7 @@ export default class UserController implements IUserInterface {
   public getallPostGuideData = async (req: Request, res: Response) => {
     const id = req.params.id;
     try {
-      const response = await this.getAllPostGuideUseCase.execute(id);
+      const response = await this._getAllPostGuideUseCase.execute(id);
       res.status(HttpStatusCode.OK).json(response)
     } catch (error) {
       console.log('Erro on Fetching Post', error);
@@ -227,11 +230,11 @@ export default class UserController implements IUserInterface {
     }
   };
 
-  public getGuideSinglePost = async(req: Request, res: Response) => {
+  public getGuideSinglePost = async (req: Request, res: Response) => {
     const postId = req.params.postId;
     try {
-      const response = await this.getGuideSinglePostUseCase.execute(postId);
-      res.status(HttpStatusCode.OK).json(response) 
+      const response = await this._getGuideSinglePostUseCase.execute(postId);
+      res.status(HttpStatusCode.OK).json(response)
     } catch (error) {
       const message = extractErrorMessage(error);
       console.log(error);
@@ -242,7 +245,7 @@ export default class UserController implements IUserInterface {
   public likeGuidePost = async (req: Request, res: Response) => {
     const { postId, userId } = req.params
     try {
-      await this.likeGUidePostUseCase.execute(postId, userId);
+      await this._likeGUidePostUseCase.execute(postId, userId);
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
       const message = extractErrorMessage(error);
@@ -254,7 +257,7 @@ export default class UserController implements IUserInterface {
   public unLikeGuidePost = async (req: Request, res: Response) => {
     const { userId, postId } = req.params
     try {
-      await this.unLikeGuidePostUseCase.execute(postId, userId);
+      await this._unLikeGuidePostUseCase.execute(postId, userId);
       res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
     } catch (error) {
       const message = extractErrorMessage(error);
@@ -266,7 +269,7 @@ export default class UserController implements IUserInterface {
   public commentOnGuidePost = async (req: Request, res: Response) => {
     const data = req.body;
     try {
-      const response = await this.commentGuidePostUseCase.execute(data);
+      const response = await this._commentGuidePostUseCase.execute(data);
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
       const message = extractErrorMessage(error);
@@ -277,20 +280,20 @@ export default class UserController implements IUserInterface {
   public replyCommentOnGuidePost = async (req: Request, res: Response) => {
     const data = req.body;
     try {
-      const response = await this.replyCommentGuidePostUseCase.execute(data);
+      const response = await this._replyCommentGuidePostUseCase.execute(data);
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
       const message = extractErrorMessage(error);
       console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message:"Something went wrong on Reply" })
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on Reply" })
     }
   };
 
-  public followGuide = async(req: Request, res: Response) => {
+  public followGuide = async (req: Request, res: Response) => {
     const guideId = req.params.guideId;
     const userId = req.params.userId;
     try {
-      await this.followGuideUseCase.execute({guideId, userId});
+      await this._followGuideUseCase.execute({ guideId, userId });
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
       console.log(error);
@@ -298,11 +301,11 @@ export default class UserController implements IUserInterface {
     }
   };
 
-  public unfollowGuid = async(req: Request, res: Response) => {
+  public unfollowGuid = async (req: Request, res: Response) => {
     const guideId = req.params.guideId;
     const userId = req.params.userId;
     try {
-      await this.unfollowGuideUseCase.execute({ guideId, userId });
+      await this._unfollowGuideUseCase.execute({ guideId, userId });
       res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
     } catch (error) {
       console.log(error);
@@ -310,10 +313,10 @@ export default class UserController implements IUserInterface {
     }
   };
 
-  public getGuideWDestinationController = async(req: Request, res: Response) => {
+  public getGuideWDestinationController = async (req: Request, res: Response) => {
     const destinationId = req.params.destinationId;
     try {
-      const data = await this.getSingleDestinationUseCase.getGuideWDestination(destinationId);
+      const data = await this._getSingleDestinationUseCase.getGuideWDestination(destinationId);
       res.status(HttpStatusCode.OK).json(data);
     } catch (error) {
       console.log(error, "Cannot find the destination or guide");
@@ -321,10 +324,10 @@ export default class UserController implements IUserInterface {
     }
   };
 
-  public guideDataOnBooking = async(req: Request, res: Response) => {
+  public guideDataOnBooking = async (req: Request, res: Response) => {
     const guideId = req.params.guideId;
     try {
-      const data = await this.getSingleGuideUseCase.execute(guideId);
+      const data = await this._getSingleGuideUseCase.execute(guideId);
       res.status(HttpStatusCode.OK).json(data)
     } catch (error) {
       console.log(error);
@@ -332,15 +335,22 @@ export default class UserController implements IUserInterface {
     }
   }
 
-  public bookTheGuide = async(req: Request, res: Response) => {
-    const data = req.body
+  public bookTheGuide = async (req: Request, res: Response) => {
     const guideId = req.params.guideId;
-    const userId = req.params.userId
+    const userId = req.params.userId;
+    const destinationId = req.params.destinationId;
     try {
-      console.log(data, guideId, userId)
+      const bookingdata: BookGuide = {
+        guideId,
+        userId,
+        ...req.body
+      }
+      const data = await this._bookGuideUseCase.execute(bookingdata)
+     res.status(HttpStatusCode.CREATED).json(data)
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot book the guide" })
+      const message = extractErrorMessage(error)
+      console.log(message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
     }
   }
 

@@ -5,12 +5,12 @@ import { s3Client } from "../../../config/s3Config";
 import { env } from "../../../config/authConfig";
 
 export class DeleteDestinationUseCase implements IDeleteDestinationUseCase {
-  constructor(private readonly destinationRepo: IDestinationRepository) {}
+  constructor(private readonly _destinationRepo: IDestinationRepository) {}
 
   async execute(destinationId: string): Promise<{ message: string }> {
     if (!destinationId) throw new Error("Destination ID is required");
 
-    const destination = await this.destinationRepo.findById(destinationId);
+    const destination = await this._destinationRepo.findById(destinationId);
     if (!destination) throw new Error("Destination not found");
 
     
@@ -29,7 +29,7 @@ export class DeleteDestinationUseCase implements IDeleteDestinationUseCase {
     }
 
     
-    await this.destinationRepo.deleteById(destinationId);
+    await this._destinationRepo.deleteById(destinationId);
 
     return { message: "Destination deleted successfully" };
   }

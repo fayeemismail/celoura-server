@@ -8,8 +8,8 @@ import { IEditGuideProfileUseCase } from "./Interface/IEditGuideProfileUseCase";
 
 export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
   constructor(
-    private readonly userRepo: IUserRepository,
-    private readonly passwordService: IPasswordService
+    private readonly _userRepo: IUserRepository,
+    private readonly _passwordService: IPasswordService
   ) { }
 
   async execute(data: GuideEditProfileDTO): Promise<any> { 
@@ -27,8 +27,8 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
 
     if (!_id) throw new Error("_id is missing");
 
-    const guideUser = await this.userRepo.getUserById(_id);
-    const guide = await this.userRepo.getGuideById(_id);
+    const guideUser = await this._userRepo.getUserById(_id);
+    const guide = await this._userRepo.getGuideById(_id);
     if (!guide || !guideUser) throw new Error("Guide not found");
 
     // Handle password update
@@ -44,19 +44,19 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
         hashedPasswordInDb: guideUser.password,
       });
 
-      const hashed = await this.passwordService.hashPassword(newPassword);
-      await this.userRepo.updatePassword(_id, hashed);
+      const hashed = await this._passwordService.hashPassword(newPassword);
+      await this._userRepo.updatePassword(_id, hashed);
     }
 
     // Handle name update
     if (name && name !== guideUser.name) {
       validateNameUpdate(name);
-      await this.userRepo.updateName(_id, name);
+      await this._userRepo.updateName(_id, name);
     }
 
     // Handle bio update
     if (bio !== undefined && bio !== guide.bio) {
-      await this.userRepo.updateGuideBio(_id, bio.trim());
+      await this._userRepo.updateGuideBio(_id, bio.trim());
     }
 
     // Handle available destinations update
@@ -83,7 +83,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
       // Remove duplicates
       const uniqueDestinations = [...new Set(destinationsArray.map(d => d.trim()))];
       
-      await this.userRepo.updateGuideAvailableDestinations(_id, uniqueDestinations);
+      await this._userRepo.updateGuideAvailableDestinations(_id, uniqueDestinations);
     }
 
     // Handle profile picture removal
@@ -97,7 +97,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
         const publicId = `guide_profiles/${fileNameWithoutExt}`;
 
         const result = await cloudinary.uploader.destroy(publicId);
-        await this.userRepo.updateGuideProfilePic(_id, "");
+        await this._userRepo.updateGuideProfilePic(_id, "");
       } catch (error) {
         console.error("❌ Failed to delete profile pic from Cloudinary:", error);
         throw new Error("Failed to delete profile picture from Cloudinary");
@@ -106,7 +106,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
 
     // Handle profile picture update
     if (profilePic) {
-      await this.userRepo.updateGuideProfilePic(_id, profilePic.path);
+      await this._userRepo.updateGuideProfilePic(_id, profilePic.path);
     }
 
     return { message: "Profile updated successfully" };

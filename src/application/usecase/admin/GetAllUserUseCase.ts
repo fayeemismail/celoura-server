@@ -6,12 +6,12 @@ import { IGetAllUserUseCase } from "./interface/IGetAllUserUseCase";
 
 
 export class GetAllUserUseCase implements IGetAllUserUseCase {
-    constructor(private userRepository: IUserRepository) { }
+    constructor(private _userRepository: IUserRepository) { }
 
     async execute(page: number, limit: number, role: 'user' | 'guide', search: string): Promise<{ data: User[]; total: number }> {
-        return await this.userRepository.findAllPaginated(page, limit, role, search);
+        return await this._userRepository.findAllPaginated(page, limit, role, search);
     }
     async find() : Promise<User[]> {
-        return await this.userRepository.findAll()
+        return await this._userRepository.findAll()
     }
 }

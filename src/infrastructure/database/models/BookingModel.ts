@@ -6,12 +6,12 @@ import { Booking } from "../../../domain/entities/BookingEntity";
 
 const bookingSchema: Schema <Booking> = new Schema({
     guide:{
-        id: { type: String, required: true },
+        id: { type: String, required: true, ref: "User" },
         name: { type: String, required: true },
         email: { type: String, required: true },
     },
     user: {
-        id: { type: String, required: true },
+        id: { type: String, required: true, ref: "User" },
         name: { type: String, required: true },
         email: { type: String, required: true },
         phone: { type: String, required: true },
@@ -19,8 +19,8 @@ const bookingSchema: Schema <Booking> = new Schema({
     },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
-    durationInDays: { type: Number, required: true },
-    budget: { type: Number, required: true },
+    durationInDays: { type: String, required: true },
+    budget: { type: String, required: true },
     locations: [{ type: String, required: true }],
     status: {
         type: String,
