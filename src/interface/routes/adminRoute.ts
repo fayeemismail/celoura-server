@@ -86,4 +86,7 @@ router.get('/destination/generate-signed-urls', adminController.generateSignedUr
 router.delete('/destinations/:destinationId/delete', adminAuthenticate, adminController.deleteDestination);
 
 
+//bookigns
+router.get('/bookings/:adminId', adminAuthenticate, adminController.fetchBookings)
+
 export default router;

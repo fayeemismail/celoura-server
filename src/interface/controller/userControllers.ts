@@ -22,6 +22,9 @@ import { IGetGuideSinglePostUseCase } from "../../application/usecase/user/inter
 import { IHasAlreadyApplied } from "../../application/usecase/user/interface/IHasAlreadyApplied";
 import { IBookGuideUseCase } from "../../application/usecase/user/interface/IBookGuideUseCase";
 import { BookGuide } from "../../application/dto/user/IBookGuideData";
+import { IFetchUserBookingsUseCase } from "../../application/usecase/user/interface/IFetchUserBookingsUseCase";
+import { IFetchUserBookingDetailsUseCase } from "../../application/usecase/user/interface/IFetchUserBookingDetailsUseCase";
+import { ICancelBookingUseCase } from "../../application/usecase/user/interface/ICancelBookingUseCase";
 
 
 
@@ -44,7 +47,10 @@ export default class UserController implements IUserInterface {
     private readonly _unfollowGuideUseCase: IUnfollowGuideUseCase,
     private readonly _getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
     private readonly _hasAlreadyAppliedUseCase: IHasAlreadyApplied,
-    private readonly _bookGuideUseCase: IBookGuideUseCase
+    private readonly _bookGuideUseCase: IBookGuideUseCase,
+    private readonly _fetchUserBookingsUseCase : IFetchUserBookingsUseCase,
+    private readonly _fetchUserBookingDetailsUseCase : IFetchUserBookingDetailsUseCase,
+    private readonly _cancelUserBookingUseCase : ICancelBookingUseCase
   ) { }
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
@@ -352,7 +358,43 @@ export default class UserController implements IUserInterface {
       console.log(message);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
     }
-  }
+  };
 
+  public fetchUserBookings = async (req: Request, res: Response) => {
+    const userId = req.params.userId;
+    try {
+      const data = await this._fetchUserBookingsUseCase.execute(userId);
+      res.status(HttpStatusCode.CREATED).json(data)
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      console.log(message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+    }
+  };
+
+  public fetchUserBookingDetails = async (req: Request, res: Response) => {
+    const bookingId = req.params.bookingId;
+    try {
+      console.log(bookingId)
+      const data = await this._fetchUserBookingDetailsUseCase.execute(bookingId)
+      res.status(HttpStatusCode.CREATED).json(data)
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      console.log(message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+    }
+  };
+
+  public cancelUserBooking = async (req: Request, res: Response) => {
+    const bookingId = req.params.bookingId;
+    try {
+      const data = await this._cancelUserBookingUseCase.execute(bookingId)
+      res.status(HttpStatusCode.CREATED).json(data)
+    } catch (error) {
+      const message = extractErrorMessage(error)
+      console.log(message);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+    }
+  };
 
 };

@@ -309,4 +309,17 @@ export default class AdminController {
         }
     };
 
+    public fetchBookings = async(req: Request, res: Response) => {
+        const bookingId = req.params.bookingId;
+        try {
+            
+            // const result = await this._deleteDestinationUseCase.execute(destinationId);
+            // res.status(HttpStatusCode.NO_CONTENT).json(result.message);
+        } catch (error) {
+            const message = extractErrorMessage(error)
+            console.log(message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
+        }
+    };
+
 }

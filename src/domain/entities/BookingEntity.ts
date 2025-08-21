@@ -23,13 +23,19 @@ export interface Booking {
   startDate: Date;
   endDate: Date;
   durationInDays: string;
-  budget: string;
+  budget?: string;
   locations: string[];
 
   status: 'pending' | 'accepted' | 'rejected' | 'cancelled' | 'completed';
   guideAccepted: boolean;
+  rejected: boolean;
+  rejectedReason: string;
   cancelledBy?: 'user' | 'guide';
   specialRequests?: string;
+
+  paymentStatus?: "pending" | "paid" | "failed" | "cancelled";
+  paymentDeadline?: Date; 
+
   createdAt?: Date;
   updatedAt?: Date;
 }

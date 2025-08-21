@@ -11,7 +11,6 @@ export type BookGuide = {
     startDate: Date;
     endDate: Date;
     days: string;
-    budget: string;
     specialRequests: string;
     selectedDestinations: string[]
 };

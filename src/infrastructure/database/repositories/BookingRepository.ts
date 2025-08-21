@@ -81,12 +81,65 @@ export class BookingRepository implements IBookingRepository {
       status: { $in: ["pending", "accepted"] },
       $or: [
         {
-          startDate: { $lte: startDate },
-          endDate: { $gte: endDate }
+          startDate: { $lte: endDate },
+          endDate: { $gte: startDate }
         }
       ] 
     });
 
     return data !== null
+  };
+
+  async acceptBooking(bookingId: string, budget: string): Promise<Booking | null> {
+    const booking = await bookingModel.findByIdAndUpdate(
+      bookingId,
+      {
+        $set: {
+          budget,
+          guideAccepted: true,
+          status: "accepted",
+          paymentStatus: "pending",
+          paymentDeadline: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        },
+      },
+      { new: true }
+    );
+    return booking;
+  };
+
+  async rejectBooking(bookingId: string, reason: string): Promise<Booking | null> {
+    const booking = await bookingModel.findByIdAndUpdate(
+      bookingId,
+      {
+        $set: {
+          rejected: true,
+          rejectedReason: reason,
+          status: "rejected",
+          paymentStatus: "cancelled"
+        },
+      },
+      { new: true }
+    );
+    return booking;
+  };
+
+  async cancelBooking(bookingId: string): Promise<Booking | null> {
+    const booking = await bookingModel.findByIdAndUpdate(
+      bookingId, 
+      {
+        $set: {
+          status: "cancelled",
+          cancelledBy: "user",
+          paymentStatus: "cancelled"
+        },
+      },
+      { new: true }
+    );
+    return booking;
+  };
+
+  async fetchAllBookings(): Promise<Booking[]> {
+    return await bookingModel.find();
   }
+
 }

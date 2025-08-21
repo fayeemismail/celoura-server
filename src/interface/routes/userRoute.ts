@@ -30,6 +30,9 @@ import { GetGuideSinglePostUseCase } from '../../application/usecase/user/GetGui
 import { HasAlreadyApplied } from '../../application/usecase/user/HasAlreadyAppliedUseCase';
 import { BookGuideUseCase } from '../../application/usecase/user/BookGuideUseCase';
 import { BookingRepository } from '../../infrastructure/database/repositories/BookingRepository';
+import { FetchUserBookingsUseCase } from '../../application/usecase/user/FetchUserBookingsUseCase';
+import { FetchUserBookingsDetailsUseCase } from '../../application/usecase/user/FetchUserBookingDetailsUseCase';
+import { CancelBookingUseCase } from '../../application/usecase/user/CancelBookingUseCase';
 
 const router = express.Router();
 
@@ -62,6 +65,10 @@ const unfollowGuideUseCase = new UnfollowGuideUseCase(userRepo, followRepo);
 const getGuideSinglePostUseCase = new GetGuideSinglePostUseCase(postRepo, commentRepo, likeRepo);
 const hasAlreadyAppliedUseCase = new HasAlreadyApplied(userRepo, guideApplicationRepo);
 const bookGuideUseCase = new BookGuideUseCase(userRepo, guideRepo, bookingRepo);
+const fetchUserBookingsUseCase = new FetchUserBookingsUseCase(bookingRepo);
+const fetchUserBookingsDetailsUseCase = new FetchUserBookingsDetailsUseCase(bookingRepo);
+const cancelBookingUseCase = new CancelBookingUseCase(bookingRepo)
+
 
 
 const userController = new UserController(
@@ -82,6 +89,11 @@ const userController = new UserController(
     getGuideSinglePostUseCase,
     hasAlreadyAppliedUseCase,
     bookGuideUseCase,
+    fetchUserBookingsUseCase,
+    fetchUserBookingsDetailsUseCase,
+    cancelBookingUseCase,
+
+
 );
 
 //profile side
@@ -117,6 +129,11 @@ router.delete('/like/:postId/:userId', authenticate, checkUserStatus, userContro
 //book guide
 router.get('/book-guide/:guideId', authenticate, checkUserStatus, userController.guideDataOnBooking);
 router.post('/guide/book/:guideId/:userId/:destinationId', authenticate, upload.none(), checkUserStatus, userController.bookTheGuide);
+
+//bookings
+router.get('/bookings/:userId', authenticate, checkUserStatus, userController.fetchUserBookings)
+router.get('/booking-details/:bookingId', authenticate, checkUserStatus, userController.fetchUserBookingDetails);
+router.put('/cancel-booking/:bookingId', authenticate, checkUserStatus, userController.cancelUserBooking)
 
 
 export default router;
