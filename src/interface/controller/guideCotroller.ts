@@ -19,6 +19,9 @@ import { IReplyCommentUseCase } from "../../application/usecase/guide/Interface/
 import { IGetDetailedDestination } from "../../application/usecase/guide/Interface/IGetDetailedDestination";
 import { IAddToAvailableDestinationUseCase } from "../../application/usecase/guide/Interface/IAddToAvailableDestinationUseCase";
 import { IFetchBookingsUseCase } from "../../application/usecase/guide/Interface/IFetchBookingsUseCase";
+import { IFetchBookingDetailsUseCase } from "../../application/usecase/guide/Interface/IFetchBookingDetailsUseCase";
+import { IAcceptBookingUseCase } from "../../application/usecase/guide/Interface/IAcceptBookingUseCase";
+import { IRejectBookingUseCase } from "../../application/usecase/guide/Interface/IRejectBookingUseCase";
 
 
 
@@ -37,7 +40,10 @@ export default class GuideController {
         private readonly _replyCommentUseCase: IReplyCommentUseCase,
         private readonly _getDestinationDetailed : IGetDetailedDestination,
         private readonly _addToMyDestinationUseCase : IAddToAvailableDestinationUseCase,
-        private readonly _fetchBookingUseCase : IFetchBookingsUseCase
+        private readonly _fetchBookingUseCase : IFetchBookingsUseCase,
+        private readonly _fetchBookingDetailsUseCase : IFetchBookingDetailsUseCase,
+        private readonly _acceptBookingUseCase : IAcceptBookingUseCase,
+        private readonly _rejectBookingUseCase : IRejectBookingUseCase
 
     ) { }
 
@@ -299,5 +305,43 @@ export default class GuideController {
             console.log(message);
             res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: message ?? "Cannot fetch Bookings"})
         }
-    }
+    };
+
+    public fetchBookingDetails = async(req: Request, res: Response) => {
+        const bookingId = req.params.bookingId;
+        try {
+            const data = await this._fetchBookingDetailsUseCase.execute(bookingId);
+            res.status(HttpStatusCode.OK).json(data);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: message ?? "Cannot fetch Booking"})
+        }
+    };
+
+    public acceptBooking = async(req: Request, res: Response) => {
+        const bookingId = req.params.bookingId;
+        const {budget} = req.body
+        try {
+            const data = await this._acceptBookingUseCase.execute(bookingId, budget);
+            res.status(HttpStatusCode.OK).json(data)
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: message ?? "Cannot Accept Booking"})
+        }
+    };
+
+    public rejectBooking = async(req: Request, res: Response) => {
+        const bookingId = req.params.bookingId;
+        const { reason } = req.body
+        try {
+            const data = await this._rejectBookingUseCase.execute(bookingId, reason);
+            res.status(HttpStatusCode.OK).json(data)
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({error: message ?? "Cannot Accept Booking"})
+        }
+    };
 }

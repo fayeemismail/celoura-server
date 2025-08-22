@@ -4,7 +4,7 @@ import { GuideEditProfileDTO } from "../../dto/guide/guideEditProfileData";
 import { IPasswordService } from "../../interfaces/services/IPasswordService";
 import { validateNameUpdate } from "../../validators/nameValidators";
 import { validatePasswordUpdate } from "../../validators/passwordValidator";
-import { IEditGuideProfileUseCase } from "./Interface/IEditGuideProfileUseCase";
+import { IEditGuideProfileUseCase, successEditProfile } from "./Interface/IEditGuideProfileUseCase";
 
 export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
   constructor(
@@ -12,7 +12,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
     private readonly _passwordService: IPasswordService
   ) { }
 
-  async execute(data: GuideEditProfileDTO): Promise<any> { 
+  async execute(data: GuideEditProfileDTO): Promise<successEditProfile> { 
     const {
       _id,
       name,
@@ -96,7 +96,7 @@ export class EditGuideProfileUseCase implements IEditGuideProfileUseCase {
         const fileNameWithoutExt = decodedFile.replace(/\.[^/.]+$/, "");
         const publicId = `guide_profiles/${fileNameWithoutExt}`;
 
-        const result = await cloudinary.uploader.destroy(publicId);
+        await cloudinary.uploader.destroy(publicId);
         await this._userRepo.updateGuideProfilePic(_id, "");
       } catch (error) {
         console.error("❌ Failed to delete profile pic from Cloudinary:", error);

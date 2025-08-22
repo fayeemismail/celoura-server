@@ -1,4 +1,3 @@
-import { env } from "../../../config/authConfig";
 import { Destination } from "../../../domain/entities/Destination";
 import { IDestinationRepository } from "../../../infrastructure/database/repositories/interface/IDestinationRepository";
 import { ICreateDestintaion } from "./interface/ICreateDestination";

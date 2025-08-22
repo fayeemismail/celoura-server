@@ -23,12 +23,11 @@ export class BookGuideUseCase implements IBookGuideUseCase {
             startDate,
             endDate,
             days,
-            budget,
             specialRequests,
             selectedDestinations } = BookingData;
         
 
-        if(!name || !email || !phone || !address || !startDate || !endDate || !days || !budget || !selectedDestinations ) {
+        if(!name || !email || !phone || !address || !startDate || !endDate || !days || !selectedDestinations ) {
             throw new Error("All fields are required");
         };
         if(!userId || !guideId) throw new Error("User Id or Guide Id not found");
@@ -45,7 +44,7 @@ export class BookGuideUseCase implements IBookGuideUseCase {
         if(email !== user.email) throw new Error("Email does not match to the current User");
 
         const hasConflict = await this._bookingRepo.hasConflictingBooking(guideId, userId, startDate, endDate);
-        if(hasConflict) throw new Error("User or Guide already has a booking during the period");
+        if(hasConflict) throw new Error("Guide already has a booking during the period");
 
         const existingBooking = await this._bookingRepo.existingBookings(guideId, userId, startDate, endDate);
         if(existingBooking) throw new Error("You already have a booking request for this guide within the selected dates.");
@@ -67,10 +66,11 @@ export class BookGuideUseCase implements IBookGuideUseCase {
             startDate: new Date(startDate),
             endDate: new Date(endDate),
             durationInDays: days,
-            budget,
             locations: selectedDestinations,
             status: "pending",
             guideAccepted: false,
+            rejected: false,
+            rejectedReason: "",
             specialRequests: specialRequests ?? ""
         });
 

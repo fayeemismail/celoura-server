@@ -25,6 +25,9 @@ import { AddToAvailableDestinationUseCase } from '../../application/usecase/guid
 import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
 import { BookingRepository } from '../../infrastructure/database/repositories/BookingRepository';
 import { FetchBookingsUseCase } from '../../application/usecase/guide/FetchBookingsUseCase';
+import { FetchBookingDetailsUseCase } from '../../application/usecase/guide/FetchBookingDetailsUseCase';
+import { AcceptBookingUseCase } from '../../application/usecase/guide/AcceptBookingUseCase';
+import { RejectBookingUseCase } from '../../application/usecase/guide/RejectBookingUseCase';
 
 const router = express.Router();
 
@@ -53,6 +56,10 @@ const replyComment = new ReplyCommentUseCase(postRepo, commentsRepo, userRepo);
 const getDetailedDestination = new GetDetailedDestination(destinationRepo);
 const addToAvailableDestination = new AddToAvailableDestinationUseCase(destinationRepo, userRepo, guideRepo);
 const fetchBookigsUseCase = new FetchBookingsUseCase(bookingRepo, userRepo);
+const fetchBookingDetailsUseCase = new FetchBookingDetailsUseCase(bookingRepo);
+const acceptBookingUseCase = new AcceptBookingUseCase(bookingRepo);
+const rejectBookingUseCase = new RejectBookingUseCase(bookingRepo);
+
 
 
 
@@ -70,7 +77,10 @@ const guideController = new GuideController(
     replyComment,
     getDetailedDestination,
     addToAvailableDestination,
-    fetchBookigsUseCase
+    fetchBookigsUseCase,
+    fetchBookingDetailsUseCase,
+    acceptBookingUseCase, 
+    rejectBookingUseCase
 );
 
 
@@ -102,6 +112,9 @@ router.post('/reply-comment', guideAuthenticate, guideController.replyComment);
 
 //bookings
 router.get('/fetch-bookings/:guideId', guideAuthenticate, guideController.fetchBookigs);
+router.get('/fetch-booking-details/:bookingId', guideAuthenticate, guideController.fetchBookingDetails);
+router.put('/accept-booking/:bookingId', guideAuthenticate, guideController.acceptBooking);
+router.put('/reject-booking/:bookingId', guideAuthenticate, guideController.rejectBooking)
 
 
 export default router;

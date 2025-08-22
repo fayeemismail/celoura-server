@@ -20,7 +20,7 @@ export class DestinationRepository implements IDestinationRepository {
 
     async findAllPgainated(page: number, limit: number, search: string, attraction: string) {
         const skip = (page - 1) * limit;
-        const query: any = {};
+        const query: Record<string, unknown> = {};
 
         if (search) {
             query.$or = [
@@ -32,7 +32,7 @@ export class DestinationRepository implements IDestinationRepository {
 
         if (attraction) {
             query.features = { $elemMatch: { $regex: attraction, $options: "i" } };
-        }
+        };
 
 
         const [data, total] = await Promise.all([

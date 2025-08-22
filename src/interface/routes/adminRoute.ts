@@ -19,6 +19,9 @@ import { EditDestinationUseCase } from '../../application/usecase/admin/EditDest
 import { DeleteDestinationUseCase } from '../../application/usecase/admin/DeleteDestinationUseCase';
 import { GuideRepository } from '../../infrastructure/database/repositories/GuideRepository';
 import { GenerateSignedUrlUseCase } from '../../application/usecase/admin/GenerateSignedUrlUseCase';
+import { FetchAllBookingsUseCase } from '../../application/usecase/admin/FetchAllBookingsUseCase';
+import { BookingRepository } from '../../infrastructure/database/repositories/BookingRepository';
+import { EmailService } from '../../infrastructure/service/EmailService';
 
 
 const router = express.Router();
@@ -26,14 +29,18 @@ const router = express.Router();
 const userRepository = new UserRepository();
 const guideApplicationRepo = new GuideApplicationRepository();
 const destinationRepo = new DestinationRepository();
-const guideRepo = new GuideRepository()
+const guideRepo = new GuideRepository();
+const bookingRepo = new BookingRepository();
+
+const emailService = new EmailService(); 
+
 
 const getAllUserUseCase = new GetAllUserUseCase(userRepository);
 const blockUserUseCase = new BlockUserUseCase(userRepository);
 const unblockUserUseCase = new UnBlockUserUseCase(userRepository);
 const getAllGuideAppliesUseCase = new GetAllGuideAppliesUseCase(guideApplicationRepo);
 const approveAsGuide = new ApproveAsGuideUseCase(userRepository, guideApplicationRepo, guideRepo);
-const rejectAsGuide = new RejectAsGuideUseCase(userRepository, guideApplicationRepo);
+const rejectAsGuide = new RejectAsGuideUseCase(userRepository, guideApplicationRepo, emailService);
 const createDestiantionUseCase = new CreateDestinationUseCase(destinationRepo)
 const getAllDestinationsUseCase = new GetAllDestinationsUseCase(destinationRepo);
 const getCountUsecase = new GetCountUseCase(userRepository, destinationRepo);
@@ -41,6 +48,7 @@ const getDestination = new GetDestinationUseCase(destinationRepo);
 const editDestination = new EditDestinationUseCase(destinationRepo);
 const deleteDestination = new DeleteDestinationUseCase(destinationRepo);
 const _generateSignedURLUseCase = new GenerateSignedUrlUseCase();
+const _fetchAllBookingsUseCase = new FetchAllBookingsUseCase(bookingRepo);
 
 
 
@@ -60,7 +68,8 @@ const adminController = new AdminContrller(
     editDestination,
     deleteDestination,
     _generateSignedURLUseCase,
-    
+    _fetchAllBookingsUseCase,
+
 );
 
 
@@ -85,5 +94,8 @@ router.post('/destination/create-destination', adminController.createDestination
 router.get('/destination/generate-signed-urls', adminController.generateSignedUrls); // New endpoint
 router.delete('/destinations/:destinationId/delete', adminAuthenticate, adminController.deleteDestination);
 
+
+//bookigns
+router.get('/bookings/', adminAuthenticate, adminController.fetchBookings)
 
 export default router;

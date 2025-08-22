@@ -18,6 +18,7 @@ import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IDeleteDestinationUseCase } from "../../application/usecase/admin/interface/IDeleteDestinationUseCase";
 import { IGenerateSignedUrlUseCase } from "../../application/usecase/admin/interface/IGenarateSignedUrlUseCase";
 import { UserMapper } from "../../application/mappers/admin/userMapper";
+import { IFetchAllBookingsUseCase } from "../../application/usecase/admin/interface/IFetchAllBookingsUseCase";
 
 export default class AdminController {
     constructor(
@@ -33,7 +34,8 @@ export default class AdminController {
         private readonly _getDestinationUseCase: IGetDestinationUseCase,
         private readonly _editDestinationUseCase: IEditDestinationUseCase,
         private readonly _deleteDestinationUseCase: IDeleteDestinationUseCase,
-        private readonly _generateSignedUrlsUseCase : IGenerateSignedUrlUseCase
+        private readonly _generateSignedUrlsUseCase : IGenerateSignedUrlUseCase,
+        private readonly _fetchAllBookingsUseCase : IFetchAllBookingsUseCase
     ) { }
 
     public getAllUsers = async (req: Request, res: Response): Promise<void> => {
@@ -302,6 +304,19 @@ export default class AdminController {
         try {
             const result = await this._deleteDestinationUseCase.execute(destinationId);
             res.status(HttpStatusCode.NO_CONTENT).json(result.message);
+        } catch (error) {
+            const message = extractErrorMessage(error)
+            console.log(message);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
+        }
+    };
+
+    public fetchBookings = async(req: Request, res: Response) => {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 9;
+        try {
+            const result = await this._fetchAllBookingsUseCase.execute(page, limit);
+            res.status(HttpStatusCode.OK).json(result);
         } catch (error) {
             const message = extractErrorMessage(error)
             console.log(message);

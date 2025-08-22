@@ -9,6 +9,7 @@ export interface GuideApplication {
   address: string;
   status: string;
   userId: string;
+  profilePhotoUrl: string;
   basedOn: string;
   rejectReason: string;
   re_apply?: number;

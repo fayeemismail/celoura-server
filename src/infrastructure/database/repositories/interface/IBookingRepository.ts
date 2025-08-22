@@ -11,4 +11,9 @@ export interface IBookingRepository {
   hasConflictingBooking(guideId: string, userId: string, startDate: Date, endDate: Date): Promise<Boolean>;
   findPaginatedBookings(guideId:string, page: number, limit: number, search: string, status: string): Promise<PaginatedBookings>;
   existingBookings(guideId: string, userId: string, startDate: Date, endDate: Date): Promise<Boolean>
+  acceptBooking(bookingId: string, budget: string): Promise<Booking | null>;
+  rejectBooking(bookingId: string, reason: string): Promise<Booking | null>;
+  cancelBooking(bookingId: string): Promise<Booking | null>;
+  fetchAllBookings(): Promise<Booking[]>;
+  findBookingsPaginated(page: number, limit: number): Promise<PaginatedBookings>;
 }

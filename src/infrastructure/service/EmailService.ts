@@ -20,5 +20,26 @@ export class EmailService implements IEmailService {
             `
         };
         await transporter.sendMail(mailOptions)
+    };
+    async sendGuideRejectionEmail(email: string, reason: string): Promise<void> {
+        const mailOptions = {
+            from: `"Celoura Travel" <celouratravels@gmail.com>`,
+            to: email,
+            subject: 'Guide Application Status – Rejected',
+            text: `Unfortunately, your application to become a guide has been rejected. Reason: ${reason}`,
+            html: `
+                <div style="font-family: sans-serif; color: #333;">
+                    <h2>Guide Application Update</h2>
+                    <p>Dear Applicant,</p>
+                    <p>Thank you for your interest in becoming a guide at <strong>Celoura Travel</strong>.</p>
+                    <p>Unfortunately, your application has been <span style="color:red;font-weight:bold;">rejected</span>.</p>
+                    <p><strong>Reason:</strong> ${reason}</p>
+                    <br/>
+                    <p>You may improve your profile and reapply in the future.</p>
+                    <p>Best Regards,<br/>Celoura Travel Team</p>
+                </div>
+            `
+        };
+        await transporter.sendMail(mailOptions);
     }
 }
