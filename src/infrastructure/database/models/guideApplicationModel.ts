@@ -10,6 +10,7 @@ const guideApplicationModel: Schema <GuideApplication> = new Schema({
     address: { type: String, required: true },
     experience: { type: String, required: true },
     idFileUrl: { type: String },
+    profilePhotoUrl: { type: String },
     expertise: { type: String, required: true },
     status: { type: String, enum: [ 'pending', 'approved', 'rejected' ], default: 'pending' },
     userId: { type: String, ref: 'User' },

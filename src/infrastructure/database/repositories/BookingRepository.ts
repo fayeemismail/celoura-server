@@ -142,4 +142,13 @@ export class BookingRepository implements IBookingRepository {
     return await bookingModel.find();
   }
 
+  async findBookingsPaginated(page: number, limit: number): Promise<PaginatedBookings> {
+    const skip = (page -1 )* limit;
+    const [data, total] = await Promise.all([
+      bookingModel.find().skip(skip).limit(limit).sort({ createdAt: -1 }), 
+      bookingModel.countDocuments()
+    ]);
+    return { data, total }
+  }
+
 }

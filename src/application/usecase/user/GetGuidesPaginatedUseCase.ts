@@ -1,5 +1,6 @@
 import { IGetGuideRepository } from "../../../infrastructure/database/repositories/interface/IGuideRepository";
 import { IUserRepository } from "../../../infrastructure/database/repositories/interface/IUserRepository";
+import { GuidePaginatedReturnDTO } from "../../dto/user/GuideApplicationDTO";
 import { GuideDto } from "../../dto/user/GuideDto";
 import { IGetGuidePaginatedUseCase } from "./interface/IGetGuidesPaginatedusecase";
 
@@ -14,7 +15,7 @@ export class GetGuidesPaginatedUseCase implements IGetGuidePaginatedUseCase {
         private _userRepo: IUserRepository
     ) { }
 
-    async execute(page: number, limit: number, search: string, category: string): Promise<any> {
+    async execute(page: number, limit: number, search: string, category: string): Promise<GuidePaginatedReturnDTO> {
         const { data, total } = await this._guideRepo.findPaginatedGuides(page, limit, search, category);
 
         const result: GuideDto[] = data.map((guide) => ({

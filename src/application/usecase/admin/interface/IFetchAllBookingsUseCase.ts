@@ -1,7 +1,7 @@
-import { Booking } from "../../../../domain/entities/BookingEntity";
+import { PaginatedBookings } from "../../../../infrastructure/database/repositories/interface/IPaginatedBookings";
 
 
 
 export interface IFetchAllBookingsUseCase {
-    execute(adminId: string): Promise<Booking[]>;
+    execute(page: number, limit: number): Promise<PaginatedBookings>;
 }

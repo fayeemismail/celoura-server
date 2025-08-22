@@ -7,5 +7,5 @@ export interface successEditProfile {
 }
 
 export interface IEditGuideProfileUseCase {
-    execute(data: GuideEditProfileDTO): Promise<any>;
+    execute(data: GuideEditProfileDTO): Promise<successEditProfile>;
 }

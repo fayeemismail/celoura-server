@@ -102,7 +102,7 @@ router.put('/editProfile', authenticate, checkUserStatus, userController.editPro
 
 //aplication for guide
 router.get('/registerGuide/:userId', authenticate, checkUserStatus, userController.hasRegistered)
-router.post('/apply-for-guide', upload.single('idFile'), checkUserStatus, userController.applyForGuide);
+router.post('/apply-for-guide', upload.fields([{name:'idFile',maxCount:1},{name:'profilePhoto',maxCount:1}]), checkUserStatus, userController.applyForGuide);
 
 
 //destination side

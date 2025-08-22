@@ -1,4 +1,5 @@
 import { GuideApplication } from "../../../../domain/entities/GuideApplication";
+import { GuideApplicationDto } from "../../../dto/user/GuideApplicationDTO";
 
 export interface Input {
   fullName: string;
@@ -13,5 +14,5 @@ export interface Input {
 }
 
 export interface IApplyForGuideUseCase {
-  execute(input: Input): Promise<GuideApplication>;
+  execute(input: GuideApplicationDto): Promise<GuideApplication>;
 }

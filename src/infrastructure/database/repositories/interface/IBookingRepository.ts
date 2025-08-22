@@ -15,4 +15,5 @@ export interface IBookingRepository {
   rejectBooking(bookingId: string, reason: string): Promise<Booking | null>;
   cancelBooking(bookingId: string): Promise<Booking | null>;
   fetchAllBookings(): Promise<Booking[]>;
+  findBookingsPaginated(page: number, limit: number): Promise<PaginatedBookings>;
 }

@@ -48,9 +48,9 @@ export default class UserController implements IUserInterface {
     private readonly _getGuideSinglePostUseCase: IGetGuideSinglePostUseCase,
     private readonly _hasAlreadyAppliedUseCase: IHasAlreadyApplied,
     private readonly _bookGuideUseCase: IBookGuideUseCase,
-    private readonly _fetchUserBookingsUseCase : IFetchUserBookingsUseCase,
-    private readonly _fetchUserBookingDetailsUseCase : IFetchUserBookingDetailsUseCase,
-    private readonly _cancelUserBookingUseCase : ICancelBookingUseCase
+    private readonly _fetchUserBookingsUseCase: IFetchUserBookingsUseCase,
+    private readonly _fetchUserBookingDetailsUseCase: IFetchUserBookingDetailsUseCase,
+    private readonly _cancelUserBookingUseCase: ICancelBookingUseCase
   ) { }
 
   public getProfile = async (req: Request, res: Response): Promise<any> => {
@@ -107,22 +107,58 @@ export default class UserController implements IUserInterface {
     }
   }
 
-  public applyForGuide = async (req: Request, res: Response): Promise<any> => {
+  public applyForGuide = async (req: Request, res: Response): Promise<void> => {
     try {
       const { fullName, dob, phone, email, address, experience, expertise, userId, basedOn } = req.body;
-      const idFileUrl = req.file?.path;
 
-      if (!idFileUrl) {
-        return res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: 'Identity proof file is required' });
+      // Cast req.files into a dictionary type
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+      const idFile = files?.["idFile"]?.[0];
+      const profilePhoto = files?.["profilePhoto"]?.[0];
+
+      if (!idFile) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({
+          success: false,
+          message: "Identity proof file is required",
+        });
+        return;
       }
 
-      const application = { fullName, dob, phone, email, address, experience, expertise, idFileUrl, userId, basedOn };
-      await this._applyForGuideUseCase.execute(application)
-      return res.status(HttpStatusCode.CREATED).json({ success: true, message: 'Application submited SuccessFully' })
+      if (!profilePhoto) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({
+          success: false,
+          message: "Profile photo is required",
+        });
+        return;
+      }
+
+      const applicationDto = {
+        fullName,
+        dob: new Date(dob),
+        phone,
+        email,
+        address,
+        experience,
+        expertise,
+        idFileUrl: idFile.path,
+        profilePhotoUrl: profilePhoto.path,
+        userId,
+        basedOn,
+      };
+      await this._applyForGuideUseCase.execute(applicationDto);
+
+      res.status(HttpStatusCode.CREATED).json({
+        success: true,
+        message: "Application submitted successfully",
+      });
     } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.log('Error', message);
-      res.status(HttpStatusCode.BAD_REQUEST).json({ success: false, message: message })
+      const message = extractErrorMessage(error);
+      console.log("Error", message);
+      res.status(HttpStatusCode.BAD_REQUEST).json({
+        success: false,
+        message,
+      });
     }
   }
 
@@ -352,7 +388,7 @@ export default class UserController implements IUserInterface {
         ...req.body
       }
       const data = await this._bookGuideUseCase.execute(bookingdata)
-     res.status(HttpStatusCode.CREATED).json(data)
+      res.status(HttpStatusCode.CREATED).json(data)
     } catch (error) {
       const message = extractErrorMessage(error)
       console.log(message);
