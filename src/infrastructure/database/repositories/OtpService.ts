@@ -4,16 +4,16 @@ import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 const redis = new Redis();
 
 export class OtpRepository implements IOtpRepository {
-    async setOtp(email: string, otp: string): Promise<void> {
-        await redis.set(`otp:${email}`, otp, 'EX', 90);
+    async setOtp(key: string, otp: string): Promise<void> {
+        await redis.set(key, otp, 'EX', 90);
     }
 
-    async getOtp(email: string): Promise<string | null> {
-        return await redis.get(`otp:${email}`);
+    async getOtp(key: string): Promise<string | null> {
+        return await redis.get(key);
     }
 
-    async deleteOtp(email: string): Promise<void> {
-        await redis.del(`otp:${email}`)
+    async deleteOtp(key: string): Promise<void> {
+        await redis.del(key)
     }
 
     async setTempUser(email: string, userData: object): Promise<void> {
@@ -27,5 +27,9 @@ export class OtpRepository implements IOtpRepository {
 
     async deleteTempUser(email: string): Promise<void> {
         await redis.del(`tempuser:${email}`)
-    }
+    };
+
+    // async getforgotOtp(email: string): Promise<string | null> {
+    //     return await redis.get(`forgot:${email}`)
+    // }
 }

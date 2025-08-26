@@ -15,7 +15,7 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase {
 
   async execute({email, otp}: OtpInput): Promise<{ status: number; data: { message?: string; error?: string; savedUser?: User; }; }> {
       try {
-      const savedOtp = await this._otpRepo.getOtp(email);
+      const savedOtp = await this._otpRepo.getOtp(`forgot:${email}`);
       if (!savedOtp) {
         return {
           status: HttpStatusCode.BAD_REQUEST,
@@ -50,7 +50,7 @@ export class VerifyOtpUseCase implements IVerifyOtpUseCase {
         is_verified: false,
       };
 
-      await this._otpRepo.deleteOtp(email);
+      await this._otpRepo.deleteOtp(`otp:${email}`);
       await this._otpRepo.deleteTempUser(email);
 
       const savedUser = await this._userRepo.createUser(user);

@@ -13,6 +13,9 @@ import { GuideDataDto } from "../../application/dto/guide/guideDataDto";
 import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IResendOtpUseCase } from "../../application/interfaces/services/IResendOtpService";
 import { IVerifyOtpUseCase } from "../../application/usecase/auth/interface/IVerifyOtpUseCase";
+import { IForgotPasswordUseCase } from "../../application/usecase/auth/interface/IForgotPasswordUseCase";
+import { IResentForgotPasswordUseCase } from "../../application/usecase/auth/interface/IResentForgotPasswordOtpUseCase";
+import { IVerifyForgotPasswordUseCase } from "../../application/usecase/auth/interface/IverifyForgotPasswordOtpUseCase";
 
 
 
@@ -25,7 +28,10 @@ export default class AuthController implements IAuthController {
         private readonly _refreshAccessTokenUseCase: IRefreshAccessTokenUseCase,
         private readonly _getUserUseCase : IGetUserProfile,
         private readonly _resendOtpUseCase : IResendOtpUseCase,
-        private readonly _verifyOtpUseCase : IVerifyOtpUseCase
+        private readonly _verifyOtpUseCase : IVerifyOtpUseCase,
+        private readonly _forgotPasswordUseCase : IForgotPasswordUseCase,
+        private readonly _verifyForgotPasswordOtpUseCse : IVerifyForgotPasswordUseCase,
+        private readonly _resentForgotPassOtpUseCase : IResentForgotPasswordUseCase
     ) { }
 
     public signup = async (req: Request, res: Response, next: NextFunction) => {
@@ -345,5 +351,52 @@ export default class AuthController implements IAuthController {
         }
     }
 
+    public requestPasswordReset = async(req: Request, res: Response) => {
+        const {email} = req.body
+        try {
+            const response = await this._forgotPasswordUseCase.execute(email);
+            res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            const message = extractErrorMessage(error)
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Cannot sent Otp" })
+        }
+    };
 
+    public verifyForgotPassOtp = async(req: Request, res: Response) => {
+        const {email, otp} = req.body
+        try {
+            // console.log(email, otp);
+            const response = await this._verifyForgotPasswordOtpUseCse.execute(email, otp);
+            res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot verify Otp" })
+        }
+    };
+
+    public resentForgotPasswordOtp = async(req: Request, res: Response) => {
+        const {email} = req.body
+        try {
+            const response = await this._resentForgotPassOtpUseCase.execute(email);
+            res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Cannot re-sent Otp" })
+        }
+    };
+
+    public changeForgotPassword = async(req: Request, res: Response) => {
+        const {email, newPassword} = req.body;
+        try {
+            console.log(email, newPassword);
+            // const response = await this._resentForgotPassOtpUseCase.execute(email);
+            // res.status(HttpStatusCode.OK).json(response);
+        } catch (error) {
+            const message = extractErrorMessage(error);
+            console.log(error);
+            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Cannot re-sent Otp" })
+        }
+    };
 }

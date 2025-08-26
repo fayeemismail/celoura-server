@@ -12,7 +12,7 @@ export const sendSignupOtp = async (
     const otp = crypto.randomInt(100000, 999999).toString();
     
     //sace otp to redis
-    await redisService.setOtp(email, otp);
+    await redisService.setOtp(`otp:${email}`, otp);
     
     //send otp via mail
     await mailService.sendOtpEmail(email, otp);
