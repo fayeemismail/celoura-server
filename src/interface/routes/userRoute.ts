@@ -33,6 +33,8 @@ import { BookingRepository } from '../../infrastructure/database/repositories/Bo
 import { FetchUserBookingsUseCase } from '../../application/usecase/user/FetchUserBookingsUseCase';
 import { FetchUserBookingsDetailsUseCase } from '../../application/usecase/user/FetchUserBookingDetailsUseCase';
 import { CancelBookingUseCase } from '../../application/usecase/user/CancelBookingUseCase';
+import { AddAddressUseCase } from '../../application/usecase/user/AddAddressUseCase';
+import { AddressRepository } from '../../infrastructure/database/repositories/AddressRepository';
 
 const router = express.Router();
 
@@ -46,6 +48,7 @@ const commentRepo = new CommentsRepository();
 const likeRepo = new LikeRepository();
 const followRepo = new FollowGuideRepository();
 const bookingRepo = new BookingRepository();
+const addressRepo = new AddressRepository();
 
 
 const applyForGuideUseCase = new ApplyForGuideUseCase(guideApplicationRepo, userRepo);
@@ -67,7 +70,8 @@ const hasAlreadyAppliedUseCase = new HasAlreadyApplied(userRepo, guideApplicatio
 const bookGuideUseCase = new BookGuideUseCase(userRepo, guideRepo, bookingRepo);
 const fetchUserBookingsUseCase = new FetchUserBookingsUseCase(bookingRepo);
 const fetchUserBookingsDetailsUseCase = new FetchUserBookingsDetailsUseCase(bookingRepo);
-const cancelBookingUseCase = new CancelBookingUseCase(bookingRepo)
+const cancelBookingUseCase = new CancelBookingUseCase(bookingRepo);
+const addNewAddressUseCase = new AddAddressUseCase(addressRepo, userRepo);
 
 
 
@@ -92,7 +96,7 @@ const userController = new UserController(
     fetchUserBookingsUseCase,
     fetchUserBookingsDetailsUseCase,
     cancelBookingUseCase,
-
+    addNewAddressUseCase,
 
 );
 
@@ -133,7 +137,11 @@ router.post('/guide/book/:guideId/:userId/:destinationId', authenticate, upload.
 //bookings
 router.get('/bookings/:userId', authenticate, checkUserStatus, userController.fetchUserBookings)
 router.get('/booking-details/:bookingId', authenticate, checkUserStatus, userController.fetchUserBookingDetails);
-router.put('/cancel-booking/:bookingId', authenticate, checkUserStatus, userController.cancelUserBooking)
+router.put('/cancel-booking/:bookingId', authenticate, checkUserStatus, userController.cancelUserBooking);
+
+//adddress
+router.get("/get-address/:userId", authenticate, checkUserStatus, userController.getUserAddresses);
+router.post("/add-new-address", authenticate, upload.none(), checkUserStatus, userController.addNewAddress);
 
 
 export default router;

@@ -1,7 +1,7 @@
 import { IOtpRepository } from "../../../domain/interfaces/IOtpRepository";
 import { HttpStatusCode } from "../../constants/httpStatus";
 import { ForgotPasswordDTO } from "../../dto/auth/ForgotPasswordDTO";
-import { IVerifyForgotPasswordUseCase } from "./interface/IverifyForgotPasswordOtpUseCase";
+import { IVerifyForgotPasswordUseCase } from "./interface/IVerifyPasswordForgotUseCase";
 
 
 
@@ -21,7 +21,7 @@ export class VerifyForgotPasswordOtpUseCse implements IVerifyForgotPasswordUseCa
                 data: { message: "Otp expired or invalid" }
             }
         };
-        
+
         if(savedOtp !== otp) {
             return {
                 status: HttpStatusCode.UNAUTHORIZED,

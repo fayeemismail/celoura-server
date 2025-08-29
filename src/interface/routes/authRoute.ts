@@ -18,6 +18,7 @@ import { ForgotPasswordUseCase } from '../../application/usecase/auth/ForgotPass
 import { ForgotPasswordService } from '../../infrastructure/service/ForgotPasswordService';
 import { VerifyForgotPasswordOtpUseCse } from '../../application/usecase/auth/VerifyForgotPasswordOtpUseCase';
 import { ResentForgotPasswordUsecase } from '../../application/usecase/auth/ResentForgotPasswordUseCase';
+import { ChangeForgotPasswordUseCase } from '../../application/usecase/auth/ChangeForgotPassword';
 
 
 const router = express.Router();
@@ -41,7 +42,8 @@ const resendOtpUseCase = new ResendOtpUseCase(otpRepo, emailService);
 const verifyOtpUseCase = new VerifyOtpUseCase(otpRepo, userRepo, passwordService);
 const forgotPasswordUseCase = new ForgotPasswordUseCase(userRepo, forgotPasswordService);
 const verifyForgotPassOtpUseCase = new VerifyForgotPasswordOtpUseCse(otpRepo);
-const resentForgotPasswOtpUseCase = new ResentForgotPasswordUsecase(userRepo, forgotPasswordService, otpRepo)
+const resentForgotPasswOtpUseCase = new ResentForgotPasswordUsecase(userRepo, forgotPasswordService, otpRepo);
+const changeForgotPasswordUseCase = new ChangeForgotPasswordUseCase(userRepo, passwordService);
 
 
 const authController = new AuthController(
@@ -55,7 +57,8 @@ const authController = new AuthController(
     verifyOtpUseCase,
     forgotPasswordUseCase,
     verifyForgotPassOtpUseCase,
-    resentForgotPasswOtpUseCase
+    resentForgotPasswOtpUseCase,
+    changeForgotPasswordUseCase
 );
 
 //sugnup routes.

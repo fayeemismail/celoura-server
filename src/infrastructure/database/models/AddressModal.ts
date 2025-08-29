@@ -6,6 +6,7 @@ import { model } from "mongoose";
 
 const addressSchema: Schema<Address> = new Schema({
     name: { type: String },
+    userId: { type: String, required: true, ref: "User" },
     phone: { type: String },
     line1: { type: String, required: true },
     line2: { type: String },

@@ -1,7 +1,7 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { JwtPayload } from "jsonwebtoken";
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 import { env } from "../../config/authConfig";
 import { IGetAllUserUseCase } from "../../application/usecase/admin/interface/IGetAllUserUseCase";
 import { IBlockUserUseCase } from "../../application/usecase/user/interface/IBlockUserUseCase";
@@ -14,172 +14,170 @@ import { IApproveAsGuide } from "../../application/usecase/admin/interface/IAppr
 import { IGetCountUseCase } from "../../application/usecase/admin/interface/IGetCountUseCase";
 import { IGetDestinationUseCase } from "../../application/usecase/admin/interface/IGetDestinationUseCase";
 import { IEditDestinationUseCase } from "../../application/usecase/admin/interface/IEditDestinationUseCase";
-import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IDeleteDestinationUseCase } from "../../application/usecase/admin/interface/IDeleteDestinationUseCase";
 import { IGenerateSignedUrlUseCase } from "../../application/usecase/admin/interface/IGenarateSignedUrlUseCase";
 import { UserMapper } from "../../application/mappers/admin/userMapper";
 import { IFetchAllBookingsUseCase } from "../../application/usecase/admin/interface/IFetchAllBookingsUseCase";
 
 export default class AdminController {
-    constructor(
-        private readonly _getAllUserUseCase: IGetAllUserUseCase,
-        private readonly _blockUserUseCase: IBlockUserUseCase,
-        private readonly _unBlockUserUseCase: IUnBlockUserUseCase,
-        private readonly _getAllGuideAppliesUseCase: IGetAllGuideApplies,
-        private readonly _approveAsGuideUseCase: IApproveAsGuide,
-        private readonly _rejectAsGuideUseCase: IRejectAsGuide,
-        private readonly _createDestinationUseCase: ICreateDestintaion,
-        private readonly _getAllDestinationsUseCase: IGetAllDestinations,
-        private readonly _getCountUseCase: IGetCountUseCase,
-        private readonly _getDestinationUseCase: IGetDestinationUseCase,
-        private readonly _editDestinationUseCase: IEditDestinationUseCase,
-        private readonly _deleteDestinationUseCase: IDeleteDestinationUseCase,
-        private readonly _generateSignedUrlsUseCase : IGenerateSignedUrlUseCase,
-        private readonly _fetchAllBookingsUseCase : IFetchAllBookingsUseCase
-    ) { }
+  constructor(
+    private readonly _getAllUserUseCase: IGetAllUserUseCase,
+    private readonly _blockUserUseCase: IBlockUserUseCase,
+    private readonly _unBlockUserUseCase: IUnBlockUserUseCase,
+    private readonly _getAllGuideAppliesUseCase: IGetAllGuideApplies,
+    private readonly _approveAsGuideUseCase: IApproveAsGuide,
+    private readonly _rejectAsGuideUseCase: IRejectAsGuide,
+    private readonly _createDestinationUseCase: ICreateDestintaion,
+    private readonly _getAllDestinationsUseCase: IGetAllDestinations,
+    private readonly _getCountUseCase: IGetCountUseCase,
+    private readonly _getDestinationUseCase: IGetDestinationUseCase,
+    private readonly _editDestinationUseCase: IEditDestinationUseCase,
+    private readonly _deleteDestinationUseCase: IDeleteDestinationUseCase,
+    private readonly _generateSignedUrlsUseCase: IGenerateSignedUrlUseCase,
+    private readonly _fetchAllBookingsUseCase: IFetchAllBookingsUseCase
+  ) {}
 
-    public getAllUsers = async (req: Request, res: Response): Promise<void> => {
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
-            const role = req.query.role as 'user' | 'guide' || 'user';
-            const search = (req.query.search as string) || '';
+  public getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const role = (req.query.role as "user" | "guide") || "user";
+      const search = (req.query.search as string) || "";
 
-            const { data, total } = await this._getAllUserUseCase.execute(page, limit, role, search);
-            const userguides = UserMapper.toDTOList(data)
-            res.status(HttpStatusCode.OK).json({
-                status: true,
-                data: userguides,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    totalPages: Math.ceil(total / limit),
-                },
-            });
-        } catch (error) {
-            console.error("GetAllUsers Error:", error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
-        }
-    };
+      const { data, total } = await this._getAllUserUseCase.execute(page, limit, role, search);
+      const userguides = UserMapper.toDTOList(data);
 
-    public adminRefreshAccessToken = (req: Request, res: Response): any => {
-        const token = req.cookies?.adminRefreshToken;
-        if (!token) {
-            return res.status(HttpStatusCode.UNAUTHORIZED).json({ error: 'Refresh token is missing' });
-        }
-        try {
-            const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
+      res.status(HttpStatusCode.OK).json({
+        status: true,
+        data: userguides,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-            if (!payload || typeof payload == 'string' || !payload.id) {
-                return res.status(HttpStatusCode.FORBIDDEN).json({ error: 'Invalid token payload' });
-            }
+  public adminRefreshAccessToken = (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies?.adminRefreshToken;
+    if (!token) {
+      res.status(HttpStatusCode.UNAUTHORIZED).json({ error: "Refresh token is missing" });
+    }
 
-            const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
-                expiresIn: '15m'
-            });
+    try {
+      const payload = jwt.verify(token, env.JWT_REFRESH_SECRET!) as JwtPayload;
 
-            res.cookie('adminAccessToken', newAccessToken, {
-                httpOnly: true,
-                secure: env.NODE_ENV === 'production',
-                sameSite: 'strict',
-                maxAge: env.ACCESS_TOKEN_EXPIRE,
-                path: '/',
-            });
+      if (!payload || typeof payload == "string" || !payload.id) {
+        res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid token payload" });
+      }
 
-            return res.status(HttpStatusCode.OK).json({ success: true });
-        } catch (error) {
-            console.error('Admin Refresh Error: ', error);
-            return res.status(HttpStatusCode.FORBIDDEN).json({ error: "Invalid admin refresh token" });
-        }
-    };
+      const newAccessToken = jwt.sign({ id: payload.id }, env.JWT_ACCESS_SECRET!, {
+        expiresIn: "15m",
+      });
 
-    public blockUser = async (req: Request, res: Response): Promise<any> => {
-        const { userId } = req.params;
-        try {
-            if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: 'User not found' });
-            await this._blockUserUseCase.execute(userId);
-            return res.status(HttpStatusCode.OK).json({ message: 'User Has been Blocked successfully' });
-        } catch (error: any) {
-            console.log(error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Failed to Block user' });
-        }
-    };
+      res.cookie("adminAccessToken", newAccessToken, {
+        httpOnly: true,
+        secure: env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: env.ACCESS_TOKEN_EXPIRE,
+        path: "/",
+      });
 
-    public unBlockUser = async (req: Request, res: Response): Promise<any> => {
-        const { userId } = req.params;
-        try {
-            if (!userId) return res.status(HttpStatusCode.UNAUTHORIZED).json({ message: "User Not Found" });
-            await this._unBlockUserUseCase.execute(userId);
-            res.status(HttpStatusCode.OK).json({ message: 'UnBlocked User' });
-        } catch (error: any) {
-            console.log(error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Failed to unBlock User' });
-        }
-    };
+      res.status(HttpStatusCode.OK).json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public getGuideApplications = async (req: Request, res: Response): Promise<any> => {
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 10;
-            const { data, total, totalPages } = await this._getAllGuideAppliesUseCase.execute(page, limit);
-            return res.status(HttpStatusCode.OK).json({ data, total, page, totalPages });
-        } catch (error: any) {
-            console.log(error.message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: error.message });
-        }
-    };
+  public blockUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      if (!userId) res.status(HttpStatusCode.BAD_REQUEST).json({ message: "User not found" });
 
-    public approveGuide = async (req: Request, res: Response): Promise<void> => {
-        const { applicationId, userId } = req.body;
-        try {
-            if (!applicationId || !userId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
-                return;
-            }
-            await this._approveAsGuideUseCase.execute(applicationId, userId);
-            res.status(HttpStatusCode.OK).json({ message: 'Approved as guide Successfully' });
-        } catch (error: any) {
-            console.log(error.message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
-        }
-    };
+      await this._blockUserUseCase.execute(userId);
+      res.status(HttpStatusCode.OK).json({ message: "User blocked successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public rejectGuide = async (req: Request, res: Response): Promise<any> => {
-        const { applicationId, userId, reason } = req.body;
-        console.log(reason)
-        try {
-            if (!applicationId || !userId) {
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: 'Application or User not found' });
-                return;
-            }
-            await this._rejectAsGuideUseCase.execute(applicationId, userId, reason);
-            res.status(HttpStatusCode.OK).json({ message: 'Application Rejected successfully' });
-        } catch (error: any) {
-            console.log(error.message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message });
-        }
-    };
+  public unBlockUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { userId } = req.params;
+      if (!userId) res.status(HttpStatusCode.BAD_REQUEST).json({ message: "User not found" });
 
-    public getCount = async (req: Request, res: Response) => {
-        try {
-            const userData = await this._getCountUseCase.findUser();
-            const guideData = await this._getCountUseCase.findGuide();
-            const destination = await this._getCountUseCase.findDestination();
-            const user = UserMapper.toDTOList(userData);
-            const guide = UserMapper.toDTOList(guideData)
-            res.status(HttpStatusCode.OK).json({ user, guide, destination });
-        } catch (error) {
-            console.log('Error On getting count: ', error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: error || 'Failed to Fetch users' });
-        }
-    };
+      await this._unBlockUserUseCase.execute(userId);
+      res.status(HttpStatusCode.OK).json({ message: "User unblocked successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public createDestination = async (req: Request, res: Response): Promise<any> => {
+  public getGuideApplications = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const { data, total, totalPages } = await this._getAllGuideAppliesUseCase.execute(page, limit);
+      res.status(HttpStatusCode.OK).json({ data, total, page, totalPages });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public approveGuide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { applicationId, userId } = req.body;
+      if (!applicationId || !userId) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Application or User not found" });
+      }
+
+      await this._approveAsGuideUseCase.execute(applicationId, userId);
+      res.status(HttpStatusCode.OK).json({ message: "Approved as guide successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public rejectGuide = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { applicationId, userId, reason } = req.body;
+      if (!applicationId || !userId) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({ message: "Application or User not found" });
+      }
+
+      await this._rejectAsGuideUseCase.execute(applicationId, userId, reason);
+      res.status(HttpStatusCode.OK).json({ message: "Application rejected successfully" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getCount = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userData = await this._getCountUseCase.findUser();
+      const guideData = await this._getCountUseCase.findGuide();
+      const destination = await this._getCountUseCase.findDestination();
+
+      res.status(HttpStatusCode.OK).json({
+        user: UserMapper.toDTOList(userData),
+        guide: UserMapper.toDTOList(guideData),
+        destination,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public createDestination = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { name, description, location, country, features, photos } = req.body;
-      const parsedFeatures = typeof features === 'string' ? JSON.parse(features) : features;
-      const parsedPhotos = typeof photos === 'string' ? JSON.parse(photos) : photos;
+      const parsedFeatures = typeof features === "string" ? JSON.parse(features) : features;
+      const parsedPhotos = typeof photos === "string" ? JSON.parse(photos) : photos;
 
       if (!Array.isArray(parsedPhotos) || parsedPhotos.length === 0) {
         res.status(HttpStatusCode.BAD_REQUEST).json({ message: "At least one photo URL is required" });
@@ -193,135 +191,104 @@ export default class AdminController {
         parsedPhotos,
         parsedFeatures
       );
-        res.status(HttpStatusCode.CREATED).json({ message: 'Destination created successfully', data: destination });
-    } catch (error: any) {
-      console.error("Error on creating destination: ", error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || 'Internal Server Error' });
+
+      res.status(HttpStatusCode.CREATED).json({ message: "Destination created successfully", data: destination });
+    } catch (error) {
+      next(error);
     }
   };
 
-  public generateSignedUrls = async (req: Request, res: Response): Promise<any> => {
+  public generateSignedUrls = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { count } = req.query; 
+      const { count } = req.query;
       const photoCount = parseInt(count as string, 10);
 
       const signedUrls = await this._generateSignedUrlsUseCase.execute(photoCount);
-
-        res.status(HttpStatusCode.OK).json({ signedUrls });
+      res.status(HttpStatusCode.OK).json({ signedUrls });
     } catch (error) {
-      console.error("Error generating signed URLs: ", error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Failed to generate signed URLs" });
+      next(error);
     }
   };
 
-    public getAllDestinations = async (req: Request, res: Response) => {
-        try {
-            let response = await this._getAllDestinationsUseCase.findAll();
-            res.status(HttpStatusCode.OK).json({ data: response });
-        } catch (error: any) {
-            console.log(error.message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: error.message || "CAN'T fetch the data" });
-        }
-    };
+  public getAllDestinations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response = await this._getAllDestinationsUseCase.findAll();
+      res.status(HttpStatusCode.OK).json({ data: response });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public getPaginatedDestinations = async (req: Request, res: Response) => {
-        try {
-            const page = parseInt(req.query.page as string) || 1;
-            const limit = parseInt(req.query.limit as string) || 9;
-            const search = req.query.search?.toString() || "";
-            const attraction = req.query.attraction?.toString() || "";
+  public getPaginatedDestinations = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 9;
+      const search = req.query.search?.toString() || "";
+      const attraction = req.query.attraction?.toString() || "";
 
-            const { data, total } = await this._getAllDestinationsUseCase.execute(page, limit, search, attraction);
+      const { data, total } = await this._getAllDestinationsUseCase.execute(page, limit, search, attraction);
 
-            res.status(HttpStatusCode.OK).json({
-                status: true,
-                data,
-                pagination: {
-                    total,
-                    page,
-                    limit,
-                    totalPages: Math.ceil(total / limit),
-                },
-            });
-        } catch (error: any) {
-            console.error("GetAllDestinations Error:", error);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: "Internal Server Error" });
-        }
-    };
+      res.status(HttpStatusCode.OK).json({
+        status: true,
+        data,
+        pagination: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public getDestination = async (req: Request, res: Response) => {
-        const { destinationId } = req.params;
-        if (!destinationId) {
-            res.status(HttpStatusCode.BAD_REQUEST).json({ message: 'DestinationId parameter is required' });
-            return;
-        }
+  public getDestination = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { destinationId } = req.params;
+      if (!destinationId) {
+        res.status(HttpStatusCode.BAD_REQUEST).json({ message: "DestinationId parameter is required" });
+      }
 
-        try {
-            const data = await this._getDestinationUseCase.execute(destinationId);
-            res.status(HttpStatusCode.OK).json({ data });
-        } catch (error: unknown) {
-            console.error(error);
+      const data = await this._getDestinationUseCase.execute(destinationId);
+      res.status(HttpStatusCode.OK).json({ data });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-            if (error instanceof Error) {
-                if (error.message === 'Invalid DestinationId') {
-                    res.status(HttpStatusCode.BAD_REQUEST).json({ message: error.message });
-                    return;
-                }
-                res.status(HttpStatusCode.NOT_FOUND).json({ message: error.message || 'Cannot find Destination' });
-                return;
-            }
+  public editDestination = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { destinationId } = req.params;
+      const editedData = req.body;
+      const files = req.files as Express.Multer.File[];
 
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: 'Something went wrong' });
-        }
-    };
+      const update = await this._editDestinationUseCase.execute(destinationId, { ...editedData, files });
+      res.status(HttpStatusCode.OK).json({ message: update.message, data: update.data });
+    } catch (error) {
+      next(error);
+    }
+  };
 
+  public deleteDestination = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { destinationId } = req.params;
+      const result = await this._deleteDestinationUseCase.execute(destinationId);
+      res.status(HttpStatusCode.NO_CONTENT).json({ message: result.message });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-    public editDestination = async (req: Request, res: Response): Promise<any> => {
-        const {destinationId} = req.params;
-        const editedData = req.body;
-        const files = req.files as Express.Multer.File[]
-        try {
-            const updatedData = {...editedData, files};
-            console.log(updatedData, 'this is updated data');
-            const update = await this._editDestinationUseCase.execute(destinationId, updatedData);
+  public fetchBookings = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 9;
 
-            if(!update){
-                res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong" });
-                return;
-            }
-
-            res.status(HttpStatusCode.OK).json({ message: update.message, data: update.data })
-        } catch (error: unknown) {
-            const message = extractErrorMessage(error)
-            console.error("Update error:", message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || 'Internal Server Error' });
-        }
-    };
-
-    public deleteDestination = async(req: Request, res: Response) => {
-        const { destinationId } = req.params;
-        console.log(destinationId, 'this is dstination Id')
-        try {
-            const result = await this._deleteDestinationUseCase.execute(destinationId);
-            res.status(HttpStatusCode.NO_CONTENT).json(result.message);
-        } catch (error) {
-            const message = extractErrorMessage(error)
-            console.log(message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
-        }
-    };
-
-    public fetchBookings = async(req: Request, res: Response) => {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 9;
-        try {
-            const result = await this._fetchAllBookingsUseCase.execute(page, limit);
-            res.status(HttpStatusCode.OK).json(result);
-        } catch (error) {
-            const message = extractErrorMessage(error)
-            console.log(message);
-            res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({message : message})
-        }
-    };
-
+      const result = await this._fetchAllBookingsUseCase.execute(page, limit);
+      res.status(HttpStatusCode.OK).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

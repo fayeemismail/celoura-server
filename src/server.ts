@@ -11,6 +11,7 @@ import { env } from './config/authConfig';
 import passport from 'passport';
 import winston from 'winston';
 import morgan from 'morgan';
+import { errorHandler } from './infrastructure/middleware/errorHandler';
 
 
 
@@ -59,7 +60,7 @@ app.use('/api/user', userRoute);
 app.use('/api/admin', adminRouter);
 app.use('/api/guide', guideRouter);
 
-
+app.use(errorHandler);
 
 //connecting mongoDB
 mongoose.connect(process.env.MONGO_URI!).then(() => {

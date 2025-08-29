@@ -2,6 +2,7 @@
 
 export interface Address {
     _id?: string;
+    userId: string;
     name?: string;
     phone?: string;
     line1: string;
