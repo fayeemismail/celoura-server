@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { HttpStatusCode } from "../../application/constants/httpStatus";
 import { ValidationError } from "../../utils/ValidationError";
 import { ApplyForGuideUseCase } from "../../application/usecase/user/ApplyForGuideUseCase";
@@ -8,7 +8,6 @@ import { UserProfileDTO } from "../../application/dto/user/UserProfileDto";
 import { IEditUserProfileUseCase } from "../../application/usecase/user/interface/IEditUserProfileUseCase";
 import { IGetDestinationsUseCase } from "../../application/usecase/user/interface/IGetDestinationsUseCase";
 import { IGetAllDestinations } from "../../application/usecase/admin/interface/IGetAllDestinations";
-import { extractErrorMessage } from "../../utils/errorHelpers";
 import { IGetGuidePaginatedUseCase } from "../../application/usecase/user/interface/IGetGuidesPaginatedusecase";
 import { IGetSingleGuideUseCase } from "../../application/usecase/user/interface/IGetSingleGuideUseCase";
 import { IGetAllPostGuideUseCase } from "../../application/usecase/user/interface/IGetAllPostGuideUseCase";
@@ -25,9 +24,8 @@ import { BookGuide } from "../../application/dto/user/IBookGuideData";
 import { IFetchUserBookingsUseCase } from "../../application/usecase/user/interface/IFetchUserBookingsUseCase";
 import { IFetchUserBookingDetailsUseCase } from "../../application/usecase/user/interface/IFetchUserBookingDetailsUseCase";
 import { ICancelBookingUseCase } from "../../application/usecase/user/interface/ICancelBookingUseCase";
-
-
-
+import { AddressDto } from "../../application/dto/user/requrest/AddressDto";
+import { IAddAddressUseCase } from "../../application/usecase/user/interface/IAddAddressUseCase";
 
 export default class UserController implements IUserInterface {
   constructor(
@@ -50,85 +48,60 @@ export default class UserController implements IUserInterface {
     private readonly _bookGuideUseCase: IBookGuideUseCase,
     private readonly _fetchUserBookingsUseCase: IFetchUserBookingsUseCase,
     private readonly _fetchUserBookingDetailsUseCase: IFetchUserBookingDetailsUseCase,
-    private readonly _cancelUserBookingUseCase: ICancelBookingUseCase
-  ) { }
+    private readonly _cancelUserBookingUseCase: ICancelBookingUseCase,
+    private readonly _addNewAddressUseCase : IAddAddressUseCase
+  ) {}
 
-  public getProfile = async (req: Request, res: Response): Promise<any> => {
+  public getProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.params.id;
       const user = await this._guideProfileUseCase.execute(userId);
       const userDTO = UserProfileDTO.formDomain(user);
-
       res.status(HttpStatusCode.OK).json(userDTO);
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.error('Get Profile Error: ', message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ error: message })
+    } catch (error) {
+      next(error);
     }
   };
 
-  public hasRegistered = async (req: Request, res: Response) => {
-    const userId = req.params.userId
+  public hasRegistered = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const userId = req.params.userId;
       const response = await this._hasAlreadyAppliedUseCase.execute(userId);
-      res.status(HttpStatusCode.OK).json(response)
+      res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Some thing went wrong on fetch application" });
+      next(error);
     }
-  }
+  };
 
-  public editProfile = async (req: Request, res: Response): Promise<void> => {
+  public editProfile = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const updateData = req.body;
       const user = await this._editProfileUseCase.execute(updateData);
-
       const userData = UserProfileDTO.formDomain(user);
-
-      res.status(HttpStatusCode.OK).json({ data: userData, message: 'Profile pdated successfully' });
-    } catch (error: unknown) {
+      res.status(HttpStatusCode.OK).json({ data: userData, message: "Profile updated successfully" });
+    } catch (error) {
       if (error instanceof ValidationError) {
         res.status(error.statusCode).json({
           status: "Validation Error",
           message: error.message,
         });
-      } else if (error instanceof Error) {
-        console.error(error);
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-          status: HttpStatusCode.INTERNAL_SERVER_ERROR,
-          message: error.message,
-        });
       } else {
-        res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-          status: HttpStatusCode.INTERNAL_SERVER_ERROR,
-          message: "Unexpected error occurred",
-        });
+        next(error);
       }
     }
-  }
+  };
 
-  public applyForGuide = async (req: Request, res: Response): Promise<void> => {
+  public applyForGuide = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { fullName, dob, phone, email, address, experience, expertise, userId, basedOn } = req.body;
-
-      // Cast req.files into a dictionary type
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-
       const idFile = files?.["idFile"]?.[0];
       const profilePhoto = files?.["profilePhoto"]?.[0];
 
-      if (!idFile) {
+      if (!idFile || !profilePhoto) {
         res.status(HttpStatusCode.BAD_REQUEST).json({
           success: false,
-          message: "Identity proof file is required",
-        });
-        return;
-      }
-
-      if (!profilePhoto) {
-        res.status(HttpStatusCode.BAD_REQUEST).json({
-          success: false,
-          message: "Profile photo is required",
+          message: "ID proof and profile photo are required",
         });
         return;
       }
@@ -146,48 +119,38 @@ export default class UserController implements IUserInterface {
         userId,
         basedOn,
       };
+
       await this._applyForGuideUseCase.execute(applicationDto);
 
       res.status(HttpStatusCode.CREATED).json({
         success: true,
         message: "Application submitted successfully",
       });
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error);
-      console.log("Error", message);
-      res.status(HttpStatusCode.BAD_REQUEST).json({
-        success: false,
-        message,
-      });
+    } catch (error) {
+      next(error);
     }
-  }
+  };
 
-  public getDestinations = async (req: Request, res: Response) => {
+  public getDestinations = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const data = await this._getAllDestinationsUseCase.findAll();
-      res.status(HttpStatusCode.OK).json({ data })
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.log(message)
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Unexpected error on fetching data" })
+      res.status(HttpStatusCode.OK).json({ data });
+    } catch (error) {
+      next(error);
     }
-  }
+  };
 
-  public getSingleDestination = async (req: Request, res: Response) => {
+  public getSingleDestination = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params;
       const data = await this._getSingleDestinationUseCase.findById(id);
-      res.status(HttpStatusCode.OK).json({ data })
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.log(message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-        message: message || "Cannot get destination"
-      })
+      res.status(HttpStatusCode.OK).json({ data });
+    } catch (error) {
+      next(error);
     }
-  }
+  };
 
-  public getPaginatedDestinations = async (req: Request, res: Response) => {
+  public getPaginatedDestinations = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 9;
@@ -206,32 +169,28 @@ export default class UserController implements IUserInterface {
           totalPages: Math.ceil(total / limit),
         },
       });
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.error("GetAllDestinations Error:", error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ status: false, message: message || "Internal Server Error" });
-    }
-  }
-
-  public getNewDestinations = async (req: Request, res: Response) => {
-    try {
-      const limit = parseInt(req.params.limit as string) || 3;
-
-      const data = await this._getAllDestinationsUseCase.findNew(limit);
-      res.status(HttpStatusCode.OK).json({ data })
-    } catch (error: unknown) {
-      const message = extractErrorMessage(error)
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Something went wrong" });
+    } catch (error) {
+      next(error);
     }
   };
 
-  public getAllGuidesOnUser = async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 9;
-    const search = req.query.search?.toString() || "";
-    const category = req.query.category?.toString() || "";
+  public getNewDestinations = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const limit = parseInt(req.params.limit as string) || 3;
+      const data = await this._getAllDestinationsUseCase.findNew(limit);
+      res.status(HttpStatusCode.OK).json({ data });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getAllGuidesOnUser = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 9;
+      const search = req.query.search?.toString() || "";
+      const category = req.query.category?.toString() || "";
+
       const { data, total } = await this._getGuidespaginatedUseCase.execute(page, limit, search, category);
       res.status(HttpStatusCode.OK).json({
         data,
@@ -239,198 +198,190 @@ export default class UserController implements IUserInterface {
           total,
           page,
           limit,
-          totalPages: Math.ceil(total / limit)
-        }
-      })
+          totalPages: Math.ceil(total / limit),
+        },
+      });
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message || "Cannot Fetch Guides" });
+      next(error);
     }
   };
 
-  public getGuideSingleData = async (req: Request, res: Response) => {
-    const id = req.params.userId
+  public getGuideSingleData = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const id = req.params.userId;
       const response = await this._getSingleGuideUseCase.execute(id);
       res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
-      const message = extractErrorMessage(error)
-      console.log("this is message ", message ?? "Error On Getting Single Guide", error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? 'Some thing went Wrong on Getting Data' });
+      next(error);
     }
   };
 
-  public getallPostGuideData = async (req: Request, res: Response) => {
-    const id = req.params.id;
+  public getallPostGuideData = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const id = req.params.id;
       const response = await this._getAllPostGuideUseCase.execute(id);
-      res.status(HttpStatusCode.OK).json(response)
+      res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
-      console.log('Erro on Fetching Post', error);
-      res.status(HttpStatusCode.OK).json({ message: "Something went wrong on Fetching posts" });
+      next(error);
     }
   };
 
-  public getGuideSinglePost = async (req: Request, res: Response) => {
-    const postId = req.params.postId;
+  public getGuideSinglePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const postId = req.params.postId;
       const response = await this._getGuideSinglePostUseCase.execute(postId);
-      res.status(HttpStatusCode.OK).json(response)
+      res.status(HttpStatusCode.OK).json(response);
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on fetching post" });
+      next(error);
     }
-  }
+  };
 
-  public likeGuidePost = async (req: Request, res: Response) => {
-    const { postId, userId } = req.params
+  public likeGuidePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { postId, userId } = req.params;
       await this._likeGUidePostUseCase.execute(postId, userId);
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on liking" })
+      next(error);
     }
   };
 
-  public unLikeGuidePost = async (req: Request, res: Response) => {
-    const { userId, postId } = req.params
+  public unLikeGuidePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { userId, postId } = req.params;
       await this._unLikeGuidePostUseCase.execute(postId, userId);
-      res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
+      res.status(HttpStatusCode.NO_CONTENT).json({ success: true });
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on unLiking" })
+      next(error);
     }
   };
 
-  public commentOnGuidePost = async (req: Request, res: Response) => {
-    const data = req.body;
+  public commentOnGuidePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const data = req.body;
       const response = await this._commentGuidePostUseCase.execute(data);
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: message ?? "Something went wrong on Commenting" })
+      next(error);
     }
-  }
-  public replyCommentOnGuidePost = async (req: Request, res: Response) => {
-    const data = req.body;
+  };
+
+  public replyCommentOnGuidePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const data = req.body;
       const response = await this._replyCommentGuidePostUseCase.execute(data);
       res.status(HttpStatusCode.CREATED).json(response);
     } catch (error) {
-      const message = extractErrorMessage(error);
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on Reply" })
+      next(error);
     }
   };
 
-  public followGuide = async (req: Request, res: Response) => {
-    const guideId = req.params.guideId;
-    const userId = req.params.userId;
+  public followGuide = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const guideId = req.params.guideId;
+      const userId = req.params.userId;
       await this._followGuideUseCase.execute({ guideId, userId });
       res.status(HttpStatusCode.CREATED).json({ success: true });
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on follow" });
+      next(error);
     }
   };
 
-  public unfollowGuid = async (req: Request, res: Response) => {
-    const guideId = req.params.guideId;
-    const userId = req.params.userId;
+  public unfollowGuid = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const guideId = req.params.guideId;
+      const userId = req.params.userId;
       await this._unfollowGuideUseCase.execute({ guideId, userId });
-      res.status(HttpStatusCode.NO_CONTENT).json({ success: true })
+      res.status(HttpStatusCode.NO_CONTENT).json({ success: true });
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Something went wrong on unfollow" });
+      next(error);
     }
   };
 
-  public getGuideWDestinationController = async (req: Request, res: Response) => {
-    const destinationId = req.params.destinationId;
+  public getGuideWDestinationController = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const destinationId = req.params.destinationId;
       const data = await this._getSingleDestinationUseCase.getGuideWDestination(destinationId);
       res.status(HttpStatusCode.OK).json(data);
     } catch (error) {
-      console.log(error, "Cannot find the destination or guide");
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot find the destination or guide" })
+      next(error);
     }
   };
 
-  public guideDataOnBooking = async (req: Request, res: Response) => {
-    const guideId = req.params.guideId;
+  public guideDataOnBooking = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const guideId = req.params.guideId;
       const data = await this._getSingleGuideUseCase.execute(guideId);
-      res.status(HttpStatusCode.OK).json(data)
+      res.status(HttpStatusCode.OK).json(data);
     } catch (error) {
-      console.log(error);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({ message: "Cannot get Guide Data" })
+      next(error);
     }
-  }
+  };
 
-  public bookTheGuide = async (req: Request, res: Response) => {
-    const guideId = req.params.guideId;
-    const userId = req.params.userId;
-    const destinationId = req.params.destinationId;
+  public bookTheGuide = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const guideId = req.params.guideId;
+      const userId = req.params.userId;
       const bookingdata: BookGuide = {
         guideId,
         userId,
-        ...req.body
-      }
-      const data = await this._bookGuideUseCase.execute(bookingdata)
-      res.status(HttpStatusCode.CREATED).json(data)
+        ...req.body,
+      };
+      const data = await this._bookGuideUseCase.execute(bookingdata);
+      res.status(HttpStatusCode.CREATED).json(data);
     } catch (error) {
-      const message = extractErrorMessage(error)
-      console.log(message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+      next(error);
     }
   };
 
-  public fetchUserBookings = async (req: Request, res: Response) => {
-    const userId = req.params.userId;
+  public fetchUserBookings = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const userId = req.params.userId;
       const data = await this._fetchUserBookingsUseCase.execute(userId);
-      res.status(HttpStatusCode.CREATED).json(data)
+      res.status(HttpStatusCode.CREATED).json(data);
     } catch (error) {
-      const message = extractErrorMessage(error)
-      console.log(message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+      next(error);
     }
   };
 
-  public fetchUserBookingDetails = async (req: Request, res: Response) => {
-    const bookingId = req.params.bookingId;
+  public fetchUserBookingDetails = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(bookingId)
-      const data = await this._fetchUserBookingDetailsUseCase.execute(bookingId)
-      res.status(HttpStatusCode.CREATED).json(data)
+      const bookingId = req.params.bookingId;
+      const data = await this._fetchUserBookingDetailsUseCase.execute(bookingId);
+      res.status(HttpStatusCode.CREATED).json(data);
     } catch (error) {
-      const message = extractErrorMessage(error)
-      console.log(message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+      next(error);
     }
   };
 
-  public cancelUserBooking = async (req: Request, res: Response) => {
-    const bookingId = req.params.bookingId;
+  public cancelUserBooking = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await this._cancelUserBookingUseCase.execute(bookingId)
-      res.status(HttpStatusCode.CREATED).json(data)
+      const bookingId = req.params.bookingId;
+      const data = await this._cancelUserBookingUseCase.execute(bookingId);
+      res.status(HttpStatusCode.CREATED).json(data);
     } catch (error) {
-      const message = extractErrorMessage(error)
-      console.log(message);
-      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json(message)
+      next(error);
     }
   };
 
-};
+  public addNewAddress = async(req: Request, res: Response, next: NextFunction) => {
+    try {
+     const dto = new AddressDto(req.body);
+     const response = await this._addNewAddressUseCase.execute(dto);
+     res.status(HttpStatusCode.OK).json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getUserAddresses = async(req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId
+    try {
+      console.log(userId);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
+}

@@ -14,6 +14,11 @@ import { RegisterUseCase } from '../../application/usecase/user/RegisterUserUseC
 import { LoginUserUseCase } from '../../application/usecase/user/LoginUser';
 import { ResendOtpUseCase } from '../../application/usecase/auth/ResendOtp';
 import { VerifyOtpUseCase } from '../../application/usecase/auth/VerifyOtp';
+import { ForgotPasswordUseCase } from '../../application/usecase/auth/ForgotPasswordUseCase';
+import { ForgotPasswordService } from '../../infrastructure/service/ForgotPasswordService';
+import { VerifyForgotPasswordOtpUseCse } from '../../application/usecase/auth/VerifyForgotPasswordOtpUseCase';
+import { ResentForgotPasswordUsecase } from '../../application/usecase/auth/ResentForgotPasswordUseCase';
+import { ChangeForgotPasswordUseCase } from '../../application/usecase/auth/ChangeForgotPassword';
 
 
 const router = express.Router();
@@ -24,6 +29,7 @@ const authService = new AuthService(); // after cleaning remove this from contro
 const passwordService = new PasswordService();
 const otpRepo = new OtpRepository();
 const emailService = new EmailService();
+const forgotPasswordService = new ForgotPasswordService(otpRepo, emailService)
 
 // usecase
 const loginOrRegisterUseCase = new RegisterGoogleUserUseCase(userRepo, authService);
@@ -34,6 +40,10 @@ const refreshAccessTokenUseCase = new RefreshAccessTokenUseCase(authService, use
 const getUserUseCasse = new GetUserProfile(userRepo);
 const resendOtpUseCase = new ResendOtpUseCase(otpRepo, emailService);
 const verifyOtpUseCase = new VerifyOtpUseCase(otpRepo, userRepo, passwordService);
+const forgotPasswordUseCase = new ForgotPasswordUseCase(userRepo, forgotPasswordService);
+const verifyForgotPassOtpUseCase = new VerifyForgotPasswordOtpUseCse(otpRepo);
+const resentForgotPasswOtpUseCase = new ResentForgotPasswordUsecase(userRepo, forgotPasswordService, otpRepo);
+const changeForgotPasswordUseCase = new ChangeForgotPasswordUseCase(userRepo, passwordService);
 
 
 const authController = new AuthController(
@@ -44,7 +54,11 @@ const authController = new AuthController(
     refreshAccessTokenUseCase,
     getUserUseCasse,
     resendOtpUseCase,
-    verifyOtpUseCase
+    verifyOtpUseCase,
+    forgotPasswordUseCase,
+    verifyForgotPassOtpUseCase,
+    resentForgotPasswOtpUseCase,
+    changeForgotPasswordUseCase
 );
 
 //sugnup routes.
@@ -71,5 +85,11 @@ router.post('/google-login', authController.googleLoginVerify);
 
 //For Login Guide With Google 
 router.post('/guide-google-login', authController.googleVerifyGuide);
+
+//forgot password
+router.post('/forgot-password-email', authController.requestPasswordReset);
+router.post('/forgot-password/verifytp', authController.verifyForgotPassOtp);
+router.put('/forgotpassword/resendOtp', authController.resentForgotPasswordOtp);
+router.put('/changePassword', authController.changeForgotPassword);
 
 export default router;

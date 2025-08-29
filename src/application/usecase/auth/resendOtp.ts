@@ -12,9 +12,9 @@ export class ResendOtpUseCase implements IResendOtpUseCase {
 
   async execute(email: string): Promise<{status: number; data: { message?: string; error?: string }}> {
     
-    const existingOtp = await this._otpRepo.getOtp(email);
+    const existingOtp = await this._otpRepo.getOtp(`otp:${email}`);
     if (existingOtp) {
-      await this._otpRepo.deleteOtp(email);
+      await this._otpRepo.deleteOtp(`otp:${email}`);
     }
 
     const tempUser = await this._otpRepo.getTempUser(email);

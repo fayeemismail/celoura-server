@@ -16,10 +16,7 @@ export class LoginUserUseCase implements ILoginUserUseCase{
         try {
             const user = await this._userRepo.findByEmail(email);
             if(!user) {
-                return {
-                    status: HttpStatusCode.NOT_FOUND,
-                    data: { error: 'Invalid email or password' }
-                };
+                throw new Error("User not found")
             }
 
             const isValid = await this._passwordService.comparePassword(password, user.password);

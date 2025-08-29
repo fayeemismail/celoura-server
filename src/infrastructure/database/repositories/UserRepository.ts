@@ -17,7 +17,7 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
   }
 
   async getUserById(_id: string): Promise<User | null> {
-      return userModel.findById(_id)
+    return userModel.findById(_id)
   }
 
   async createUser(data: Partial<User>): Promise<User> {
@@ -39,7 +39,16 @@ export class UserRepository extends BaseRepository<User> implements IUserReposit
 
   async updatePassword(userId: string, hashedPassword: string): Promise<void> {
     await userModel.findByIdAndUpdate(userId, { password: hashedPassword });
+  };
+
+  async changePasswordByEmail(email: string, hashedPassword: string): Promise<void> {
+    await userModel.findOneAndUpdate(
+      { email },
+      { password: hashedPassword },
+      { new: true }
+    );
   }
+
 
   async updateName(userId: string, name: string): Promise<void> {
     await userModel.findByIdAndUpdate(userId, { name });
